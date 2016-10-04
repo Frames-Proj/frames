@@ -1,0 +1,22 @@
+
+
+# Sponsorship
+
+Brett Russell, James Bach, Nicholas Koteskey, and Stephan Pilsl,
+members of the SAFEnet community have agreed to sponsor our project.
+They are all interested and enthusiastic about the implications of
+a distributed peer-to-peer network like the SAFEnet, and are willing
+to provide their time in order to help grow the SAFE ecosystem.
+
+Are sponsors are mostly located near the Prime Meridian, so we will
+have to meet and coordinate online. We plan on using video chat services
+such as Google Hangouts and Skype to hold these remote meetings, and we
+will keep a written record of our activity to ensure that our sponsors
+have enough visibility into the project.
+
+We currently have an online meeting planned to discuss our thoughts on
+the implications of the SAFEnet and get the input of our sponsors. Networks
+like the SAFEnet are very new, so much of the value our sponsors will bring
+to the project will be in helping us refine our ideas about it. All of them
+have been actively involved in the SAFE community for some time, and have
+had ample opportunity to think deeply about the network.
