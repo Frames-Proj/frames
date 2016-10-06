@@ -7,8 +7,8 @@ for the software that already exists, and what does exist is relatively
 sparse.  Furthermore, there are not many developers in the world who
 have an active base of knowledge about the SAFE Network.
 
-Our project would help to bring a cutting-edge piece of technology to
-maturity.  We would do this by learning the nuances of working with
+Our project would help to bring a cutting-edge piece of technology closer
+to maturity.  We would do this by learning the nuances of working with
 SAFEnet and contributing to the community's documentation, effectively
 paving the way for future SAFEnet developers.  Another way that our
 project would contribute to the growth of SAFEnet is by demonstrating a
