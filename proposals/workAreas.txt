@@ -13,3 +13,7 @@ SAFEnet and contributing to the community's documentation, effectively
 paving the way for future SAFEnet developers.  Another way that our
 project would contribute to the growth of SAFEnet is by demonstrating a
 valid use case for SAFEnet along with a workable solution to that problem.
+This solution would involve a data-schema library that allows users to
+specify the graph of their data across the network in a declarative manner
+rather than having to go through the process manually.  We would then use
+this library to build an app to demonstrate the capabilities of the network.
