@@ -1,0 +1,10 @@
+
+Hierarchical data does a good job of providing an organizational framework
+for information. We use hierarchical structures in file systems, the DNS system,
+JSON, XML, and NoSQL data stores. It then seems a safe bet to assume that
+SAFE app authors will want to store hierarchical data blobs on the network.
+
+Consider an image sharing app in which each user has a profile. Each user
+profile can be stored in a tree of information about the user which has
+a standard structure. A link to the root node of the profile can be appended
+to some app specific (this can be done with appendable data).
