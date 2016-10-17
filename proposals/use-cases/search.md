@@ -24,6 +24,20 @@ For each uploaded video, add an entry of the following sort the database (by dat
 }
 ```
 
-Based on the above entry, another index can be built which links words with object paths. For example, in the index containing object paths of all videos on the site, the word "cat" could be linked to this video (using the object path), with a weight of 3 (1x title, 1x description and 1x tag). 
+Based on the above entry, another index can be built which links words with object paths. 
+
+```javascript
+{
+	"cat": [{
+		"weight": 3
+		"object": "PATH/TO/OBJECT",
+		"unique_id": "123zje38fna"
+	}],
+	"dog": [{
+	...
+	}]
+}
+
+For example, in the index containing object paths of all videos on the site, the word "cat" could be linked to this video (using the object path), with a weight of 3 (1x title, 1x description and 1x tag) which is the number of times it occurs in the meta data. 
 
 On retrieval, this super index will return the path to this video if the search term was cat.
