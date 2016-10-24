@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "sourceMap":  true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "target": "es6"
+    },
+    "files": [
+        "./lib/auth-and-store.ts"
+    ]
+}
