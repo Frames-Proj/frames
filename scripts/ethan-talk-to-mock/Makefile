@@ -10,6 +10,10 @@ build:
 run:
 	node js/HelloTypescript.js
 
+clean:
+	rm -f tscommand-*
+    $(shell find lib -type f | grep -E ".*(\.js|\.js\.map)" | xargs rm -f)
+
 setup:
 	npm install
 
