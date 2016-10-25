@@ -2,10 +2,11 @@
 
 import * as fs from "fs";
 import * as WebRequest from "web-request";
+import { Request } from "web-request";
 
 const endpoint : string = 'http://localhost:8100';
 
-const directoryName : string = 'ethan-example1';
+const directoryName : string = 'ethan-example2';
 
 const authFileName : string = 'auth.dat';
 
@@ -92,8 +93,8 @@ async function getAuth() : Promise<AuthResponse> {
     return authBlob;
 }
 
-async function storeFile(authRes: AuthResponse, contents: string): Promise<boolean> {
-    console.log(`storeFile:: contents=${contents}`);
+async function storeFile(authRes: AuthResponse, fileToSend: string): Promise<boolean> {
+    console.log(`storeFile:: auth=${authRes} fileToSend=${fileToSend}`);
 
     // create directory is not idempotant... thanks Obama!
     let dirExists: boolean =
@@ -123,8 +124,8 @@ async function storeFile(authRes: AuthResponse, contents: string): Promise<boole
                         }
                     });
             } else {
-                console.log("directory exists!!");
-                console.log(res.content);
+                // console.log("directory exists!!");
+                // console.log(res.content);
                 return Promise.resolve(true);
             }
         });
@@ -133,11 +134,12 @@ async function storeFile(authRes: AuthResponse, contents: string): Promise<boole
         return Promise.resolve(false);
     }
 
-    let binaryContents : string = new Buffer(contents).toString('base64');
-    let size : number = binaryContents.length;
+    // let binaryContents : string = new Buffer(contents).toString('base64');
+    let size : number = fs.statSync(fileToSend).size;
+        // binaryContents.length;
     
-    let fileOk : boolean =
-        await WebRequest.post(endpoint + `/nfs/file/app/${directoryName}/store.txt`, {
+    const mkFileReq : Request<{}> =
+        await WebRequest.create(endpoint + `/nfs/file/app/${directoryName}/store.txt`, {
             json: true,
             method: "POST",
             encoding: null,
@@ -146,14 +148,17 @@ async function storeFile(authRes: AuthResponse, contents: string): Promise<boole
             },
             headers: {
                 'Content-Type': 'text',
-                'Content-Length': size // why is this in the client??
-                // 'Metadata': new Buffer('sample metadata').toString('base64')
-            },
-            body: binaryContents
-        }).then( (res) => {
-            console.log("wrote file!!");
-            console.log(`statusCode=${res.statusCode}`);
-            console.log(`content=${res.content}`);
+                'Content-Length': size, // why is this in the client??
+                'Metadata': new Buffer('sample metadata').toString('base64')
+            }
+        });
+    fs.createReadStream(fileToSend).pipe(mkFileReq);
+
+    const fileOk : boolean =
+        await mkFileReq.response.then( (res) => {
+            console.log(`storeFile:: statusCode=${res.statusCode}`);
+            console.log(`storeFile:: content=${res.content}`);
+            console.log(res);
             return Promise.resolve(res.statusCode === 200);
         }).catch( (err) => {
             console.error("file creation failed!!");
@@ -177,10 +182,8 @@ async function loadFileContents(authRes : AuthResponse): Promise<string> {
     console.log(`loadFileContents:: statusCode=${fileResponse.statusCode}`);
     console.log(`loadFileContents:: content=${fileResponse.content}`);
 
-    return Promise.resolve(fileResponse.content);
+    return Promise.resolve(fileResponse.content.toString());
 }
-
-
 
 //
 // Main
@@ -191,7 +194,8 @@ async function loadFileContents(authRes : AuthResponse): Promise<string> {
     const auth : AuthResponse = await getAuth();
     if (args[0] === "store") {
         console.log("storing!");
-        storeFile(auth, args[1]);
+        const itWorked = await storeFile(auth, args[1]);
+        console.log(`[ ${itWorked ? 'PASSED' : 'FAILED'} ]`);
     } else if (args[0] === "load") {
         let contents : string = await loadFileContents(auth);
         console.log(`contents=${contents}`);
