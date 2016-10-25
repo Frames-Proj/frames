@@ -5,6 +5,7 @@ typings/
 tscommand-*
 lib/**/*.js
 lib/**/*.js.map
+*.dat
 
 *.swp
 *~

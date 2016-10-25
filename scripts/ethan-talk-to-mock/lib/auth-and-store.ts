@@ -1,9 +1,13 @@
+/// <reference path="../typings/index.d.ts" />
 
+import * as fs from "fs";
 import * as WebRequest from "web-request";
 
-var endpoint = 'http://localhost:8100';
+const endpoint : string = 'http://localhost:8100';
 
-let directoryName : string = "ethan-example1";
+const directoryName : string = 'ethan-example1';
+
+const authFileName : string = 'auth.dat';
 
 // authorization payload
 var payload = {
@@ -46,22 +50,50 @@ interface AuthResponse {
     permissions: Array<string>
 };
 
-async function storeFile(contents: string): Promise<boolean> {
-    let size : number = contents.length;
-    console.log(`storeFile:: contents=${contents}`);
+async function getAuth() : Promise<AuthResponse> {
 
-    let authRes : AuthResponse =
-        await WebRequest.create<AuthResponse>(endpoint + '/auth', {
-            json: true,
-            method: "POST",
-            body: payload
-        }).response.then( (res) => {
-            if (res.statusCode === 401) {
-                throw new SAFEAuthError();
+    const authBlob : Promise<AuthResponse> =
+    new Promise<AuthResponse>( (resolve, reject) => {
+        fs.readFile(authFileName, (err, data) => {
+            if (err) {
+                reject(err);
             } else {
-                return res.content;
+                resolve(JSON.parse(data.toString()));
             }
         });
+    }).catch( (err) => {
+
+        console.log("failed to open file!!");
+
+        // return
+        const authResponse : Promise<AuthResponse> = 
+            WebRequest.create<AuthResponse>(endpoint + '/auth', {
+                json: true,
+                method: "POST",
+                body: payload
+            }).response.then( (res) => {
+                if (res.statusCode === 401) {
+                    throw new SAFEAuthError();
+                } else {
+                    return res.content;
+                }
+            }).then( (res) => {
+                console.log(`writing ${JSON.stringify(res)} to file!!`);
+                fs.writeFile(authFileName, JSON.stringify(res), (err) => {
+                    console.error(`getAuth:: err=${err}`);
+                    if (err) throw err;
+                });
+                return Promise.resolve(res);
+            });
+        return authResponse;
+
+    });
+
+    return authBlob;
+}
+
+async function storeFile(authRes: AuthResponse, contents: string): Promise<boolean> {
+    console.log(`storeFile:: contents=${contents}`);
 
     // create directory is not idempotant... thanks Obama!
     let dirExists: boolean =
@@ -101,6 +133,9 @@ async function storeFile(contents: string): Promise<boolean> {
         return Promise.resolve(false);
     }
 
+    let binaryContents : string = new Buffer(contents).toString('base64');
+    let size : number = binaryContents.length;
+    
     let fileOk : boolean =
         await WebRequest.post(endpoint + `/nfs/file/app/${directoryName}/store.txt`, {
             json: true,
@@ -114,31 +149,22 @@ async function storeFile(contents: string): Promise<boolean> {
                 'Content-Length': size // why is this in the client??
                 // 'Metadata': new Buffer('sample metadata').toString('base64')
             },
-            body: new Buffer(contents).toString('base64')
+            body: binaryContents
         }).then( (res) => {
             console.log("wrote file!!");
             console.log(`statusCode=${res.statusCode}`);
             console.log(`content=${res.content}`);
             return Promise.resolve(res.statusCode === 200);
+        }).catch( (err) => {
+            console.error("file creation failed!!");
+            // console.error(err);
+            return Promise.resolve(false);
         });
     
     return Promise.resolve(fileOk);
 }
 
-async function loadFileContents(): Promise<string> {
-
-    let authRes : AuthResponse =
-        await WebRequest.create<AuthResponse>(endpoint + '/auth', {
-            json: true,
-            method: "POST",
-            body: payload
-        }).response.then( (res) => {
-            if (res.statusCode === 401) {
-                throw new SAFEAuthError();
-            } else {
-                return res.content;
-            }
-        });
+async function loadFileContents(authRes : AuthResponse): Promise<string> {
 
     let fileResponse =
         await WebRequest.get(endpoint + `/nfs/file/app/${directoryName}/store.txt`, {
@@ -160,12 +186,14 @@ async function loadFileContents(): Promise<string> {
 // Main
 //
 
-let args = process.argv.slice(2);
-if (args[0] === "store") {
-    storeFile(args[1]);
-} else if (args[0] === "load") {
-    let contents : Promise<string> = loadFileContents();
-    contents.then( (cont) => {
-        console.log(`contents=${cont}`);
-    });
-}
+(async function() {
+    const args = process.argv.slice(2);
+    const auth : AuthResponse = await getAuth();
+    if (args[0] === "store") {
+        console.log("storing!");
+        storeFile(auth, args[1]);
+    } else if (args[0] === "load") {
+        let contents : string = await loadFileContents(auth);
+        console.log(`contents=${contents}`);
+    }
+})();
