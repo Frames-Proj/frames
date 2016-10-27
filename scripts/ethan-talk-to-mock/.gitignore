@@ -1,0 +1,11 @@
+js/
+node_modules
+.tscache
+typings/
+tscommand-*
+lib/**/*.js
+lib/**/*.js.map
+*.dat
+
+*.swp
+*~

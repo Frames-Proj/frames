@@ -1,0 +1,21 @@
+{
+  "name": "ethan-talk-to-mock",
+  "version": "1.0.0",
+  "description": "hello typescript",
+  "main": "js/HelloTypescript.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "web-request": "^1.0.6"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-ts": "^6.0.0-beta.3",
+    "typescript": "^2.0.3",
+    "typings": "^1.4.0"
+  }
+}
