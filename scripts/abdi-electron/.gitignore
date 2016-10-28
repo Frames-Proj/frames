@@ -8,3 +8,4 @@ tscommand-*
 *.dat
 *.swp
 *~
+*.log
