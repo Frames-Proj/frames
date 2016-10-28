@@ -6,7 +6,7 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
         ts: {
             default: {
-                files: [{ src: ['./lib/app.ts'], dest: './app.js'}]
+                files: [{ src: ['./app.ts'], dest: './app.js'}]
             }
         },
         watch: {

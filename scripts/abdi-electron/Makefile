@@ -13,4 +13,3 @@ build:
 clean:
 	rm -f *.map
 	rm -f app.js
-	rm -rf node_modules
