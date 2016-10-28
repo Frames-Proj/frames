@@ -1,6 +1,9 @@
 setup:
 	npm install
 
+run:
+	npm start
+
 watch:
 	node_modules/grunt/bin/grunt watch
 
