@@ -1,6 +1,8 @@
 "use strict";
 
 const {app, BrowserWindow} = require('electron');
+const chromecasts = require('chromecasts');
+// import chromecasts from 'chromecasts';
 
 let win;
 
