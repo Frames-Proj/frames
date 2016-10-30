@@ -13,6 +13,9 @@ function createWindow() {
 
     win.webContents.openDevTools();
 
+    // window.console.log("hello world");
+    // window.console.log(`chromecasts=${chromecasts.list()}`);
+
     win.on('closed', () => {
         win = null;
     });
