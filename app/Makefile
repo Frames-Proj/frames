@@ -13,5 +13,5 @@ watch:
 	node_modules/grunt/bin/grunt watch
 
 clean:
-	rm -f *.map.js
-	rm -f *.js
+	rm -f app.js.map
+	rm -f app.js
