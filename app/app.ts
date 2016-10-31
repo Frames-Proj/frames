@@ -8,6 +8,7 @@ const app = electron.app;
 // const {app, BrowserWindow} = require('electron');
 
 import Config from './src/ts/global-config';
+import Auth from './src/ts/auth';
 const CONFIG : Config = Config.getInstance();
 
 let win;
@@ -18,6 +19,10 @@ function createWindow():void {
     win.loadURL(`file://${__dirname}/index.html`);
 
     win.webContents.openDevTools();
+
+    Auth.getInstance().token.then( (tok) => {
+        console.log(`TOKEN: ${tok}`);
+    });
 
     // window.console.log("hello world");
 

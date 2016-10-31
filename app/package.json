@@ -17,5 +17,6 @@
     "typings": "^1.4.0"
   },
   "dependencies": {
+    "web-request": "^1.0.7"
   }
 }
