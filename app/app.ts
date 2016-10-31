@@ -8,8 +8,9 @@ const app = electron.app;
 // const {app, BrowserWindow} = require('electron');
 
 import Config from './src/ts/global-config';
-import Auth from './src/ts/auth';
 const CONFIG : Config = Config.getInstance();
+
+import { Auth } from './src/ts/auth';
 
 let win;
 

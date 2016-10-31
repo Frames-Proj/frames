@@ -11,6 +11,7 @@ import { Request } from "web-request";
 import { SAFEAuthError, InstantiationError } from "./error";
 import { unPromise, id } from "./util";
 
+const mkpath = require('mkpath');
 
 import Config from './global-config';
 const CONFIG = Config.getInstance();
@@ -27,12 +28,12 @@ interface AuthorizationPayload {
     permissions: Array<string>
 }
 
-interface AuthResponse {
+export interface AuthResponse {
     token: string,
     permissions: Array<string>
 }
 
-export default class Auth {
+export class Auth {
     // On construction Auth gets an authentication token
     // for the app using the following simple algorithm:
     //
@@ -77,7 +78,6 @@ export default class Auth {
     get authResponse(): Promise<AuthResponse> { return this.authRes; }
     get token(): Promise<string> {
         return this.authRes.then( res => {
-            console.log("Auth:: token");
             return Promise.resolve(res.token);
         });
     }
@@ -95,20 +95,31 @@ export default class Auth {
 async function getAuth(payload: AuthorizationPayload) : Promise<AuthResponse> {
     console.log(`auth file: ${AUTH_FILE_NAME}`);
 
+    const createDir : Promise<void> = new Promise( (resolve, reject) => {
+        mkpath(CONFIG.APP_HOME_DIR, function(err) {
+            if (err)
+                reject(err);
+            else
+                resolve();
+        });
+    });
+
     // first we try to see if the authorization token is already here
     const authBlob : Promise<AuthResponse> =
-    new Promise<AuthResponse>( (resolve, reject) => {
-        fs.readFile(AUTH_FILE_NAME, (err, data) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(JSON.parse(data.toString()));
-            }
+    createDir.then( (_) => {
+        return new Promise<AuthResponse>( (resolve, reject) => {
+            fs.readFile(AUTH_FILE_NAME, (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(JSON.parse(data.toString()));
+                }
+            });
         });
     }).catch( (err) => {
         // if the auth file does not exist, we ask the safe_launcher
         // for a token.
-        console.log("failed to open file!!");
+        console.log("failed to open file! !");
 
         const authResponse : Promise<AuthResponse> = 
             WebRequest.create<AuthResponse>(CONFIG.SAFE_LAUNCHER_ENDPOINT + '/auth', {
@@ -116,7 +127,7 @@ async function getAuth(payload: AuthorizationPayload) : Promise<AuthResponse> {
                 method: "POST",
                 body: payload
             }).response.then( (res) => {
-                if (res.statusCode === 401) { // 401 mean that we were denied by the user
+                if (res.statusCode === 401) { // 401 means that we were denied by the user
                     throw new SAFEAuthError();
                 } else {
                     return res.content;

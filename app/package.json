@@ -17,6 +17,7 @@
     "typings": "^1.4.0"
   },
   "dependencies": {
+    "mkpath": "^1.0.0",
     "web-request": "^1.0.7"
   }
 }
