@@ -1,8 +1,6 @@
 "use strict";
 
 const {app, BrowserWindow} = require('electron');
-const chromecasts = require('chromecasts');
-// import chromecasts from 'chromecasts';
 
 let win;
 
@@ -12,6 +10,9 @@ function createWindow() {
     win.loadURL(`file://${__dirname}/index.html`);
 
     win.webContents.openDevTools();
+
+    // window.console.log("hello world");
+    // window.console.log(`chromecasts=${chromecasts.list()}`);
 
     win.on('closed', () => {
         win = null;
