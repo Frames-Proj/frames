@@ -1,0 +1,19 @@
+{
+  "name": "low-level wrapper around the safe_launcher API",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^6.0.46",
+    "grunt": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-ts": "^6.0.0-beta.3",
+    "typescript": "^2.0.6"
+  },
+  "dependencies": {
+  }
+}
