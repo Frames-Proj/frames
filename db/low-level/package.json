@@ -1,19 +1,23 @@
 {
-  "name": "low-level wrapper around the safe_launcher API",
+  "name": "safe-launcher-client",
   "version": "1.0.0",
-  "description": "",
+  "description": "A low level client for the safe_launcher's REST API.",
   "main": "index.ts",
-  "scripts": {
-  },
+  "scripts": {},
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^6.0.46",
     "grunt": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-ts": "^6.0.0-beta.3",
-    "typescript": "^2.0.6"
+    "jasmine": "^2.5.2",
+    "jasmine-check": "^0.1.5",
+    "typescript": "^2.0.6",
+    "typings": "^1.4.0"
   },
   "dependencies": {
+    "mkpath": "^1.0.0",
+    "urlsafe-base64": "^1.0.0",
+    "web-request": "^1.0.7"
   }
 }

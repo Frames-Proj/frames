@@ -6,7 +6,18 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
         ts: {
             default: {
-                files: [{ src: ['./app.ts'], dest: './app.js'}]
+                src: ['index.ts', 'src/**/*.ts', 'spec/**/*.ts']
+
+                // This seems like a good idea, but I don't know
+                // how to make it play nice with electron
+                // 
+                // outDir: 'dist'
+            },
+            options: {
+                sourceMap: true,
+                module: 'commonjs',
+                target: 'es6',
+                moduleResolution: 'node'
             }
         },
         watch: {
