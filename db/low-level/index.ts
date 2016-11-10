@@ -13,21 +13,16 @@
 //
 
 import * as fs from 'fs';
-import * as path from 'path';
 import { getAuth, AuthorizationPayload, AuthResponse
-         , decodeAuthResponse } from './src/ts/auth';
-const mkpath = require('mkpath');
+         , decodeAuthResponse, getCachedTokenOrAuthenticate } from './src/ts/auth';
 
 export class SafeClient {
 
-    authRes: Promise<AuthResponse>;
-
-    // TODO(ethan): use something besides a string to represent a filepath
-    authPayload : AuthorizationPayload;
-    cacheFile : string;
-    reAuth : boolean;
-    endpoint : string;
-
+    readonly authRes: Promise<AuthResponse>;
+    readonly authPayload : AuthorizationPayload;
+    readonly cacheFile : string;
+    readonly reAuth : boolean;
+    readonly endpoint : string;
 
     constructor(authPayload: AuthorizationPayload, endpoint : string, cacheFile ?: string, reAuth ?: boolean) {
 
@@ -40,8 +35,8 @@ export class SafeClient {
         this.endpoint = endpoint;
         this.authPayload = authPayload;
 
-        console.log("about to attempt authentication.");
-        this.authRes = this.getCachedTokenOrAuthenticate();
+        this.authRes = getCachedTokenOrAuthenticate(this.authPayload, this.endpoint,
+                                                    this.reAuth, this.cacheFile);
     }
 
     public authenticated() : Promise<boolean> {
@@ -50,44 +45,12 @@ export class SafeClient {
         });
     }
 
-    private async getCachedTokenOrAuthenticate() : Promise<AuthResponse> {
-        if (this.cacheFile !== undefined || !this.reAuth) {
-            await new Promise( (resolve, reject) => {
-                mkpath(path.dirname(this.cacheFile), function(err) {
-                        if (err)
-                            reject(err);
-                        else
-                            resolve();
-                    });
-                });
-
-            const authResponse : AuthResponse =
-                await new Promise<AuthResponse>( (resolve, reject) => {
-                    fs.readFile(this.cacheFile, (err, data) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            decodeAuthResponse(JSON.parse(data.toString())).then(resolve);
-                        }
-                    });
-                }).catch( (_) => {
-                    // TODO(ethan): actually cache the file in the getAuth call!
-                    return getAuth(this.authPayload, this.endpoint, this.cacheFile);
-                });
-
-            return authResponse;
-        } else {
-            return getAuth(this.authPayload, this.endpoint, this.cacheFile);
-        }
-    }
     get authResponse(): Promise<AuthResponse> { return this.authRes; }
-    /*
     get token(): Promise<string> {
         return this.authRes.then( res => {
             return Promise.resolve(res.token);
         });
     }
-    */
     get permissions(): Promise<string[]> {
         return this.authRes.then( (res) => {
             return Promise.resolve(res.permissions);

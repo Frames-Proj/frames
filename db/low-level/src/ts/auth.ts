@@ -2,6 +2,9 @@
 
 import * as WebRequest from 'web-request';
 import { Request } from 'web-request';
+import { saneResponse } from './util';
+import * as path from 'path';
+const mkpath = require('mkpath');
 
 import * as fs from 'fs';
 
@@ -45,15 +48,7 @@ export async function getAuth(payload: AuthorizationPayload, endpoint : string, 
             method: "POST",
             body: payload
         }).response.then( (res) => {
-            if (res.statusCode === 401) { // 401 means that we were denied by the user
-                throw new Error('Auth denied by safe launcher.');
-            } else if (res.statusCode === 404) {
-                throw new Error(`endpoint=${endpoint} not found.`);
-            } else if (res.statusCode !== 200) {
-                throw new Error('Error authenticating.');
-            } else {
-                return res.content;
-            }
+            return saneResponse(res).content;
         });
 
     if (cacheFile !== undefined) {
@@ -66,4 +61,40 @@ export async function getAuth(payload: AuthorizationPayload, endpoint : string, 
     }
 
     return authResponse;
+}
+
+// this is only exposed to make unit testing each client class in isolation
+// easier
+export async function getCachedTokenOrAuthenticate(
+    authPayload : AuthorizationPayload, endpoint : string,
+    reAuth : boolean, cacheFile ?: string) : Promise<AuthResponse> {
+
+    // console.log(`getCachedTokenOrAuthenticate:: reAuth=${reAuth} cacheFile=${cacheFile}`);
+
+    if (cacheFile !== undefined || !reAuth) {
+        await new Promise( (resolve, reject) => {
+            mkpath(path.dirname(cacheFile), function(err) {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+
+        const authResponse : AuthResponse =
+            await new Promise<AuthResponse>( (resolve, reject) => {
+                fs.readFile(cacheFile, (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        decodeAuthResponse(JSON.parse(data.toString())).then(resolve);
+                    }
+                });
+            }).catch( (_) => {
+                // TODO(ethan): actually cache the file in the getAuth call!
+                return getAuth(authPayload, endpoint, cacheFile);
+            });
+
+        return authResponse;
+    } else {
+        return getAuth(authPayload, endpoint, cacheFile);
+    }
 }
