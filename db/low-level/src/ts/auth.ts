@@ -1,8 +1,12 @@
 
 
+/// <reference path="../../node_modules/tsmonad/dist/tsmonad.d.ts" />
+
+
 import * as WebRequest from 'web-request';
 import { Request } from 'web-request';
 import { saneResponse } from './util';
+import { Either } from 'tsmonad';
 import * as path from 'path';
 const mkpath = require('mkpath');
 
@@ -26,14 +30,14 @@ export interface AuthResponse {
 }
 
 // TODO(ethan): define a FromJson interface to do this instead.
-export function decodeAuthResponse(obj: {}): Promise<AuthResponse> {
+export function decodeAuthResponse(obj: {}): Either<any, AuthResponse> {
     if ('token' in obj && 'permissions' in obj) {
-        return Promise.resolve({
+        return Either.right({
             token: obj['token'],
             permissions: obj['permissions']
         });
     } else {
-        return Promise.reject(new Error(`${obj} is not an AuthResponse`));
+        return Either.left(new Error(`${obj} is not an AuthResponse`));
     }
 }
 
@@ -48,7 +52,10 @@ export async function getAuth(payload: AuthorizationPayload, endpoint : string) 
             method: "POST",
             body: payload
         }).response.then( (res) => {
-            return saneResponse(res).content;
+            return decodeAuthResponse(saneResponse(res).content).caseOf({
+                  right: (response) => { return response; }
+                , left: (err) => { throw err; }
+            });
         });
 
     return authResponse;

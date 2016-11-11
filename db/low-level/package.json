@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "mkpath": "^1.0.0",
+    "tsmonad": "^0.6.1",
     "urlsafe-base64": "^1.0.0",
     "web-request": "^1.0.7"
   }

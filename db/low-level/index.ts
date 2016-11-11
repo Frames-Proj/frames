@@ -13,8 +13,7 @@
 //
 
 import * as fs from 'fs';
-import { getAuth, AuthorizationPayload, AuthResponse
-         , decodeAuthResponse } from './src/ts/auth';
+import { getAuth, AuthorizationPayload, AuthResponse } from './src/ts/auth';
 import { ApiClientConfig } from './src/ts/client';
 import { NfsClient } from './src/ts/nfs';
 
