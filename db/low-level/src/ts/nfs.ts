@@ -128,7 +128,7 @@ class NfsFileClient extends ApiClient {
         let payload = {
             encoding: null,
             headers: {
-                'Content-Type': 'image/png',
+                'Content-Type': contentType,
                 'Content-Length': file.byteLength,
             },
             auth: {
