@@ -135,7 +135,8 @@ class NfsFileClient extends ApiClient {
                 bearer: (await this.authRes).token
             },
             body: file
-        }
+        };
+
         if (metadata !== undefined) {
             payload['headers']['Metadata'] = metadata.toString('base64');
         }
