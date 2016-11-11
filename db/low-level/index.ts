@@ -14,7 +14,9 @@
 
 import * as fs from 'fs';
 import { getAuth, AuthorizationPayload, AuthResponse
-         , decodeAuthResponse, getCachedTokenOrAuthenticate } from './src/ts/auth';
+         , decodeAuthResponse } from './src/ts/auth';
+import { ApiClientConfig } from './src/ts/client';
+import { NfsClient } from './src/ts/nfs';
 
 export class SafeClient {
 
@@ -23,6 +25,9 @@ export class SafeClient {
     readonly cacheFile : string;
     readonly reAuth : boolean;
     readonly endpoint : string;
+
+    // sub-apis
+    public readonly nfs : NfsClient;
 
     constructor(authPayload: AuthorizationPayload, endpoint : string, cacheFile ?: string, reAuth ?: boolean) {
 
@@ -35,8 +40,15 @@ export class SafeClient {
         this.endpoint = endpoint;
         this.authPayload = authPayload;
 
-        this.authRes = getCachedTokenOrAuthenticate(this.authPayload, this.endpoint,
-                                                    this.reAuth, this.cacheFile);
+
+        this.authRes = getAuth(this.authPayload, this.endpoint);
+
+        const apiClientConfig : ApiClientConfig = {
+            authRes: this.authRes,
+            endpoint: this.endpoint
+        }
+
+        this.nfs = new NfsClient(apiClientConfig);
     }
 
     public authenticated() : Promise<boolean> {

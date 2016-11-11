@@ -1,23 +1,16 @@
 
 /// <reference path="../typings/index.d.ts" />
 
-import { AuthorizationPayload } from '../src/ts/auth';
-import { SafeClient } from '../index';
-import { makeid, testAuthPayload, endpoint, cacheFile } from './test_util';
-const mkpath = require('mkpath');
+import { client } from './test_util';
 
-
-describe('A SafeClient is an object which can make calls to the safe_laucher', () => {
+describe('A SafeClient ', () => {
 
     // smoke test
-    it('Can authenticate with the safe_launcher', (done) => {
+    it('can authenticate with the safe_launcher', (done) => {
         (async function() {
 
-            const client : SafeClient =
-                new SafeClient(testAuthPayload, endpoint, await cacheFile);
-
             client.authResponse.catch( (err) => {
-                console.log(err);
+                expect(err).toBe(undefined);
             })
 
             expect(await client.authenticated()).toBe(true);
@@ -26,20 +19,4 @@ describe('A SafeClient is an object which can make calls to the safe_laucher', (
         })();
     });
     
-    it('Does not need to authenticate a second time (you should not have to click twice)', (done) => {
-        (async function() {
-
-            const client : SafeClient =
-                new SafeClient(testAuthPayload, endpoint, await cacheFile);
-
-            client.authResponse.catch( (err) => {
-                console.log(err);
-            })
-
-            expect(await client.authenticated()).toBe(true);
-
-            done();
-        })();
-    });
-
 });

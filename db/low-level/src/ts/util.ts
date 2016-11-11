@@ -22,7 +22,9 @@ export function saneResponse<T>(res : Response<T>): Response<T> {
         throw new SafeError( 'Auth denied by safe launcher.', res );
     } else if (res.statusCode === 404) {
         throw new SafeError( 'endpoint not found.', res );
-    } else if (res.statusCode !== 200) {
+
+    // we should at least be in the 200 status code range
+    } else if (Math.floor(res.statusCode / 100) !== 2) {
         throw new SafeError(`statusCode=${res.statusCode}`, res);
     } else {
         return res;

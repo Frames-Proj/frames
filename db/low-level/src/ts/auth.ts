@@ -40,7 +40,7 @@ export function decodeAuthResponse(obj: {}): Promise<AuthResponse> {
 
 // This function impliments authorization caching. It just stores
 // the app auth token in the clear in a file called auth.dat
-export async function getAuth(payload: AuthorizationPayload, endpoint : string, cacheFile ?: string) : Promise<AuthResponse> {
+export async function getAuth(payload: AuthorizationPayload, endpoint : string) : Promise<AuthResponse> {
 
     const authResponse : AuthResponse = 
         await WebRequest.create<AuthResponse>(endpoint + '/auth', {
@@ -51,50 +51,5 @@ export async function getAuth(payload: AuthorizationPayload, endpoint : string, 
             return saneResponse(res).content;
         });
 
-    if (cacheFile !== undefined) {
-        await new Promise( (resolve, reject) => {
-            fs.writeFile(cacheFile, JSON.stringify(authResponse), (err) => {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
-    }
-
     return authResponse;
-}
-
-// this is only exposed to make unit testing each client class in isolation
-// easier
-export async function getCachedTokenOrAuthenticate(
-    authPayload : AuthorizationPayload, endpoint : string,
-    reAuth : boolean, cacheFile ?: string) : Promise<AuthResponse> {
-
-    // console.log(`getCachedTokenOrAuthenticate:: reAuth=${reAuth} cacheFile=${cacheFile}`);
-
-    if (cacheFile !== undefined || !reAuth) {
-        await new Promise( (resolve, reject) => {
-            mkpath(path.dirname(cacheFile), function(err) {
-                    if (err) reject(err);
-                    else resolve();
-                });
-            });
-
-        const authResponse : AuthResponse =
-            await new Promise<AuthResponse>( (resolve, reject) => {
-                fs.readFile(cacheFile, (err, data) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        decodeAuthResponse(JSON.parse(data.toString())).then(resolve);
-                    }
-                });
-            }).catch( (_) => {
-                // TODO(ethan): actually cache the file in the getAuth call!
-                return getAuth(authPayload, endpoint, cacheFile);
-            });
-
-        return authResponse;
-    } else {
-        return getAuth(authPayload, endpoint, cacheFile);
-    }
 }
