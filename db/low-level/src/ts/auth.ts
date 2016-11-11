@@ -15,14 +15,14 @@ export interface AuthorizationPayload {
         version: string,
         vendor: string
     },
-    permissions: Array<string>
+    permissions: string[]
 }
 
 
 
 export interface AuthResponse {
     token: string,
-    permissions: Array<string>
+    permissions: string[]
 }
 
 // TODO(ethan): define a FromJson interface to do this instead.
