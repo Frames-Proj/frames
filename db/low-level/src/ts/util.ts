@@ -17,16 +17,19 @@ export class SafeError extends Error {
 }
 
 // for use in a promise context
-export function saneResponse<T>(res : Response<T>): Response<T> {
-    if (res.statusCode === 401) { // 401 means that we were denied by the user
-        throw new SafeError( 'Auth denied by safe launcher.', res );
-    } else if (res.statusCode === 404) {
-        throw new SafeError( 'endpoint not found.', res );
+export async function saneResponse<T>(response : Promise<Response<T>>): Promise<Response<T>> {
+    return response.then( (res) => {
 
-    // we should at least be in the 200 status code range
-    } else if (Math.floor(res.statusCode / 100) !== 2) {
-        throw new SafeError(`statusCode=${res.statusCode}`, res);
-    } else {
-        return res;
-    }
+        if (res.statusCode === 401) { // 401 means that we were denied by the user
+            throw new SafeError( 'Auth denied by safe launcher.', res );
+        } else if (res.statusCode === 404) {
+            throw new SafeError( 'endpoint not found.', res );
+
+        // we should at least be in the 200 status code range
+        } else if (Math.floor(res.statusCode / 100) !== 2) {
+            throw new SafeError(`statusCode=${res.statusCode}`, res);
+        } else {
+            return res;
+        }
+    }).catch( (err) => { throw err; } );
 }

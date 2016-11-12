@@ -47,12 +47,12 @@ export function decodeAuthResponse(obj: {}): Either<any, AuthResponse> {
 export async function getAuth(payload: AuthorizationPayload, endpoint : string) : Promise<AuthResponse> {
 
     const authResponse : AuthResponse = 
-        await WebRequest.create<AuthResponse>(endpoint + '/auth', {
+        await saneResponse(WebRequest.create<AuthResponse>(endpoint + '/auth', {
             json: true,
             method: "POST",
             body: payload
-        }).response.then( (res) => {
-            return decodeAuthResponse(saneResponse(res).content).caseOf({
+        }).response).then( (res) => {
+            return decodeAuthResponse(res.content).caseOf({
                   right: (response) => { return response; }
                 , left: (err) => { throw err; }
             });

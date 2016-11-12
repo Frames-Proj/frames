@@ -6,6 +6,9 @@
 import { makeid, client } from './test_util';
 import { AuthorizationPayload } from '../src/ts/auth';
 import { NfsClient, NfsDirectoryInfo } from '../src/ts/nfs';
+import * as stream from 'stream';
+// const Stream = require('ts-stream').Stream;
+// import Stream from 'nodejs';
 // const mkpath = require('mkpath');
 
 
@@ -80,13 +83,40 @@ describe('An nfs client', () => {
     it('can upload a file to the network', (done) => { (async function() {
         const filename : string = makeid();
 
-        const mkFile = await client.nfs.file.create('app', filename + '-invictus.txt',
-                                                invictus, 'text/plain');
-        expect(mkFile).toBe(true);
-        done();
+        console.log('about to make stream!!');
+        let fStream = new stream.Duplex();
+        console.log('about to write to stream!!');
+        await new Promise( (resolve, reject) => {
+            fStream.write(invictus, 'utf8', (err) => {
+                console.log(`err=${err}`);
+                console.log('pang');
+                resolve();
+            });
+            fStream.on('error', (err) => {
+                console.log('ping');
+                reject(err);
+            });
+        }).then( (_) => {
+            console.log('PING');
+        });
+
+        console.log('about to make call!!');
+        const mkFile : Promise<void> =
+            client.nfs.file.create('app', filename + '-invictus.txt',
+                                   fStream, invictus.byteLength, 'text/plain');
+
+        console.log('ping');
+        
+        mkFile.catch( (err) => {
+            expect(err).toBeUndefined();
+            done();
+        }).then( (_) => {
+            done();
+        });
 
     })()});
 
+    /*
     it('can get a file from the network', (done) => { (async function() {
         const filename : string = makeid();
 
@@ -94,11 +124,15 @@ describe('An nfs client', () => {
                                                 invictus, 'text/plain');
         expect(mkFile).toBe(true);
 
-        // const fileInfo = await client.nfs.file.get('app', filename + '-invictus.txt');
+        const fileInfo = await client.nfs.file.get('app', filename + '-invictus.txt');
 
+        console.log(`fileInfo = ${JSON.stringify(fileInfo)}`);
+
+        expect(fileInfo.body).toBe(invictus);
 
         done();
     })()});
+    */
     
 });
 
