@@ -24,6 +24,7 @@ describe('An nfs directory client', () => {
     it('can make a new directory', (done) => {(async function() {
         await client.nfs.dir.create('app', makeid(), true).catch((err) => {
             fail(err);
+            done();
         });
 
         done();
@@ -34,6 +35,7 @@ describe('An nfs directory client', () => {
 
         await client.nfs.dir.create('app', dir, true).catch((err) => {
             fail(err);
+            done();
         });
 
         const dirResponse : NfsDirectoryInfo = await client.nfs.dir.get('app', dir);
@@ -49,10 +51,12 @@ describe('An nfs directory client', () => {
 
         await client.nfs.dir.create('app', dir, true).catch((err) => {
             fail(err);
+            done();
         });
 
         await client.nfs.dir.delete('app', dir).catch((err) => {
             fail(err);
+            done();
         });
 
         client.nfs.dir.get('app', dir).catch((err) => {
@@ -68,10 +72,12 @@ describe('An nfs directory client', () => {
 
         await client.nfs.dir.create('app', firstDirName, true).catch((err) => {
             fail(err);
+            done();
         });
 
         await client.nfs.dir.update('app', firstDirName, secondDirName).catch((err) => {
             fail(err);
+            done();
         });
 
         const dirInfo : NfsDirectoryInfo = await client.nfs.dir.get('app', secondDirName);
@@ -88,11 +94,13 @@ describe('An nfs directory client', () => {
 
         await client.nfs.dir.create('app', firstDirName, true).catch((err) => {
             fail(err);
+            done();
         });
 
         console.log('about to move directory!');
         await client.nfs.dir.move('app', firstDirName, 'drive', secondDirName).catch((err) => {
             fail(err);
+            done();
         });
 
         const dirInfo : NfsDirectoryInfo = await client.nfs.dir.get('drive', secondDirName);
@@ -123,14 +131,15 @@ describe("An nfs file client", () => {
         const mkFile : Promise<void> =
             client.nfs.file.create('app', filename, testStream,
                                    invictus.byteLength, 'text/plain');
-        
+
         await mkFile.catch( (err) => {
             fail(err);
             console.error(err);
+            done();
         });
 
         const fileInfo = await client.nfs.file.get('app', filename);
-        
+
         expect(fileInfo.body.equals(invictus)).toBe(true);
 
         done();
@@ -149,9 +158,10 @@ describe("An nfs file client", () => {
         const mkFile : Promise<void> =
             client.nfs.file.create('app', remotePath, testStream,
                                    fileSize, 'image/jpg');
-        
+
         await mkFile.catch( (err) => {
             fail(err);
+            done();
         });
 
         const fileInfo = await client.nfs.file.get('app', remotePath);
@@ -166,14 +176,14 @@ describe("An nfs file client", () => {
                 else resolve(data);
             });
         });
-        
+
         expect(fileInfo.body.equals(imgBuffer)).toBe(true);
 
         done();
 
     })()});
 
-    
+
 });
 
 const invictus : Buffer = Buffer.from(`
