@@ -23,7 +23,7 @@ describe('An nfs directory client', () => {
 
     it('can make a new directory', (done) => {(async function() {
         await client.nfs.dir.create('app', makeid(), true).catch((err) => {
-            expect(err).toBeUndefined();
+            fail(err);
         });
 
         done();
@@ -33,7 +33,7 @@ describe('An nfs directory client', () => {
         const dir : string = makeid();
 
         await client.nfs.dir.create('app', dir, true).catch((err) => {
-            expect(err).toBeUndefined();
+            fail(err);
         });
 
         const dirResponse : NfsDirectoryInfo = await client.nfs.dir.get('app', dir);
@@ -48,15 +48,12 @@ describe('An nfs directory client', () => {
         const dir : string = makeid();
 
         await client.nfs.dir.create('app', dir, true).catch((err) => {
-            expect(err).toBeUndefined();
+            fail(err);
         });
 
-        const deletedDir : boolean =
-            await client.nfs.dir.delete('app', dir).catch((err) => {
-                expect(err).toBeUndefined();
-                return false;
-            });
-        expect(deletedDir).toBe(true);
+        await client.nfs.dir.delete('app', dir).catch((err) => {
+            fail(err);
+        });
 
         client.nfs.dir.get('app', dir).catch((err) => {
             expect(err.res.statusCode).toBe(404);
@@ -64,6 +61,47 @@ describe('An nfs directory client', () => {
         });
 
     })()});
+
+    it('can update a directories name', (done) => {(async function() {
+        const firstDirName : string = makeid();
+        const secondDirName : string = makeid();
+
+        await client.nfs.dir.create('app', firstDirName, true).catch((err) => {
+            fail(err);
+        });
+
+        await client.nfs.dir.update('app', firstDirName, secondDirName).catch((err) => {
+            fail(err);
+        });
+
+        const dirInfo : NfsDirectoryInfo = await client.nfs.dir.get('app', secondDirName);
+
+        expect(dirInfo.info.name).toBe(secondDirName);
+
+        done();
+
+    })()});
+
+    it('can move a directory', (done) => {(async function() {
+        const firstDirName : string = makeid();
+        const secondDirName : string = makeid();
+
+        await client.nfs.dir.create('app', firstDirName, true).catch((err) => {
+            fail(err);
+        });
+
+        console.log('about to move directory!');
+        await client.nfs.dir.move('app', firstDirName, 'drive', secondDirName).catch((err) => {
+            fail(err);
+        });
+
+        const dirInfo : NfsDirectoryInfo = await client.nfs.dir.get('drive', secondDirName);
+        expect(dirInfo.info.name).toBe(secondDirName);
+
+        done();
+
+    })()});
+
 });
 
 describe("An nfs file client", () => {
@@ -87,7 +125,7 @@ describe("An nfs file client", () => {
                                    invictus.byteLength, 'text/plain');
         
         await mkFile.catch( (err) => {
-            expect(err).toBeUndefined();
+            fail(err);
             console.error(err);
         });
 
@@ -113,8 +151,7 @@ describe("An nfs file client", () => {
                                    fileSize, 'image/jpg');
         
         await mkFile.catch( (err) => {
-            expect(err).toBeUndefined();
-            console.error(err);
+            fail(err);
         });
 
         const fileInfo = await client.nfs.file.get('app', remotePath);

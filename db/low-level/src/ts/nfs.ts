@@ -14,6 +14,8 @@ import * as stream from 'stream';
 import * as WebRequest from 'web-request';
 import { Response } from 'web-request';
 
+export type RootPath = 'app' | 'drive';
+
 export class NfsClient extends ApiClient {
 
     public readonly dir : NfsDirectoryClient;
@@ -40,7 +42,7 @@ export interface NfsDirectoryInfo {
 }
 
 class NfsDirectoryClient extends ApiClient {
-    private mkendpoint(rootPath : string, dirPath : string) : string {
+    private mkendpoint(rootPath : RootPath, dirPath : string) : string {
         return this.endpoint + `/nfs/directory/${rootPath}/${dirPath}`;
     }
 
@@ -52,7 +54,7 @@ class NfsDirectoryClient extends ApiClient {
      *  @arg directoryPath - the path to the directory
      *  @returns a promise to deliver some directory information
      */
-    public async get(rootPath : string, directoryPath : string) : Promise<NfsDirectoryInfo> {
+    public async get(rootPath : RootPath, directoryPath : string) : Promise<NfsDirectoryInfo> {
         const res : Response<string> = await saneResponse(WebRequest.get(
             this.mkendpoint(rootPath, directoryPath), {
                 auth: {
@@ -68,17 +70,17 @@ class NfsDirectoryClient extends ApiClient {
     /** @arg rootPath - either 'app' or 'drive' 
      *  @arg directoryPath - the path to the directory
      *  @arg isPrivate - directory permissions
-     *  @arg metadata - optional metadata about the directory. Should be a base64 string.
+     *  @arg metadata - optional metadata about the directory.
      *  @returns a promise to say if the directory was really created
      */
-    public async create(rootPath : string, directoryPath : string,
-                                 isPrivate : boolean, metadata ?: string) : Promise<void> {
+    public async create(rootPath : RootPath, directoryPath : string,
+                        isPrivate : boolean, metadata ?: string) : Promise<void> {
 
         let recBody = {
             'isPrivate': isPrivate
         }
         if (metadata !== undefined) {
-            recBody['metadata'] = metadata;
+            recBody['metadata'] = new Buffer(metadata).toString('base64');
         }
 
         const result = await saneResponse(WebRequest.post(
@@ -99,7 +101,9 @@ class NfsDirectoryClient extends ApiClient {
      *  @arg directoryPath - the path to the directory
      *  @returns a promise to say if the directory was really deleted 
      */
-    public async delete(rootPath : string, directoryPath : string) : Promise<boolean> {
+    public async delete(rootPath : RootPath, directoryPath : string) : Promise<void>
+    {
+
         const result = await saneResponse(WebRequest.delete(
             this.mkendpoint(rootPath, directoryPath), {
                 json: true,
@@ -108,11 +112,82 @@ class NfsDirectoryClient extends ApiClient {
                 }
             }));
 
-        return result.statusCode == 200;
+        if (result.statusCode !== 200) {
+            throw new SafeError(`statusCode=${result.statusCode} !== 200`, result);
+        }
     }
 
-    // TODO(ethan): update directory
-    // TODO(ethan): move directory 
+    // TODO(ethan): test the metadata
+    /** @arg rootPath - either 'app' or 'drive' 
+     *  @arg directoryPath - the path to the directory
+     *  @arg newName - the new directory name
+     *  @arg newMetadata - the new directory metadata
+     *  @returns a promise to say if the directory was really deleted 
+     */
+    public async update(rootPath : RootPath, directoryPath : string,
+                        newName : string, newMetadata ?: string) : Promise<void>
+    {
+        let recBody = {
+            'name': newName
+        }
+        if (newMetadata !== undefined) {
+            recBody['metadata'] = new Buffer(newMetadata).toString('base64');
+        }
+
+        const result = await saneResponse(WebRequest.put(
+            this.mkendpoint(rootPath, directoryPath), {
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                },
+                body: recBody
+            }));
+
+        if (result.statusCode !== 200) {
+            throw new SafeError(`statusCode=${result.statusCode} !== 200`, result);
+        }
+    }
+
+    private async moveOrCopy(srcRootPath : RootPath, srcDirPath : string,
+                             dstRootPath : RootPath, dstDirPath : string,
+                             action : 'move' | 'copy') : Promise<void>
+    {
+        console.log(this.endpoint + '/nfs/movedir');
+        const endpoint = 'http://localhost:8100/nfs/movedir';
+
+        const result = await saneResponse(WebRequest.create(
+            //this.endpoint + '/nfs/movedir'
+            endpoint
+            , {
+                json: true,
+                method: 'POST',
+                auth: {
+                    bearer: (await this.authRes).token
+                },
+                body: {
+                    srcRootPath: srcRootPath,
+                    srcPath: srcDirPath,
+                    destRootPath: dstRootPath,
+                    destPath: dstDirPath,
+                    action: action
+                }
+            }).response);
+
+        if (result.statusCode !== 200) {
+            throw new SafeError(`statusCode=${result.statusCode} !== 200`, result);
+        }
+    }
+
+    public async move(srcRootPath : RootPath, srcDirPath : string,
+                      dstRootPath : RootPath, dstDirPath : string) : Promise<void>
+    {
+        return this.moveOrCopy(srcRootPath, srcDirPath, dstRootPath, dstDirPath, 'move');
+    }
+    public async copy(srcRootPath : RootPath, srcDirPath : string,
+                      dstRootPath : RootPath, dstDirPath : string) : Promise<void>
+    {
+        return this.moveOrCopy(srcRootPath, srcDirPath, dstRootPath, dstDirPath, 'copy');
+    }
 }
 
 interface SafeFile {
@@ -121,7 +196,7 @@ interface SafeFile {
 }
 
 class NfsFileClient extends ApiClient {
-    private mkendpoint(rootPath : string, filePath: string) : string {
+    private mkendpoint(rootPath : RootPath, filePath: string) : string {
         return this.endpoint + `/nfs/file/${rootPath}/${filePath}`;
     }
 
@@ -138,7 +213,9 @@ class NfsFileClient extends ApiClient {
      *  @arg metadata - optional metadata about the directory.
      *  @returns a promise to create the file
      */
-    public async create(rootPath : string, filePath : string, file : NodeJS.ReadableStream, size : number, contentType : string, metadata ?: Buffer) : Promise<void> {
+    public async create(rootPath : RootPath, filePath : string, file : NodeJS.ReadableStream,
+                        size : number, contentType : string, metadata ?: Buffer) : Promise<void>
+    {
 
         let payload = {
             encoding: null,
@@ -171,7 +248,7 @@ class NfsFileClient extends ApiClient {
      *  @arg range - an optional range of the file to get
      *  @returns a promise containing the file contents, and request headers
      */
-    public async get(rootPath : string, filePath : string,
+    public async get(rootPath : RootPath, filePath : string,
                      range ?: [number, number]) : Promise<SafeFile>
     {
 
