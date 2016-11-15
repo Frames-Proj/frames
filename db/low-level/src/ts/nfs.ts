@@ -155,7 +155,8 @@ class NfsFileClient extends ApiClient {
         }
 
         const request = file.pipe(WebRequest.create(this.mkendpoint(rootPath, filePath), payload));
-        const response = await saneResponse(request.response);
+
+        await saneResponse(request.response);
     }
 
     // TODO(ethan): test the range header
