@@ -22,12 +22,9 @@ describe('An nfs directory client', () => {
     })()});
 
     it('can make a new directory', (done) => {(async function() {
-        const dirResponse : boolean =
-            await client.nfs.dir.create('app', makeid(), true).catch((err) => {
-                expect(err).toBeUndefined();
-                return false;
-            });
-        expect(dirResponse).toBe(true);
+        await client.nfs.dir.create('app', makeid(), true).catch((err) => {
+            expect(err).toBeUndefined();
+        });
 
         done();
     })()});
@@ -35,12 +32,10 @@ describe('An nfs directory client', () => {
     it('can check to see if a freshly created directory exists', (done) => {(async function() {
         const dir : string = makeid();
 
-        const createdDir : boolean =
-            await client.nfs.dir.create('app', dir, true).catch((err) => {
-                expect(err).toBeUndefined();
-                return false;
-            });
-        expect(createdDir).toBe(true);
+        await client.nfs.dir.create('app', dir, true).catch((err) => {
+            expect(err).toBeUndefined();
+        });
+
         const dirResponse : NfsDirectoryInfo = await client.nfs.dir.get('app', dir);
 
         expect(dirResponse.info.name).toBe(dir);
@@ -52,12 +47,9 @@ describe('An nfs directory client', () => {
     it('can delete a directory', (done) => {(async function() {
         const dir : string = makeid();
 
-        const createdDir : boolean =
-            await client.nfs.dir.create('app', dir, true).catch((err) => {
-                expect(err).toBeUndefined();
-                return false;
-            });
-        expect(createdDir).toBe(true);
+        await client.nfs.dir.create('app', dir, true).catch((err) => {
+            expect(err).toBeUndefined();
+        });
 
         const deletedDir : boolean =
             await client.nfs.dir.delete('app', dir).catch((err) => {

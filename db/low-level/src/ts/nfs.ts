@@ -8,7 +8,7 @@
 
 import { AuthResponse } from './auth';
 import { ApiClient, ApiClientConfig } from './client';
-import { saneResponse } from './util';
+import { saneResponse, SafeError } from './util';
 import * as stream from 'stream';
 
 import * as WebRequest from 'web-request';
@@ -72,7 +72,7 @@ class NfsDirectoryClient extends ApiClient {
      *  @returns a promise to say if the directory was really created
      */
     public async create(rootPath : string, directoryPath : string,
-                                 isPrivate : boolean, metadata ?: string) : Promise<boolean> {
+                                 isPrivate : boolean, metadata ?: string) : Promise<void> {
 
         let recBody = {
             'isPrivate': isPrivate
@@ -90,7 +90,9 @@ class NfsDirectoryClient extends ApiClient {
                 body: recBody
             }));
 
-        return result.statusCode == 200;
+        if (result.statusCode !== 200) {
+            throw new SafeError(`statusCode=${result.statusCode} !== 200`, result);
+        }
     }
 
     /** @arg rootPath - either 'app' or 'drive' 
@@ -156,7 +158,11 @@ class NfsFileClient extends ApiClient {
 
         const request = file.pipe(WebRequest.create(this.mkendpoint(rootPath, filePath), payload));
 
-        await saneResponse(request.response);
+        const response = await saneResponse(request.response);
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
     }
 
     // TODO(ethan): test the range header
