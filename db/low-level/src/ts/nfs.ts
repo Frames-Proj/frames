@@ -69,7 +69,6 @@ class NfsDirectoryClient extends ApiClient {
      */
     public async create(rootPath : string, directoryPath : string,
                                  isPrivate : boolean, metadata ?: string) : Promise<boolean> {
-        // console.log(`createDirectory:: rootPath=${rootPath} directoryPath=${directoryPath}`);
 
         let recBody = {
             'isPrivate': isPrivate
