@@ -90,7 +90,6 @@ class NfsDirectoryClient extends ApiClient {
         return result.statusCode == 200;
     }
 
-    // TODO(ethan): add return type
     /** @arg rootPath - either 'app' or 'drive' 
      *  @arg directoryPath - the path to the directory
      *  @returns a promise to say if the directory was really deleted 
@@ -112,8 +111,8 @@ class NfsDirectoryClient extends ApiClient {
 }
 
 interface SafeFile {
-    headers: any, // TODO(abdi): give this a type
-    body: string 
+    headers: WebRequest.Headers,
+    body: Buffer
 }
 
 class NfsFileClient extends ApiClient {
@@ -130,8 +129,8 @@ class NfsFileClient extends ApiClient {
      *  @arg metadata - optional metadata about the directory.
      *  @returns a promise to create the file
      */
-    public async create(rootPath : string, filePath : string, file : stream.Readable, size : number, contentType : string, metadata ?: Buffer) : Promise<void> {
-        console.log(`createDirectory:: rootPath=${rootPath} directoryPath=${filePath}`);
+    public async create(rootPath : string, filePath : string, file : NodeJS.ReadableStream, size : number, contentType : string, metadata ?: Buffer) : Promise<void> {
+        // console.log(`createDirectory:: rootPath=${rootPath} directoryPath=${filePath}`);
 
         let payload = {
             encoding: null,
@@ -142,31 +141,30 @@ class NfsFileClient extends ApiClient {
             },
             auth: {
                 bearer: (await this.authRes).token
-            },
-            body: file
+            }
         };
 
         if (metadata !== undefined) {
             payload['headers']['Metadata'] = metadata.toString('base64');
         }
 
-        console.log('about to make request!!');
         const request = file.pipe(WebRequest.create(
             this.endpoint + `/nfs/file/${rootPath}/${filePath}`, payload));
-        console.log('just made request!!');
         const response = await saneResponse(request.response);
     }
 
-    // TODO(ethan): find out the type this should respond with
-    // TODO(ethan): support the range parameter (this would be how we do streaming). Test it.
     /** @arg rootPath - either 'app' or 'drive' 
      *  @arg filePath - the path to the directory
      *  @arg range - an optional range of the file to get
      *  @returns a promise containing the file contents, and request headers
      */
-    public async get(rootPath : string, filePath : string, range ?: [number, number]) : Promise<SafeFile> {
+    public async get(rootPath : string, filePath : string,
+                     range ?: [number, number]) : Promise<SafeFile>
+    {
 
-        let payload = {
+        let payload : WebRequest.RequestOptions = {
+            method: "GET",
+            encoding: null, // force a buffer response
             auth: {
                 bearer: (await this.authRes).token
             }
@@ -178,19 +176,14 @@ class NfsFileClient extends ApiClient {
             };
         }
 
-        const res : Response<string> = await saneResponse(WebRequest.get(
-            this.endpoint + `/nfs/file/${rootPath}/${filePath}`, payload));
-
-        console.log(`typeof res.body=${typeof res.content}`);
-        console.log(`typeof res.headers=${typeof res.headers}`);
-        // TODO(ethan): figure out the best way to send the body back
-        console.log(`res.body=${res.content}`);
-        console.log(`res.headers=${JSON.stringify(res.headers)}`);
-
         // @unsafe
+        const res : Response<Buffer> = await WebRequest.create<Buffer>(
+            this.endpoint + `/nfs/file/${rootPath}/${filePath}`, payload).response;
+
         return {
             headers: res.headers,
             body: res.content
         };
+
     }
 }

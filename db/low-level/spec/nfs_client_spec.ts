@@ -3,17 +3,14 @@
 
 /// <reference path="../typings/index.d.ts" />
 
-import { makeid, client } from './test_util';
+import { makeid, client, TEST_DATA_DIR } from './test_util';
 import { AuthorizationPayload } from '../src/ts/auth';
 import { NfsClient, NfsDirectoryInfo } from '../src/ts/nfs';
 import * as stream from 'stream';
-// const Stream = require('ts-stream').Stream;
-// import Stream from 'nodejs';
-// const mkpath = require('mkpath');
+import * as fs from 'fs';
 
 
-
-describe('An nfs client', () => {
+describe('An nfs directory client', () => {
 
     it('can check to see if a non-existant directory exists', (done) => {(async function() {
         const dirResponse : Promise<NfsDirectoryInfo> =
@@ -75,64 +72,78 @@ describe('An nfs client', () => {
         });
 
     })()});
+});
 
-    //
-    // NfsFileClient
-    //
+describe("An nfs file client", () => {
 
-    it('can upload a file to the network', (done) => { (async function() {
-        const filename : string = makeid();
+    it('can upload a file to the network, and check that it is really there',
+       (done) => { (async function()
+    {
+        const filename : string = makeid() + '-invictus.txt';
 
-        console.log('about to make stream!!');
-        let fStream = new stream.Duplex();
-        console.log('about to write to stream!!');
+        let testStream : stream.Transform = new stream.PassThrough();
+
         await new Promise( (resolve, reject) => {
-            fStream.write(invictus, 'utf8', (err) => {
-                console.log(`err=${err}`);
-                console.log('pang');
+            testStream.write(invictus, (err) => {
+                expect(err).toBeUndefined();
                 resolve();
             });
-            fStream.on('error', (err) => {
-                console.log('ping');
-                reject(err);
-            });
-        }).then( (_) => {
-            console.log('PING');
         });
 
-        console.log('about to make call!!');
         const mkFile : Promise<void> =
-            client.nfs.file.create('app', filename + '-invictus.txt',
-                                   fStream, invictus.byteLength, 'text/plain');
-
-        console.log('ping');
+            client.nfs.file.create('app', filename, testStream,
+                                   invictus.byteLength, 'text/plain');
         
-        mkFile.catch( (err) => {
+        await mkFile.catch( (err) => {
             expect(err).toBeUndefined();
-            done();
-        }).then( (_) => {
-            done();
+            console.error(err);
         });
 
-    })()});
-
-    /*
-    it('can get a file from the network', (done) => { (async function() {
-        const filename : string = makeid();
-
-        const mkFile = await client.nfs.file.create('app', filename + '-invictus.txt',
-                                                invictus, 'text/plain');
-        expect(mkFile).toBe(true);
-
-        const fileInfo = await client.nfs.file.get('app', filename + '-invictus.txt');
-
-        console.log(`fileInfo = ${JSON.stringify(fileInfo)}`);
-
-        expect(fileInfo.body).toBe(invictus);
+        const fileInfo = await client.nfs.file.get('app', filename);
+        
+        expect(fileInfo.body.equals(invictus)).toBe(true);
 
         done();
+
     })()});
-    */
+
+    it('can handle image files as well as text blocks',
+       (done) => {(async function()
+    {
+        const remotePath : string = makeid() + '-jesus.jpg';
+        const localPath : string = TEST_DATA_DIR + '/jesus.jpg';
+
+        let fileSize : number = fs.statSync(localPath).size;
+        let testStream : stream.Readable = fs.createReadStream(localPath);
+
+        const mkFile : Promise<void> =
+            client.nfs.file.create('app', remotePath, testStream,
+                                   fileSize, 'image/jpg');
+        
+        await mkFile.catch( (err) => {
+            expect(err).toBeUndefined();
+            console.error(err);
+        });
+
+        const fileInfo = await client.nfs.file.get('app', remotePath);
+
+        // For some baffling reason, typescript wails when I annotate this with
+        // the buffer type, but everything seems to work anyway. Please forgive the
+        // typecasting.
+        const imgBuffer : Buffer = <Buffer>await new Promise( (resolve, reject) => {
+            const lpath : string = localPath; // typescript automatically caught this js closure bug #blessed
+            fs.readFile(lpath, (err : NodeJS.ErrnoException, data : Buffer) => {
+                if (err) reject(err);
+                else resolve(data);
+            });
+        });
+        
+        expect(fileInfo.body.equals(imgBuffer)).toBe(true);
+
+        done();
+
+    })()});
+
     
 });
 

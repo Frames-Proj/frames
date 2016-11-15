@@ -5,6 +5,7 @@ const mkpath = require('mkpath');
 import { AuthorizationPayload, AuthResponse } from '../src/ts/auth';
 import { SafeClient } from '../index';
 import { ApiClientConfig } from '../src/ts/client';
+import * as stream from 'stream';
 
 const testAuthPayload : AuthorizationPayload = {
     "app": {
@@ -32,6 +33,6 @@ export function makeid()
     return text;
 }
 
-
-
 export const client : SafeClient = new SafeClient(testAuthPayload, endpoint);
+
+export const TEST_DATA_DIR : string = `${__dirname}/test_data`;
