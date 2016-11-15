@@ -153,6 +153,7 @@ class NfsFileClient extends ApiClient {
         const response = await saneResponse(request.response);
     }
 
+    // TODO(ethan): test the range header
     /** @arg rootPath - either 'app' or 'drive' 
      *  @arg filePath - the path to the directory
      *  @arg range - an optional range of the file to get
