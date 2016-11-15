@@ -40,6 +40,10 @@ export interface NfsDirectoryInfo {
 }
 
 class NfsDirectoryClient extends ApiClient {
+    private mkendpoint(rootPath : string, dirPath : string) : string {
+        return this.endpoint + `/nfs/directory/${rootPath}/${dirPath}`;
+    }
+
     constructor(conf: ApiClientConfig){
         super(conf);
     }
@@ -50,7 +54,7 @@ class NfsDirectoryClient extends ApiClient {
      */
     public async get(rootPath : string, directoryPath : string) : Promise<NfsDirectoryInfo> {
         const res : Response<string> = await saneResponse(WebRequest.get(
-            this.endpoint + `/nfs/directory/${rootPath}/${directoryPath}`, {
+            this.mkendpoint(rootPath, directoryPath), {
                 auth: {
                     bearer: (await this.authRes).token
                 }
@@ -78,7 +82,7 @@ class NfsDirectoryClient extends ApiClient {
         }
 
         const result = await saneResponse(WebRequest.post(
-            this.endpoint + `/nfs/directory/${rootPath}/${directoryPath}`, {
+            this.mkendpoint(rootPath, directoryPath), {
                 json: true,
                 auth: {
                     bearer: (await this.authRes).token
@@ -95,7 +99,7 @@ class NfsDirectoryClient extends ApiClient {
      */
     public async delete(rootPath : string, directoryPath : string) : Promise<boolean> {
         const result = await saneResponse(WebRequest.delete(
-            this.endpoint + `/nfs/directory/${rootPath}/${directoryPath}`, {
+            this.mkendpoint(rootPath, directoryPath), {
                 json: true,
                 auth: {
                     bearer: (await this.authRes).token
@@ -115,6 +119,10 @@ interface SafeFile {
 }
 
 class NfsFileClient extends ApiClient {
+    private mkendpoint(rootPath : string, filePath: string) : string {
+        return this.endpoint + `/nfs/file/${rootPath}/${filePath}`;
+    }
+
     constructor(conf: ApiClientConfig){
         super(conf);
     }
@@ -129,7 +137,6 @@ class NfsFileClient extends ApiClient {
      *  @returns a promise to create the file
      */
     public async create(rootPath : string, filePath : string, file : NodeJS.ReadableStream, size : number, contentType : string, metadata ?: Buffer) : Promise<void> {
-        // console.log(`createDirectory:: rootPath=${rootPath} directoryPath=${filePath}`);
 
         let payload = {
             encoding: null,
@@ -147,8 +154,7 @@ class NfsFileClient extends ApiClient {
             payload['headers']['Metadata'] = metadata.toString('base64');
         }
 
-        const request = file.pipe(WebRequest.create(
-            this.endpoint + `/nfs/file/${rootPath}/${filePath}`, payload));
+        const request = file.pipe(WebRequest.create(this.mkendpoint(rootPath, filePath), payload));
         const response = await saneResponse(request.response);
     }
 
@@ -177,8 +183,8 @@ class NfsFileClient extends ApiClient {
         }
 
         // @unsafe
-        const res : Response<Buffer> = await WebRequest.create<Buffer>(
-            this.endpoint + `/nfs/file/${rootPath}/${filePath}`, payload).response;
+        const res : Response<Buffer> =
+            await WebRequest.create<Buffer>(this.mkendpoint(rootPath, filePath), payload).response;
 
         return {
             headers: res.headers,
