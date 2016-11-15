@@ -30,7 +30,7 @@ export interface AuthResponse {
 }
 
 // TODO(ethan): define a FromJson interface to do this instead.
-export function decodeAuthResponse(obj: {}): Either<any, AuthResponse> {
+function decodeAuthResponse(obj: {}): Either<any, AuthResponse> {
     if ('token' in obj && 'permissions' in obj) {
         return Either.right({
             token: obj['token'],
