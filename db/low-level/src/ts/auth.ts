@@ -42,8 +42,6 @@ function decodeAuthResponse(obj: {}): Either<any, AuthResponse> {
 }
 
 
-// This function impliments authorization caching. It just stores
-// the app auth token in the clear in a file called auth.dat
 export async function getAuth(payload: AuthorizationPayload, endpoint : string) : Promise<AuthResponse> {
 
     const authResponse : AuthResponse = 
