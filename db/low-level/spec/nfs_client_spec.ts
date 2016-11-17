@@ -186,6 +186,7 @@ describe("An nfs file client", () => {
 
 });
 
+// Buffer.from requires node --version to be >= 6.0.0
 const invictus : Buffer = Buffer.from(`
 Out of the night that covers me,
 Black as the pit from pole to pole,
