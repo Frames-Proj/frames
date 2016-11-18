@@ -159,8 +159,6 @@ class NfsDirectoryClient extends ApiClient {
                              dstRootPath : RootPath, dstDirPath : string,
                              action : 'move' | 'copy') : Promise<void>
     {
-        console.log(this.endpoint + '/nfs/movedir');
-        const endpoint = 'http://localhost:8100/nfs/movedir';
 
         const result = await saneResponse(WebRequest.create(
             this.endpoint + '/nfs/movedir', {
