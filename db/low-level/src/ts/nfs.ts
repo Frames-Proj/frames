@@ -29,16 +29,23 @@ export class NfsClient extends ApiClient {
 
 }
 
+export interface NfsFileData {
+    name : string,
+    createdOn: string,
+    modifiedOn: string,
+    metadata: string
+}
+export interface NfsDirectoryData {
+    name : string,
+    isPrivate : boolean,
+    createdOn: string,
+    modifiedOn: string,
+    metadata: string
+}
 export interface NfsDirectoryInfo {
-    info : {
-        name : string,
-        isPrivate : boolean,
-        createdOn: string,
-        modifiedOn: string,
-        metadata: string
-    },
-    files: any[], // TODO(ethan): find out the actual types for this
-    subDirectories: any[] 
+    info : NfsDirectoryData
+    files: NfsFileData[],
+    subDirectories: NfsDirectoryData[] 
 }
 
 class NfsDirectoryClient extends ApiClient {
@@ -147,7 +154,7 @@ class NfsDirectoryClient extends ApiClient {
             throw new SafeError(`statusCode=${result.statusCode} !== 200`, result);
         }
     }
-
+    
     private async moveOrCopy(srcRootPath : RootPath, srcDirPath : string,
                              dstRootPath : RootPath, dstDirPath : string,
                              action : 'move' | 'copy') : Promise<void>
@@ -156,9 +163,7 @@ class NfsDirectoryClient extends ApiClient {
         const endpoint = 'http://localhost:8100/nfs/movedir';
 
         const result = await saneResponse(WebRequest.create(
-            //this.endpoint + '/nfs/movedir'
-            endpoint
-            , {
+            this.endpoint + '/nfs/movedir', {
                 json: true,
                 method: 'POST',
                 auth: {
