@@ -3,7 +3,7 @@
 
 /// <reference path="../typings/index.d.ts" />
 
-import { makeid, client, TEST_DATA_DIR } from './test_util';
+import { makeid, client, TEST_DATA_DIR, exists } from './test_util';
 import { AuthorizationPayload } from '../src/ts/auth';
 import { NfsClient, NfsDirectoryInfo } from '../src/ts/nfs';
 import * as stream from 'stream';
@@ -92,19 +92,28 @@ describe('An nfs directory client', () => {
         const firstDirName : string = makeid();
         const secondDirName : string = makeid();
 
-        await client.nfs.dir.create('app', firstDirName, true).catch((err) => {
-            fail(err);
-            done();
+        await client.nfs.dir.create('app', '/' + firstDirName, true).catch((err) => {
+            fail(err); done();
         });
 
-        console.log('about to move directory!');
-        await client.nfs.dir.move('app', firstDirName, 'drive', secondDirName).catch((err) => {
-            fail(err);
-            done();
+        await client.nfs.dir.create('app', '/' + secondDirName, true).catch((err) => {
+            fail(err); done();
         });
 
-        const dirInfo : NfsDirectoryInfo = await client.nfs.dir.get('drive', secondDirName);
-        expect(dirInfo.info.name).toBe(secondDirName);
+        await client.nfs.dir.move('app', `/${firstDirName}`,
+                                  'app', `/${secondDirName}`)
+            .catch((err) => { fail(err); done(); });
+
+
+        const dirInfo : NfsDirectoryInfo =
+            await client.nfs.dir.get('app', `/${secondDirName}`).catch((err) => {
+                fail(err); done(); throw err;
+            });
+        expect(
+            exists(dirInfo.subDirectories, (dir) => {
+                return dir.name == firstDirName;
+            })
+        ).toBe(true);
 
         done();
 
