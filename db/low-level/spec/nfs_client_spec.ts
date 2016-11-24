@@ -119,6 +119,43 @@ describe('An nfs directory client', () => {
 
     })()});
 
+
+    it('can copy a directory', (done) => {(async function() {
+        const firstDirName : string = makeid();
+        const secondDirName : string = makeid();
+
+        await client.nfs.dir.create('app', '/' + firstDirName, true).catch((err) => {
+            fail(err); done();
+        });
+        await client.nfs.dir.create('app', '/' + secondDirName, true).catch((err) => {
+            fail(err); done();
+        });
+
+        await client.nfs.dir.copy('app', `/${firstDirName}`,
+                                  'app', `/${secondDirName}`)
+            .catch((err) => { fail(err); done(); });
+
+        const tgtDirInfo : NfsDirectoryInfo =
+            await client.nfs.dir.get('app', `/${secondDirName}`).catch((err) => {
+                fail(err); done(); throw err;
+            });
+        expect(
+            exists(tgtDirInfo.subDirectories, (dir) => {
+                return dir.name == firstDirName;
+            })
+        ).toBe(true);
+
+        const srcDirInfo : NfsDirectoryInfo =
+            await client.nfs.dir.get('app', `/${firstDirName}`).catch((err) => {
+                fail(err); done(); throw err;
+            });
+
+        expect(srcDirInfo.info.name).toBe(firstDirName);
+
+        done();
+
+    })()});
+
 });
 
 describe("An nfs file client", () => {
