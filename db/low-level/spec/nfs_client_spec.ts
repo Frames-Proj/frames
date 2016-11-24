@@ -3,9 +3,9 @@
 
 /// <reference path="../typings/index.d.ts" />
 
-import { makeid, client, TEST_DATA_DIR, exists } from './test_util';
+import { makeid, client, TEST_DATA_DIR, exists, failDone } from './test_util';
 import { AuthorizationPayload } from '../src/ts/auth';
-import { NfsClient, NfsDirectoryInfo } from '../src/ts/nfs';
+import { NfsClient, NfsDirectoryInfo, SafeFile } from '../src/ts/nfs';
 import * as stream from 'stream';
 import * as fs from 'fs';
 
@@ -164,7 +164,6 @@ describe("An nfs file client", () => {
        (done) => { (async function()
     {
         const filename : string = makeid() + '-invictus.txt';
-
         let testStream : stream.Transform = new stream.PassThrough();
 
         await new Promise( (resolve, reject) => {
@@ -185,9 +184,41 @@ describe("An nfs file client", () => {
         });
 
         const fileInfo = await client.nfs.file.get('app', filename);
+        expect(fileInfo.body.equals(invictus)).toBe(true);
+
+        done();
+
+    })()});
+
+    it('can delete files', (done) => {(async function() {
+        const filename : string = makeid() + '-invictus.txt';
+        let testStream : stream.Transform = new stream.PassThrough();
+
+        await new Promise( (resolve, reject) => {
+            testStream.write(invictus, (err) => {
+                expect(err).toBeUndefined();
+                resolve();
+            });
+        });
+
+        await failDone(client.nfs.file.create('app', filename, testStream,
+                                                invictus.byteLength, 'text/plain'), done);
+
+        const fileInfo : SafeFile =
+            await failDone(client.nfs.file.get('app', filename), done);
 
         expect(fileInfo.body.equals(invictus)).toBe(true);
 
+        await failDone(client.nfs.file.delete('app', filename), done);
+
+        const newFileInfo : SafeFile =
+            await client.nfs.file.get('app', filename).catch( (err) => {
+                expect(err.res.statusCode).toBe(404);
+                done();
+                throw err;
+            });
+
+        fail("file is still there!");
         done();
 
     })()});
