@@ -110,7 +110,6 @@ class NfsDirectoryClient extends ApiClient {
      */
     public async delete(rootPath : RootPath, directoryPath : string) : Promise<void>
     {
-
         const result = await saneResponse(WebRequest.delete(
             this.mkendpoint(rootPath, directoryPath), {
                 json: true,
@@ -193,7 +192,7 @@ class NfsDirectoryClient extends ApiClient {
     }
 }
 
-interface SafeFile {
+export interface SafeFile {
     headers: WebRequest.Headers,
     body: Buffer
 }
@@ -271,12 +270,28 @@ class NfsFileClient extends ApiClient {
 
         // @unsafe
         const res : Response<Buffer> =
-            await WebRequest.create<Buffer>(this.mkendpoint(rootPath, filePath), payload).response;
+            await saneResponse(WebRequest.create<Buffer>(this.mkendpoint(rootPath, filePath),
+                                                         payload).response);
 
         return {
             headers: res.headers,
             body: res.content
         };
 
+    }
+
+    public async delete(rootPath : RootPath, filePath : string) : Promise<void>
+    {
+        const result = await saneResponse(WebRequest.delete(
+            this.mkendpoint(rootPath, filePath), {
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }));
+
+        if (result.statusCode !== 200 || result.content !== "OK") {
+            throw new SafeError(`statusCode=${result.statusCode} !== 200`, result);
+        }
     }
 }

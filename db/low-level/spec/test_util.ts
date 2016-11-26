@@ -45,3 +45,12 @@ export function exists<T>(list : T[], pred : (elem : T) => boolean) : boolean
     }
     return false;
 }
+
+export function failDone<T>(promise: Promise<T>,
+                            done : () => void) : Promise<T>
+{
+    return promise.catch((err) => {
+        console.log(err);
+        fail(err); done(); throw err;
+    });
+}

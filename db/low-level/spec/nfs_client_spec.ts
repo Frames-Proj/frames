@@ -3,9 +3,9 @@
 
 /// <reference path="../typings/index.d.ts" />
 
-import { makeid, client, TEST_DATA_DIR, exists } from './test_util';
+import { makeid, client, TEST_DATA_DIR, exists, failDone } from './test_util';
 import { AuthorizationPayload } from '../src/ts/auth';
-import { NfsClient, NfsDirectoryInfo } from '../src/ts/nfs';
+import { NfsClient, NfsDirectoryInfo, SafeFile } from '../src/ts/nfs';
 import * as stream from 'stream';
 import * as fs from 'fs';
 
@@ -119,6 +119,43 @@ describe('An nfs directory client', () => {
 
     })()});
 
+
+    it('can copy a directory', (done) => {(async function() {
+        const firstDirName : string = makeid();
+        const secondDirName : string = makeid();
+
+        await client.nfs.dir.create('app', '/' + firstDirName, true).catch((err) => {
+            fail(err); done();
+        });
+        await client.nfs.dir.create('app', '/' + secondDirName, true).catch((err) => {
+            fail(err); done();
+        });
+
+        await client.nfs.dir.copy('app', `/${firstDirName}`,
+                                  'app', `/${secondDirName}`)
+            .catch((err) => { fail(err); done(); });
+
+        const tgtDirInfo : NfsDirectoryInfo =
+            await client.nfs.dir.get('app', `/${secondDirName}`).catch((err) => {
+                fail(err); done(); throw err;
+            });
+        expect(
+            exists(tgtDirInfo.subDirectories, (dir) => {
+                return dir.name == firstDirName;
+            })
+        ).toBe(true);
+
+        const srcDirInfo : NfsDirectoryInfo =
+            await client.nfs.dir.get('app', `/${firstDirName}`).catch((err) => {
+                fail(err); done(); throw err;
+            });
+
+        expect(srcDirInfo.info.name).toBe(firstDirName);
+
+        done();
+
+    })()});
+
 });
 
 describe("An nfs file client", () => {
@@ -127,7 +164,6 @@ describe("An nfs file client", () => {
        (done) => { (async function()
     {
         const filename : string = makeid() + '-invictus.txt';
-
         let testStream : stream.Transform = new stream.PassThrough();
 
         await new Promise( (resolve, reject) => {
@@ -148,9 +184,41 @@ describe("An nfs file client", () => {
         });
 
         const fileInfo = await client.nfs.file.get('app', filename);
+        expect(fileInfo.body.equals(invictus)).toBe(true);
+
+        done();
+
+    })()});
+
+    it('can delete files', (done) => {(async function() {
+        const filename : string = makeid() + '-invictus.txt';
+        let testStream : stream.Transform = new stream.PassThrough();
+
+        await new Promise( (resolve, reject) => {
+            testStream.write(invictus, (err) => {
+                expect(err).toBeUndefined();
+                resolve();
+            });
+        });
+
+        await failDone(client.nfs.file.create('app', filename, testStream,
+                                                invictus.byteLength, 'text/plain'), done);
+
+        const fileInfo : SafeFile =
+            await failDone(client.nfs.file.get('app', filename), done);
 
         expect(fileInfo.body.equals(invictus)).toBe(true);
 
+        await failDone(client.nfs.file.delete('app', filename), done);
+
+        const newFileInfo : SafeFile =
+            await client.nfs.file.get('app', filename).catch( (err) => {
+                expect(err.res.statusCode).toBe(404);
+                done();
+                throw err;
+            });
+
+        fail("file is still there!");
         done();
 
     })()});
