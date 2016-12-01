@@ -1,4 +1,5 @@
 js/
+!client/js/
 node_modules
 .tscache
 typings/
@@ -9,6 +10,7 @@ src/**/*.js.map
 *.swp
 *~
 *.log
+.DS_Store
 
 app.js
 app.js.map

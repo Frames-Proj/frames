@@ -1,0 +1,24 @@
+#flex-parent {
+    height: 550px;
+    width: 100%;
+}
+
+#flex-parent a {
+    display: inline-block;
+    text-decoration: none;
+    text-align: left;
+}
+
+#test-video {
+    height: 100px; 
+    width: 100px; 
+    margin: 20px;
+    text-transform: none;
+}
+
+#test-video .icon {
+    height: 100px; 
+    width: 100px; 
+    background-color: gray; 
+    margin-bottom: 10px;
+}
