@@ -206,9 +206,9 @@ class NfsFileClient extends ApiClient {
         super(conf);
     }
 
-    /** @arg rootPath - either 'app' or 'drive' 
-     *  @arg filePath - the path to the directory
-     *  @arg file - the actual data. The whole `file` buffer wil be sent, so make sure that
+    /** @arg rootPath - either 'app' or 'drive'
+     *  @arg filePath - the path to the file on the safeNET
+     *  @arg file - the actual data. The whole `file` stream will be sent, so make sure that
      *                it contains ~only~ the data you want to send (no garbage at the end).
      *  @arg size - the size of the file
      *  @arg contentType - the Mime content type
@@ -245,8 +245,8 @@ class NfsFileClient extends ApiClient {
     }
 
     // TODO(ethan): test the range header
-    /** @arg rootPath - either 'app' or 'drive' 
-     *  @arg filePath - the path to the directory
+    /** @arg rootPath - either 'app' or 'drive'
+     *  @arg filePath - the path to the file
      *  @arg range - an optional range of the file to get
      *  @returns a promise containing the file contents, and request headers
      */
