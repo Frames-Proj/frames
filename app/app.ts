@@ -1,5 +1,4 @@
 
-/// <reference path="typings/index.d.ts" />
 
 const electron = require('electron');
 const BrowserWindow = electron.BrowserWindow;
@@ -17,7 +16,7 @@ let win;
 function createWindow():void {
     win = new BrowserWindow({ width: 800, height: 600 });
 
-    win.loadURL(`file://${__dirname}/index.html`);
+    win.loadURL(`file://${__dirname}/client/index.html`);
 
     win.webContents.openDevTools();
 
