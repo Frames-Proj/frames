@@ -21,21 +21,12 @@ export class SafeClient {
 
     readonly authRes: Promise<AuthResponse>;
     readonly authPayload : AuthorizationPayload;
-    readonly cacheFile : string;
-    readonly reAuth : boolean;
     readonly endpoint : string;
 
     // sub-apis
     public readonly nfs : NfsClient;
 
-    constructor(authPayload: AuthorizationPayload, endpoint : string, cacheFile ?: string, reAuth ?: boolean) {
-
-        if (reAuth === undefined) {
-            this.reAuth = false;
-        } else {
-            this.reAuth = reAuth;
-        }
-        this.cacheFile = cacheFile;
+    constructor(authPayload: AuthorizationPayload, endpoint : string) {
         this.endpoint = endpoint;
         this.authPayload = authPayload;
 
