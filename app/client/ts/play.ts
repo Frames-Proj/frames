@@ -1,5 +1,5 @@
 /// <reference path="jquery.d.ts" />
-/// <reference path="video.d.ts" />
+/// <reference path="video.ts" />
 
 $(document).ready(function() {
 
