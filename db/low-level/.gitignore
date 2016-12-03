@@ -2,11 +2,7 @@
 node_modules/
 typings/
 
-spec/**/*.js.map
-spec/**/*.js
-
-src/**/*.js.map
-src/**/*.js
+lib/
 
 index.js.map
 index.js

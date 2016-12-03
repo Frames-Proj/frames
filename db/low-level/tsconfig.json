@@ -4,8 +4,14 @@
         "module": "commonjs",
         "target": "es6",
         "removeComments": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "outDir": "lib/"
    },
+   "files": [
+       "./index.ts",
+       "./spec/nfs_client_spec.ts",
+       "./spec/safe_client_spec.ts"
+   ],
    "exclude": [
         "node_modules"
     ]

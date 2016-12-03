@@ -1,6 +1,7 @@
 
 build:
-	node_modules/grunt/bin/grunt ts
+	# node_modules/grunt/bin/grunt ts
+	./node_modules/typescript/bin/tsc
 
 test:
 	# JASMINE_CONFIG_PATH=$(pwd)/spec/support/jasmine.json
@@ -18,7 +19,7 @@ run:
 watch:
 	# node_modules/grunt/bin/grunt watch
 	# prefer tsc -w to take advantage of tsc's iterative compilation
-	tsc -w
+	./node_modules/typescript/bin/tsc -w
 
 clean:
 	rm -f index.js.map

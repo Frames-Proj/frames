@@ -35,7 +35,7 @@ export function makeid()
 
 export const client : SafeClient = new SafeClient(testAuthPayload, endpoint);
 
-export const TEST_DATA_DIR : string = `${__dirname}/test_data`;
+export const TEST_DATA_DIR : string = `${__dirname}/../../spec/test_data`;
 
 // really javascript?
 export function exists<T>(list : T[], pred : (elem : T) => boolean) : boolean
