@@ -1,5 +1,6 @@
 js/
-!client/js/
+client/ts/*.js
+client/ts/*.js.map
 node_modules
 .tscache
 typings/
