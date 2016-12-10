@@ -12,28 +12,36 @@
 //      - sc.nfs.createFile(...) : Promise<whatever>
 //
 
-import * as fs from 'fs';
-import { getAuth, AuthorizationPayload, AuthResponse } from './src/ts/auth';
-import { ApiClientConfig } from './src/ts/client';
-import { NfsClient } from './src/ts/nfs';
+import * as fs from "fs";
+import { getAuth, AuthorizationPayload, AuthResponse } from "./src/ts/auth";
+import { ApiClientConfig } from "./src/ts/client";
+import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
+         NfsDirectoryInfo, NfsFileData
+       } from "./src/ts/nfs";
+
+export { NfsClient, NfsFileClient, NfsDirectoryClient,
+         NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
+         AuthResponse
+       };
+
 
 export class SafeClient {
 
     readonly authRes: Promise<AuthResponse>;
-    readonly authPayload : AuthorizationPayload;
-    readonly endpoint : string;
+    readonly authPayload: AuthorizationPayload;
+    readonly endpoint: string;
 
     // sub-apis
-    public readonly nfs : NfsClient;
+    public readonly nfs: NfsClient;
 
-    constructor(authPayload: AuthorizationPayload, endpoint : string) {
+    constructor(authPayload: AuthorizationPayload, endpoint: string) {
         this.endpoint = endpoint;
         this.authPayload = authPayload;
 
 
         this.authRes = getAuth(this.authPayload, this.endpoint);
 
-        const apiClientConfig : ApiClientConfig = {
+        const apiClientConfig: ApiClientConfig = {
             authRes: this.authRes,
             endpoint: this.endpoint
         }
@@ -41,7 +49,7 @@ export class SafeClient {
         this.nfs = new NfsClient(apiClientConfig);
     }
 
-    public authenticated() : Promise<boolean> {
+    public authenticated(): Promise<boolean> {
         return new Promise( (resolve, reject) => {
             this.authRes.then( (_) => resolve(true)).catch( (_) => resolve(false) );
         });

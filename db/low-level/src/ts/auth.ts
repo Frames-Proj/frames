@@ -1,8 +1,5 @@
 
 
-/// <reference path="../../node_modules/tsmonad/dist/tsmonad.d.ts" />
-
-
 import * as WebRequest from 'web-request';
 import { Request } from 'web-request';
 import { saneResponse } from './util';

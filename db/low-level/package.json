@@ -5,8 +5,8 @@
   "main": "index.js",
   "typings": "index",
   "files": [
-      "./index.js",
-      "./lib/**/*.js"
+    "./index.js",
+    "./lib/**/*.js"
   ],
   "scripts": {},
   "author": "",
@@ -21,8 +21,9 @@
     "typings": "^1.4.0"
   },
   "dependencies": {
+    "@types/jasmine": "^2.5.38",
+    "@types/node": "0.0.2",
     "mkpath": "^1.0.0",
-    "ts-node": "^1.7.0",
     "tsmonad": "^0.6.1",
     "urlsafe-base64": "^1.0.0",
     "web-request": "^1.0.7"

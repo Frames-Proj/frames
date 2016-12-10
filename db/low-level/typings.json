@@ -1,7 +1,0 @@
-{
-  "globalDependencies": {
-    "jasmine": "registry:dt/jasmine#2.5.0+20161025102649",
-    "node": "registry:dt/node#6.0.0+20161019125345",
-    "urlsafe-base64": "registry:dt/urlsafe-base64#1.0.0+20160316155526"
-  }
-}
