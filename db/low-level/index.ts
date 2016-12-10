@@ -1,6 +1,4 @@
 
-/// <reference path="./typings/index.d.ts" />
-
 // A wrapper around the various `safe_launcher` API calls
 
 //

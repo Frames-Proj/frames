@@ -1,6 +1,4 @@
 
-/// <reference path="../typings/index.d.ts" />
-
 const mkpath = require('mkpath');
 import { AuthorizationPayload, AuthResponse } from '../src/ts/auth';
 import { SafeClient } from '../index';

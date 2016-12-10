@@ -2,7 +2,7 @@
 // File: util.ts
 //
 // Some utility functions
-// 
+//
 
 import { Response } from 'web-request';
 // import { Request } from "web-request";

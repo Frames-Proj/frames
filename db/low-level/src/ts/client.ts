@@ -1,7 +1,5 @@
 
 
-/// <reference path="../../typings/index.d.ts" />
-
 // File: client.ts
 //
 // Defines an abstract class from which all api clients derive

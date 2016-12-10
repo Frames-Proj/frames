@@ -1,6 +1,4 @@
 
-/// <reference path="../typings/index.d.ts" />
-
 import { client } from './test_util';
 
 describe('A SafeClient ', () => {

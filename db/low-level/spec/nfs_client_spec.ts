@@ -1,8 +1,4 @@
 
-
-
-/// <reference path="../typings/index.d.ts" />
-
 import { makeid, client, TEST_DATA_DIR, exists, failDone } from './test_util';
 import { AuthorizationPayload } from '../src/ts/auth';
 import { NfsClient, NfsDirectoryInfo, SafeFile } from '../src/ts/nfs';

@@ -1,6 +1,4 @@
 
-/// <reference path="../../typings/index.d.ts" />
-
 // File: nfs.ts
 //
 // For talking to the nfs portion of the safe_launcer api
