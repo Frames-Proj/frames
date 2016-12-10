@@ -48,6 +48,7 @@ export class Video {
 })();
 
 // upload video to list
+// TODO: you can make this better with file handling...with making a readstream from the file directly
 export async function uploadVideo(path : string, client : SafeClient) {
     const vBuffer : Buffer = fs.readFileSync(path);
 
@@ -65,10 +66,10 @@ export async function uploadVideo(path : string, client : SafeClient) {
     await vFile.catch((err) => {
         if (err) throw err;
     });
-
-    //print that new file just incase...
-    const datFile = await client.nfs.file.get('app', 'testVideo');
-    console.log(datFile.body.toString('utf-8'));
 }
 
-uploadVideo('/Users/abdisalan/test.txt', client);
+// get a video from the list
+// should we error handle for them....probably...
+export async function getVideo(path : string, client : SafeClient) : Promise<SafeFile> {
+    return client.nfs.file.get('app', path);
+}
