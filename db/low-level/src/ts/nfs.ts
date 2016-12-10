@@ -48,7 +48,7 @@ export interface NfsDirectoryInfo {
     subDirectories: NfsDirectoryData[] 
 }
 
-class NfsDirectoryClient extends ApiClient {
+export class NfsDirectoryClient extends ApiClient {
     private mkendpoint(rootPath : RootPath, dirPath : string) : string {
         return this.endpoint + `/nfs/directory/${rootPath}/${dirPath}`;
     }
@@ -180,15 +180,15 @@ class NfsDirectoryClient extends ApiClient {
         }
     }
 
-    public async move(srcRootPath : RootPath, srcDirPath : string,
-                      dstRootPath : RootPath, dstDirPath : string) : Promise<void>
+    public async move(srcRootPath: RootPath, srcDirPath: string,
+                      dstRootPath: RootPath, dstDirPath: string): Promise<void>
     {
-        return this.moveOrCopy(srcRootPath, srcDirPath, dstRootPath, dstDirPath, 'move');
+        return this.moveOrCopy(srcRootPath, srcDirPath, dstRootPath, dstDirPath, "move");
     }
-    public async copy(srcRootPath : RootPath, srcDirPath : string,
-                      dstRootPath : RootPath, dstDirPath : string) : Promise<void>
+    public async copy(srcRootPath: RootPath, srcDirPath: string,
+                      dstRootPath: RootPath, dstDirPath: string): Promise<void>
     {
-        return this.moveOrCopy(srcRootPath, srcDirPath, dstRootPath, dstDirPath, 'copy');
+        return this.moveOrCopy(srcRootPath, srcDirPath, dstRootPath, dstDirPath, "copy");
     }
 }
 
@@ -197,9 +197,9 @@ export interface SafeFile {
     body: Buffer
 }
 
-class NfsFileClient extends ApiClient {
-    private mkendpoint(rootPath : RootPath, filePath: string) : string {
-        return this.endpoint + `/nfs/file/${rootPath}/${filePath}`;
+export class NfsFileClient extends ApiClient {
+    private mkendpoint(rootPath: RootPath, filePath: string): string {
+        return `${this.endpoint}/nfs/file/${rootPath}/${filePath}`;
     }
 
     constructor(conf: ApiClientConfig){
@@ -215,16 +215,16 @@ class NfsFileClient extends ApiClient {
      *  @arg metadata - optional metadata about the directory.
      *  @returns a promise to create the file
      */
-    public async create(rootPath : RootPath, filePath : string, file : NodeJS.ReadableStream,
-                        size : number, contentType : string, metadata ?: Buffer) : Promise<void>
+    public async create(rootPath: RootPath, filePath: string, file: NodeJS.ReadableStream,
+                        size: number, contentType: string, metadata ?: Buffer): Promise<void>
     {
 
         let payload = {
             encoding: null,
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': contentType,
-                'Content-Length': size,
+                "Content-Type": contentType,
+                "Content-Length": size,
             },
             auth: {
                 bearer: (await this.authRes).token
@@ -232,7 +232,7 @@ class NfsFileClient extends ApiClient {
         };
 
         if (metadata !== undefined) {
-            payload['headers']['Metadata'] = metadata.toString('base64');
+            payload["headers"]["Metadata"] = metadata.toString("base64");
         }
 
         const request = file.pipe(WebRequest.create(this.mkendpoint(rootPath, filePath), payload));
@@ -250,11 +250,11 @@ class NfsFileClient extends ApiClient {
      *  @arg range - an optional range of the file to get
      *  @returns a promise containing the file contents, and request headers
      */
-    public async get(rootPath : RootPath, filePath : string,
-                     range ?: [number, number]) : Promise<SafeFile>
+    public async get(rootPath: RootPath, filePath: string,
+                     range ?: [number, number]): Promise<SafeFile>
     {
 
-        let payload : WebRequest.RequestOptions = {
+        let payload: WebRequest.RequestOptions = {
             method: "GET",
             encoding: null, // force a buffer response
             auth: {
@@ -263,13 +263,13 @@ class NfsFileClient extends ApiClient {
         };
 
         if (range !== undefined) {
-            payload['headers'] = {
-                'Range': `bytes=${range[0]}-${range[1]}`
+            payload["headers"] = {
+                "Range": `bytes=${range[0]}-${range[1]}`
             };
         }
 
         // @unsafe
-        const res : Response<Buffer> =
+        const res: Response<Buffer> =
             await saneResponse(WebRequest.create<Buffer>(this.mkendpoint(rootPath, filePath),
                                                          payload).response);
 
@@ -280,7 +280,7 @@ class NfsFileClient extends ApiClient {
 
     }
 
-    public async delete(rootPath : RootPath, filePath : string) : Promise<void>
+    public async delete(rootPath: RootPath, filePath: string): Promise<void>
     {
         const result = await saneResponse(WebRequest.delete(
             this.mkendpoint(rootPath, filePath), {
