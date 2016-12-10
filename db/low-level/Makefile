@@ -11,7 +11,6 @@ test:
 
 setup:
 	npm install
-	node node_modules/typings/dist/bin.js install
 
 run:
 	npm start 2>/dev/null
