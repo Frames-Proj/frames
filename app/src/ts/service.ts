@@ -46,35 +46,29 @@ export class Video {
 		}
 	});
 })();
+
 // upload video to list
 export async function uploadVideo(path : string, client : SafeClient) {
-	var vBuffer : Buffer;
+    const vBuffer : Buffer = fs.readFileSync(path);
 
-	await fs.readFile(path, (err, data) => {
-		if (err) throw err;
-		vBuffer = data;
-	});
-
-	const vStream : stream.Transform = new stream.PassThrough();
-
-	await new Promise( (resolve, reject) => {
+	  const vStream : stream.Transform = new stream.PassThrough();
+    await new Promise((resolve, reject) => {
         vStream.write(vBuffer, (err) => {
             resolve();
-			reject();
         });
+    }).catch((err) => {console.log(`we should likely quit this routine ...\n ${err}`)});
+
+	  const vFile : Promise<void>
+        = client.nfs.file.create('app', 'test...', vStream,
+	 							                 vBuffer.byteLength, 'application/octet-stream');
+
+    await vFile.catch((err) => {
+        if (err) throw err;
     });
-	//
-	// const vFile : Promise<void>
-	// 	= client.nfs.file.create('app', 'testVideo', vStream,
-	// 							vBuffer.byteLength, 'application/octet-stream');
-	//
-	// await vFile.catch((err) => {
-	// 	if (err) throw err;
-	// });
-	//
-	// //print that new file just incase...
-	// const datFile = await client.nfs.file.get('app', 'testVideo');
-	// console.log(datFile.body);
+
+    //print that new file just incase...
+    const datFile = await client.nfs.file.get('app', 'testVideo');
+    console.log(datFile.body.toString('utf-8'));
 }
 
 uploadVideo('/Users/abdisalan/test.txt', client);
