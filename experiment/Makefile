@@ -24,5 +24,5 @@ watch:
 clean:
 	rm -f app.js.map
 	rm -f app.js
-	rm -f js/*.js
-	rm -f js/*.js.map
+	rm -f src/ts/*.js
+	rm -f src/ts/*.js.map
