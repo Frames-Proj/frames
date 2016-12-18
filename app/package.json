@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "mkpath": "^1.0.0",
+    "safe-launcher-client": "file:///home/ethan/repos/safenet-senior-design/db/low-level",
     "web-request": "^1.0.7"
   }
 }
