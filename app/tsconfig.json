@@ -4,8 +4,12 @@
         "module": "commonjs",
         "target": "es6",
         "removeComments": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "outDir": "lib/"
    },
+   "files": [
+	"./app.ts"
+   ],
    "exclude": [
         "node_modules"
     ]
