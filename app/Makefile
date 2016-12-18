@@ -1,6 +1,6 @@
 
 build:
-	node_modules/grunt/bin/grunt ts
+	./node_modules/typescript/bin/tsc
 
 setup:
 	npm install
@@ -10,7 +10,7 @@ run:
 	npm start 2>/dev/null
 
 watch:
-	node_modules/grunt/bin/grunt watch
+	./node_modules/typescript/bin/tsc -w
 
 clean:
 	rm -f app.js.map

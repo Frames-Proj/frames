@@ -2,12 +2,8 @@
   "name": "safe-launcher-client",
   "version": "1.0.0",
   "description": "A low level client for the safe_launcher's REST API.",
-  "main": "index.js",
-  "typings": "index",
-  "files": [
-    "./index.js",
-    "./lib/**/*.js"
-  ],
+  "main": "lib/index.js",
+  "typings": "lib/index",
   "scripts": {},
   "author": "",
   "license": "ISC",

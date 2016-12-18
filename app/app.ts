@@ -11,6 +11,8 @@ const CONFIG : Config = Config.getInstance();
 
 import { Auth } from './src/ts/auth';
 
+import { SafeClient } from 'safe-launcher-client';
+
 let win;
 
 function createWindow():void {
