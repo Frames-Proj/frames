@@ -1,3 +1,4 @@
+lib/
 js/
 client/ts/*.js
 client/ts/*.js.map

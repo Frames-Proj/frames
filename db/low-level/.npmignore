@@ -1,0 +1,7 @@
+src/
+spec/
+lib/spec
+tsconfig.json
+Makefile
+index.ts
+*~
