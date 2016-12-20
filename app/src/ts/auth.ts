@@ -95,7 +95,7 @@ export class Auth {
 async function getAuth(payload: AuthorizationPayload) : Promise<AuthResponse> {
     console.log(`auth file: ${AUTH_FILE_NAME}`);
 
-    const createDir : Promise<void> = new Promise( (resolve, reject) => {
+    const createDir = new Promise( (resolve, reject) => {
         mkpath(CONFIG.APP_HOME_DIR, function(err) {
             if (err)
                 reject(err);

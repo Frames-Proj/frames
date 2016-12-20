@@ -1,8 +1,9 @@
 
-build:
+build: setup
 	./node_modules/typescript/bin/tsc
 
 setup:
+	$(MAKE) -C ../db/low-level
 	npm install
 	node node_modules/typings/dist/bin.js install
 
