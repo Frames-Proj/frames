@@ -1,4 +1,4 @@
-lib/
+dist/
 js/
 client/ts/*.js
 client/ts/*.js.map
