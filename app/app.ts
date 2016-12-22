@@ -9,8 +9,6 @@ const app = electron.app;
 import Config from './src/ts/global-config';
 const CONFIG : Config = Config.getInstance();
 
-import { Auth } from './src/ts/auth';
-
 import { SafeClient } from 'safe-launcher-client';
 
 let win;
@@ -18,9 +16,9 @@ let win;
 function createWindow(): void {
     win = new BrowserWindow({ width: 800, height: 600 });
 
-    win.loadURL(`file://${__dirname}/client/index.html`);
+    win.loadURL(`file://${__dirname}/../client/index.html`);
 
-    // win.webContents.openDevTools();
+    win.webContents.openDevTools();
 
     let safeClient : SafeClient = new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
 

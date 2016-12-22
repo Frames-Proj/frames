@@ -1,8 +1,8 @@
 {
-  "name": "abdi-electron",
-  "version": "1.0.0",
+  "name": "frames",
+  "version": "0.1.0",
   "description": "",
-  "main": "app.js",
+  "main": "dist/app.js",
   "scripts": {
     "start": "./node_modules/electron/dist/electron ."
   },
@@ -10,11 +10,7 @@
   "license": "ISC",
   "devDependencies": {
     "electron": "^1.4.4",
-    "grunt": "^1.0.1",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-ts": "^6.0.0-beta.3",
-    "typescript": "^2.0.6",
-    "typings": "^1.4.0"
+    "typescript": "^2.0.6"
   },
   "dependencies": {
     "mkpath": "^1.0.0",

@@ -45,9 +45,7 @@ export default class Config {
                 "version": this.APP_VERSION,
                 "vendor": this.APP_VENDOR,
             },
-            "permissions": [
-                "SAFE_DRIVE_ACCESS"
-            ]
+            "permissions": this.APP_PERMISSIONS
         };
     }
 }
