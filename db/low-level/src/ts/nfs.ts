@@ -7,7 +7,8 @@
 import { AuthResponse } from './auth';
 import { ApiClient, ApiClientConfig } from './client';
 import { saneResponse, SafeError } from './util';
-import * as stream from 'stream';
+import * as stream from "stream";
+import * as fs from "fs";
 
 import * as WebRequest from 'web-request';
 import { Response } from 'web-request';
@@ -151,7 +152,7 @@ export class NfsDirectoryClient extends ApiClient {
             throw new SafeError(`statusCode=${result.statusCode} !== 200`, result);
         }
     }
-    
+
     private async moveOrCopy(srcRootPath : RootPath, srcDirPath : string,
                              dstRootPath : RootPath, dstDirPath : string,
                              action : 'move' | 'copy') : Promise<void>
@@ -240,6 +241,22 @@ export class NfsFileClient extends ApiClient {
         if (response.statusCode !== 200) {
             throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
         }
+    }
+
+    public async createFromLocalFile(rootPath: RootPath,
+                                     localFilePath: string,
+                                     safeFilePath: string,
+                                     fileType: string): Promise<void>
+    {
+        const stat = await new Promise<fs.Stats>( (resolve, reject) => {
+            fs.stat(localFilePath, (err, stat) => {
+                if (err != null) reject(err);
+                resolve(stat);
+            });
+        });
+
+        let readStream: NodeJS.ReadableStream = fs.createReadStream(localFilePath);
+        return this.create(rootPath, safeFilePath, readStream, stat.size, fileType);
     }
 
     // TODO(ethan): test the range header
