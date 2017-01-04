@@ -11,7 +11,7 @@ async function uploadVideo(localVideoFile: string,
                            videoTitle: string,
                            description: string): Promise<void>
 {
-    // TODO: real video format classification.
+    // TODO: real video format classification. i.e. don't just assume ogg
     safeClient.nfs.file
         .createFromLocalFile("app", localVideoFile, `videos/${videoTitle}`, "video/ogg")
         .catch( (err) => {
