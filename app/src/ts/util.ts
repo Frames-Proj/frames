@@ -1,21 +1,27 @@
 
+import * as fs from "fs";
 
-export function unPromise<T, ResultT>(
-    promise: Promise<T>,
-    success: (v: T) => ResultT,
-    fail: (v: any) => ResultT): ResultT {
+import Config from "./global-config";
+const CONFIG : Config = Config.getInstance();
 
-    let res : ResultT;
+import { SafeClient } from "safe-launcher-client";
 
-    promise.then( (successResult) => {
-        res = success(successResult);
-    }).catch( (failureResult) => {
-        res = fail(failureResult);
+export const safeClient : SafeClient =
+    new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
+
+export async function fileExists(path: string) : Promise<boolean>
+{
+    return new Promise<boolean>( (resolve, reject) => {
+        fs.stat(path, (err, stat) => {
+
+            if(err == null) {
+                resolve(true);
+            } else if(err.code == 'ENOENT') {
+                resolve(false);
+            } else {
+                reject(err);
+            }
+
+        })
     });
-
-    return res;
-}
-
-export function id<T>(x: T): T {
-    return x;
 }

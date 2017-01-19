@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@types/jasmine": "^2.5.38",
-    "@types/node": "0.0.2",
+    "@types/node": "6.0.52",
     "mkpath": "^1.0.0",
     "tsmonad": "^0.6.1",
     "urlsafe-base64": "^1.0.0",

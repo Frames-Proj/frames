@@ -1,5 +1,6 @@
-/// <reference path="jquery.d.ts" />
-/// <reference path="video.ts" />
+
+import * as $ from "jquery";
+import { Video } from "./video";
 
 $(document).ready(function() {
 

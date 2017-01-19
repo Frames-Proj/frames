@@ -1,4 +1,4 @@
-interface Video {
+export interface Video {
     src: string,
     info: {
         title: string,

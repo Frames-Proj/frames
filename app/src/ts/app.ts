@@ -6,30 +6,25 @@ const app = electron.app;
 
 // const {app, BrowserWindow} = require('electron');
 
-import Config from './src/ts/global-config';
+import Config from "./global-config";
 const CONFIG : Config = Config.getInstance();
 
-import { Auth } from './src/ts/auth';
-
-import { SafeClient } from 'safe-launcher-client';
+import { SafeClient } from "safe-launcher-client";
 
 let win;
 
-function createWindow():void {
+function createWindow(): void {
     win = new BrowserWindow({ width: 800, height: 600 });
 
-    win.loadURL(`file://${__dirname}/client/index.html`);
+    console.log(`${__dirname}`);
+    win.loadURL(`file://${__dirname}/index.html`);
 
     win.webContents.openDevTools();
 
-    Auth.getInstance().token.then( (tok) => {
-        console.log(`TOKEN: ${tok}`);
-    });
-
-    // window.console.log("hello world");
+    let safeClient : SafeClient = new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
 
     console.log(CONFIG.APP_HOME_DIR);
-    
+
     win.on('closed', () => {
         win = null;
     });

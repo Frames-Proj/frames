@@ -5,10 +5,13 @@
         "target": "es6",
         "removeComments": true,
         "moduleResolution": "node",
-        "outDir": "lib/"
+        "outDir": "client/"
    },
    "files": [
-	"./app.ts"
+	"./src/ts/app.ts",
+    "./src/ts/upload.ts",
+    "./src/ts/play.ts",
+	"./src/ts/video.ts"
    ],
    "exclude": [
         "node_modules"
