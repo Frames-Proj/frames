@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@types/node": "^6.0.52",
+    "jquery": "^3.1.1",
     "mkpath": "^1.0.0",
     "safe-launcher-client": "../db/low-level",
     "web-request": "^1.0.7"
