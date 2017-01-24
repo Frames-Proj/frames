@@ -3,8 +3,7 @@ build:
 	./node_modules/typescript/bin/tsc
 
 setup:
-	$(MAKE) -C ../db/low-level setup
-	$(MAKE) -C ../db/low-level build 
+	$(MAKE) -C ../db/low-level
 	npm install
 
 run:
