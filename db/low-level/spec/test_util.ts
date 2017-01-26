@@ -13,7 +13,8 @@ const testAuthPayload : AuthorizationPayload = {
         "vendor": "SafeClient"
     },
     "permissions": [
-        "SAFE_DRIVE_ACCESS"
+        "SAFE_DRIVE_ACCESS",
+        "LOW_LEVEL_API"
     ]
 };
 

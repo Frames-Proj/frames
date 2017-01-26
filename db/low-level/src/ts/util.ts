@@ -22,6 +22,12 @@ export class NotFoundError extends SafeError {
     }
 }
 
+export class UnexpectedResponseContent extends SafeError {
+    constructor(res: Response<any>) {
+        super("Unexpected response content", res);
+    }
+}
+
 // for use in a promise context
 export async function saneResponse<T>(response: Promise<Response<T>>): Promise<Response<T>> {
     return response.then( (res) => {

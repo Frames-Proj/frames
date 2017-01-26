@@ -16,6 +16,7 @@ import { ApiClientConfig } from "./src/ts/client";
 import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
          NfsDirectoryInfo, NfsFileData
        } from "./src/ts/nfs";
+import { AppendableDataClient } from "./src/ts/appendable-data";
 
 export { NfsClient, NfsFileClient, NfsDirectoryClient,
          NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
@@ -31,6 +32,7 @@ export class SafeClient {
 
     // sub-apis
     public readonly nfs: NfsClient;
+    public readonly ad: AppendableDataClient;
 
     constructor(authPayload: AuthorizationPayload, endpoint: string) {
         this.endpoint = endpoint;
@@ -45,6 +47,7 @@ export class SafeClient {
         }
 
         this.nfs = new NfsClient(apiClientConfig);
+        this.ad = new AppendableDataClient(apiClientConfig);
     }
 
     public authenticated(): Promise<boolean> {

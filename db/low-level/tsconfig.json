@@ -11,7 +11,8 @@
    "files": [
        "./index.ts",
        "./spec/nfs_client_spec.ts",
-       "./spec/safe_client_spec.ts"
+       "./spec/safe_client_spec.ts",
+       "./spec/appendable_data_client_spec.ts"
    ],
    "exclude": [
         "node_modules"
