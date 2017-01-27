@@ -43,5 +43,5 @@ export async function saneResponse<T>(response: Promise<Response<T>>): Promise<R
         } else {
             return res;
         }
-    }).catch( (err) => { throw err; } );
+    });
 }
