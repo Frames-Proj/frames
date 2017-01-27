@@ -1,22 +1,24 @@
 
-import { makeid, client, TEST_DATA_DIR, exists, failDone } from './test_util';
+import { makeid, client, TEST_DATA_DIR, exists, failDone } from "./test_util";
+import { AppendableDataId } from "../src/ts/appendable-data";
+import { DataIDHandle } from "../src/ts/data-id";
 
 describe("An appendable data client", () => {
 
     it("can create an appendable data", async (done) => {
-        // const dirResponse : Promise<NfsDirectoryInfo> =
-        //     client.nfs.dir.get("app", "safe-client-test-bogus").catch((err) => {
-        //         expect(err.res.statusCode).toBe(404);
-        //         done();
-        //     });
-
-        const appdat = await client.ad.create("Some name").catch( (err) => {
-            console.error(err);
-            console.error(JSON.stringify(err));
-            fail();
-            done();
-        });
+        const appdat: AppendableDataId =
+            await failDone(client.ad.create("Some name"), done);
         done();
     });
+
+
+    it("can convert an appendable-data-id to a data-id", async (done) => {
+        const appDataID: AppendableDataId =
+            await failDone(client.ad.create("Some name"), done);
+        const dataID: DataIDHandle =
+            await failDone(client.ad.toDataIdHandle(appDataID), done);
+        done();
+    });
+
 });
 
