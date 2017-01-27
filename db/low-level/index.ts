@@ -17,6 +17,7 @@ import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
          NfsDirectoryInfo, NfsFileData
        } from "./src/ts/nfs";
 import { AppendableDataClient } from "./src/ts/appendable-data";
+import { DataIDClient } from "./src/ts/data-id";
 
 export { NfsClient, NfsFileClient, NfsDirectoryClient,
          NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
@@ -33,11 +34,11 @@ export class SafeClient {
     // sub-apis
     public readonly nfs: NfsClient;
     public readonly ad: AppendableDataClient;
+    public readonly dataID: DataIDClient;
 
     constructor(authPayload: AuthorizationPayload, endpoint: string) {
         this.endpoint = endpoint;
         this.authPayload = authPayload;
-
 
         this.authRes = getAuth(this.authPayload, this.endpoint);
 
@@ -48,6 +49,7 @@ export class SafeClient {
 
         this.nfs = new NfsClient(apiClientConfig);
         this.ad = new AppendableDataClient(apiClientConfig);
+        this.dataID = new DataIDClient(apiClientConfig);
     }
 
     public authenticated(): Promise<boolean> {
