@@ -11,6 +11,7 @@ src/**/*.js.map
 *~
 *.log
 .DS_Store
+lib/
 
 app.js
 app.js.map
