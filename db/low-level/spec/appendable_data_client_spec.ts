@@ -1,6 +1,6 @@
 
 import { makeid, client, TEST_DATA_DIR, exists, failDone } from "./test_util";
-import { AppendableDataId } from "../src/ts/appendable-data";
+import { AppendableDataId, FromDataIDHandleResponse } from "../src/ts/appendable-data";
 import { DataIDHandle } from "../src/ts/data-id";
 
 describe("An appendable data client", () => {
@@ -17,6 +17,22 @@ describe("An appendable data client", () => {
             await failDone(client.ad.create("Some name"), done);
         const dataID: DataIDHandle =
             await failDone(client.ad.toDataIdHandle(appDataID), done);
+        done();
+    });
+
+    fit("can convert an appendable-data-id to a data-id and back again", async (done) => {
+        // done(); // TODO(ethan): delete me
+
+        const appDataID: AppendableDataId =
+            await failDone(client.ad.create("Some name" + makeid()), done);
+
+        await failDone(client.ad.save(appDataID), done);
+
+        const dataID: DataIDHandle =
+            await failDone(client.ad.toDataIdHandle(appDataID), done);
+
+        const res: FromDataIDHandleResponse =
+            await failDone(client.ad.fromDataIdHandle(dataID), done);
         done();
     });
 
