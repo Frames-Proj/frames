@@ -19,7 +19,7 @@ export type DataIDHandle = number;
 
 export class DataIDClient extends ApiClient {
 
-    constructor(conf: ApiClientConfig){
+    constructor(conf: ApiClientConfig) {
         super(conf);
     }
 
