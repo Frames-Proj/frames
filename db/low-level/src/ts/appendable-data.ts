@@ -12,14 +12,37 @@ export type FilterType = "BlackList" | "WhiteList";
 
 export type AppendableDataId = number;
 
-export interface FromDataIDHandleResponse {
-    handleId: AppendableDataId;
+export interface AppendableDataMetadataBase {
     isOwner: boolean;
     version: number;
     filterType: FilterType;
     dataLength: number;
     deletedDataLength: number;
 }
+function isAppendableDataMetadataBase(x: any): x is AppendableDataMetadataBase {
+    return !(  typeof x.isOwner === "undefined"
+            || typeof x.version === "undefined"
+            || typeof x.filterType === "undefined"
+            || typeof x.dataLength === "undefined"
+            || typeof x.deletedDataLength === "undefined");
+}
+
+export interface FromDataIDHandleResponse extends AppendableDataMetadataBase {
+    handleId: AppendableDataId;
+}
+function isFromDataIDHandleResponse(x: any): x is FromDataIDHandleResponse {
+    return (typeof x.handleId !== "undefined") &&
+            isAppendableDataMetadataBase(x);
+}
+
+export interface AppedableDataMetadata extends AppendableDataMetadataBase {
+    filterLength: number;
+}
+function isAppendableDataMetadata(x: any): x is AppedableDataMetadata {
+    return (typeof x.filterLength !== "undefined") &&
+            isAppendableDataMetadataBase(x);
+}
+
 
 export class AppendableDataClient extends ApiClient {
 
@@ -145,15 +168,78 @@ export class AppendableDataClient extends ApiClient {
                 }
             }).response);
 
-        if (typeof result.content.handleId === "undefined"
-                || typeof result.content.isOwner === "undefined"
-                || typeof result.content.version === "undefined"
-                || typeof result.content.filterType === "undefined"
-                || typeof result.content.dataLength === "undefined"
-                || typeof result.content.deletedDataLength === "undefined") {
+        if (isFromDataIDHandleResponse(result.content)) {
+            return result.content;
+        } else {
             throw new UnexpectedResponseContent(result);
         }
-        return result.content;
+    }
+
+    /**
+     *
+     * @param handle - the appendable data to append to
+     * @param dataId - the data id handle to be appended
+     */
+    public async append(handle: AppendableDataId, dataId: DataIDHandle): Promise<void> {
+
+        const result = await saneResponse(WebRequest.create<any>(
+            `${this.adEndpoint}/${handle}/${dataId}`, {
+                method: "PUT",
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }).response);
+
+        if (result.statusCode !== 200) {
+            throw new SafeError(
+                `Failed to append data-id=${dataId} to appendable-data-handle=${handle}.`
+                                , result);
+        }
+    }
+
+    /**
+     *
+     * @param handle - the appendable data to append to
+     * @param index - the index to get the data id from
+     * @returns the `DataIDHandle` at the index
+     */
+    public async at(handle: AppendableDataId, index: number): Promise<DataIDHandle> {
+        const result = await saneResponse(WebRequest.create<any>(
+            `${this.adEndpoint}/${handle}/${index}`, {
+                method: "GET",
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }).response);
+
+        if (typeof result.content.handleId === "undefined") {
+            throw new UnexpectedResponseContent(result);
+        }
+        return result.content.handleId;
+    }
+
+    /**
+     *
+     * @param handle - the appendable data to append to
+     * @returns the metadata associated with the appendable data
+     */
+    public async getMetadata(handle: AppendableDataId): Promise<AppedableDataMetadata> {
+        const result = await saneResponse(WebRequest.create<any>(
+            `${this.adEndpoint}/metadata/${handle}`, {
+                method: "GET",
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }).response);
+        if (isAppendableDataMetadata(result.content)) {
+            return result.content;
+        } else {
+            throw new UnexpectedResponseContent(result);
+        }
+
     }
 
 
