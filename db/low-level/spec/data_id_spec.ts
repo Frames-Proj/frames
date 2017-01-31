@@ -26,8 +26,6 @@ describe("A data id client", () => {
         const deserialised: DataIDHandle =
             await failDone(client.dataID.deserialise(serialised), done);
 
-        // expect(deserialised).toBe(dataID);
-
         done();
     });
 });

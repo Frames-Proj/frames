@@ -222,7 +222,7 @@ export class AppendableDataClient extends ApiClient {
 
     /**
      *
-     * @param handle - the appendable data to append to
+     * @param handle - the appendable data handle
      * @returns the metadata associated with the appendable data
      */
     public async getMetadata(handle: AppendableDataId): Promise<AppedableDataMetadata> {
@@ -240,6 +240,26 @@ export class AppendableDataClient extends ApiClient {
             throw new UnexpectedResponseContent(result);
         }
 
+    }
+
+    /**
+     *
+     * @param handle - the appendable data to drop
+     */
+    public async drop(handle: AppendableDataId): Promise<void> {
+        const result = await saneResponse(WebRequest.create<any>(
+            `${this.adEndpoint}/handle/${handle}`, {
+                method: "DELETE",
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }).response);
+
+        if (result.statusCode !== 200) {
+            throw new SafeError(
+                `Failed to drop appendable-data-handle=${handle}.`, result);
+        }
     }
 
 
