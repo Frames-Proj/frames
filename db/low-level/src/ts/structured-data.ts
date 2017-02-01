@@ -5,6 +5,7 @@ import { saneResponse } from "./util";
 import { DataIDHandle } from "./data-id";
 import { CipherOptsHandle } from "./cipher-opts";
 import * as WebRequest from "web-request";
+import { Response } from "web-request";
 
 import * as crypto from "crypto";
 
@@ -49,22 +50,30 @@ export class StructuredDataClient extends ApiClient {
      * @param name - the name of structured data
      * @param typeTag - Versioned (500) | Unversioned (501) | Custom (15000+)
      * @param cypherOpts
-     * @param data - string representation of the data to be stored
+     * @param data - the data to be stored
      * @param version - Only needs to be non-zero when
      * @returns the appendable data handle
      */
     public async create(name: string,
                         typeTag: TypeTag,
-                        data: string,
+                        data: string | Buffer | Object,
                         cipherOpts: CipherOptsHandle = -1,
                         version: number = 0): Promise<StructuredDataHandle>
     {
         if (typeof name === "string") {
             name = crypto.createHash("sha256").update(name).digest("base64");
         }
+
         if (typeof data === "string") {
             data = crypto.createHash("sha256").update(data).digest("base64");
+        } else if (data instanceof Buffer) {
+            data = data.toString("base64");
+        } else if (data instanceof Object) {
+            data = crypto.createHash("sha256").update(JSON.stringify(data)).digest("base64");
         }
+
+        console.log(data);
+
         if (!isValidTypeTag(typeTag)) {
             throw new Error(`Invalid TypeTag=${typeTag}`);
         }
@@ -194,6 +203,66 @@ export class StructuredDataClient extends ApiClient {
         } else {
             throw new UnexpectedResponseContent(result);
         }
+    }
+
+    /**
+     *
+     * @param handle - the structured data handle
+     */
+    public async drop(handle: StructuredDataHandle): Promise<void> {
+        const result = await saneResponse(WebRequest.create<any>(
+            `${this.sdEndpoint}/handle/${handle}`, {
+                method: "DELETE",
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }).response);
+        if (result.statusCode !== 200) {
+            throw new SafeError(`Bad statusCode=${result.statusCode}`, result);
+        }
+    }
+
+    /**
+     *
+     * @param handle - the structured data handle
+     * @param version - optional version number if the typeTag for this
+     *                  appendable data is `TYPE_TAG_VERSIONED`
+     */
+    public async read(handle: StructuredDataHandle, version ?: number): Promise<Buffer> {
+        const endpoint = `${this.sdEndpoint}/${handle}`
+            + (typeof version === "undefined" ? "" : `/${version}`);
+        const result: Response<string> = await saneResponse(WebRequest.create<string>(
+            endpoint, {
+                method: "GET",
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }).response);
+        if (result.statusCode !== 200) {
+            throw new SafeError(`Bad statusCode=${result.statusCode}`, result);
+        }
+
+        console.log(result.content);
+        console.log(new Buffer(result.content).toString("base64"));
+        return Buffer.from(result.content, "base64");
+    }
+
+    /**
+     *
+     * @param handle - the structured data handle
+     * @param version - optional version number if the typeTag for this
+     *                  appendable data is `TYPE_TAG_VERSIONED`
+     */
+    public async readAsObject(handle: StructuredDataHandle, version ?: number): Promise<Object> {
+        const res: Buffer = await this.read(handle, version);
+
+        console.log(res instanceof Buffer);
+        console.log(res.toString());
+        console.log(res.toJSON());
+
+        return res.toJSON();
     }
 
 };

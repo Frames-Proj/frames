@@ -176,6 +176,13 @@ export class AppendableDataClient extends ApiClient {
     }
 
     /**
+     * Append the data pointed to by the given dataId to the appendable
+     * data. Note that the change will automatically be reflected on the
+     * SAFEnet, but the appendable data handle used as input to this function
+     * will not be able to see the change. To see the change you must drop the
+     * appendable data handle (after first making a dataID for it), then get
+     * a new appendable data handle with `this.fromDataIdHandle`. The change
+     * will be reflected in the result.
      *
      * @param handle - the appendable data to append to
      * @param dataId - the data id handle to be appended
