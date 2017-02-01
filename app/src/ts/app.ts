@@ -12,7 +12,9 @@ const CONFIG : Config = Config.getInstance();
 let win;
 
 function createWindow(): void {
-    win = new BrowserWindow({ width: 800, height: 600 });
+
+    const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize
+    win = new BrowserWindow({ width: width, height: height });
 
     console.log(`${__dirname}`);
     win.loadURL(`file://${__dirname}/index.html`);
