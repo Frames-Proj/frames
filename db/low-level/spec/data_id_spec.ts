@@ -1,11 +1,11 @@
 import { makeid, client, TEST_DATA_DIR, exists, failDone } from "./test_util";
-import { AppendableDataId } from "../src/ts/appendable-data";
+import { AppendableDataHandle } from "../src/ts/appendable-data";
 import { DataIDHandle } from "../src/ts/data-id";
 
 describe("A data id client", () => {
 
     it("can serialise an appendable data dataID", async (done) => {
-        const appDataID: AppendableDataId =
+        const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some random name"), done);
         const dataID: DataIDHandle =
             await failDone(client.ad.toDataIdHandle(appDataID), done);
@@ -16,7 +16,7 @@ describe("A data id client", () => {
     });
 
     it("can serialise and deserialise an appendable data dataID", async (done) => {
-        const appDataID: AppendableDataId =
+        const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some random name"), done);
         const dataID: DataIDHandle =
             await failDone(client.ad.toDataIdHandle(appDataID), done);

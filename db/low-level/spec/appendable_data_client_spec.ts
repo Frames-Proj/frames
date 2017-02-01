@@ -1,6 +1,6 @@
 
 import { makeid, client, TEST_DATA_DIR, exists, failDone } from "./test_util";
-import { AppendableDataId, FromDataIDHandleResponse,
+import { AppendableDataHandle, FromDataIDHandleResponse,
          AppedableDataMetadata } from "../src/ts/appendable-data";
 import { StructuredDataHandle, TYPE_TAG_VERSIONED } from "../src/ts/structured-data";
 import { DataIDHandle } from "../src/ts/data-id";
@@ -8,7 +8,7 @@ import { DataIDHandle } from "../src/ts/data-id";
 describe("An appendable data client", () => {
 
     it("can create an appendable data, and drop it", async (done) => {
-        const appdat: AppendableDataId =
+        const appdat: AppendableDataHandle =
             await failDone(client.ad.create("Some name" + makeid()), done);
         await failDone(client.ad.save(appdat), done);
         await failDone(client.ad.drop(appdat), done);
@@ -16,7 +16,7 @@ describe("An appendable data client", () => {
     });
 
     it("can read the metadata of a fresh appendable data", async (done) => {
-        const appDataID: AppendableDataId =
+        const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some name" + makeid()), done);
         await failDone(client.ad.save(appDataID), done);
         const metadata: AppedableDataMetadata =
@@ -31,7 +31,7 @@ describe("An appendable data client", () => {
     });
 
     it("can convert an appendable-data-id to a data-id", async (done) => {
-        const appDataID: AppendableDataId =
+        const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some name" + makeid()), done);
         const dataID: DataIDHandle =
             await failDone(client.ad.toDataIdHandle(appDataID), done);
@@ -39,7 +39,7 @@ describe("An appendable data client", () => {
     });
 
     it("can convert an appendable-data-id to a data-id and back again", async (done) => {
-        const appDataID: AppendableDataId =
+        const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some name" + makeid()), done);
 
         await failDone(client.ad.save(appDataID), done);
@@ -57,7 +57,7 @@ describe("An appendable data client", () => {
         const childName: string = "Child " + makeid();
 
         // make the appendable data and save it to the network
-        const parent: AppendableDataId =
+        const parent: AppendableDataHandle =
             await failDone(client.ad.create(parentName), done);
         await failDone(client.ad.save(parent), done);
 
@@ -83,7 +83,7 @@ describe("An appendable data client", () => {
         const refreshedParent: FromDataIDHandleResponse =
             await failDone(client.ad.fromDataIdHandle(parentDataID), done);
         expect(refreshedParent.dataLength).toBe(1);
-        const refreshedParrentHandle: AppendableDataId = refreshedParent.handleId;
+        const refreshedParrentHandle: AppendableDataHandle = refreshedParent.handleId;
 
         const childDataId2: DataIDHandle =
             await failDone(client.ad.at(refreshedParrentHandle, 0), done);

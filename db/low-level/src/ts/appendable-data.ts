@@ -10,7 +10,7 @@ import * as crypto from "crypto";
 
 export type FilterType = "BlackList" | "WhiteList";
 
-export type AppendableDataId = number;
+export type AppendableDataHandle = number;
 
 export interface AppendableDataMetadataBase {
     isOwner: boolean;
@@ -28,7 +28,7 @@ function isAppendableDataMetadataBase(x: any): x is AppendableDataMetadataBase {
 }
 
 export interface FromDataIDHandleResponse extends AppendableDataMetadataBase {
-    handleId: AppendableDataId;
+    handleId: AppendableDataHandle;
 }
 function isFromDataIDHandleResponse(x: any): x is FromDataIDHandleResponse {
     return (typeof x.handleId !== "undefined") &&
@@ -66,7 +66,7 @@ export class AppendableDataClient extends ApiClient {
     public async create(name: string,
                         isPrivate: boolean = false,
                         filterType = "BlackList",
-                        filterKeys = []): Promise<AppendableDataId> {
+                        filterKeys = []): Promise<AppendableDataHandle> {
         if (typeof name === "string") {
             name = crypto.createHash("sha256").update(name).digest("base64");
         }
@@ -97,7 +97,7 @@ export class AppendableDataClient extends ApiClient {
      * @param id - the appendable data id to be converted
      * @returns a data id referring to the appendable data
      */
-    public async toDataIdHandle(id: AppendableDataId): Promise<DataIDHandle> {
+    public async toDataIdHandle(id: AppendableDataHandle): Promise<DataIDHandle> {
         const result = await saneResponse(WebRequest.create<any>(
             `${this.adEndpoint}/data-id/${id}`, {
                 method: "GET",
@@ -119,7 +119,7 @@ export class AppendableDataClient extends ApiClient {
      * @param handle - the appendable data handle
      * @param httpMethod
      */
-    private async saveImpl(handle: AppendableDataId, httpMethod: "PUT" | "POST"): Promise<void> {
+    private async saveImpl(handle: AppendableDataHandle, httpMethod: "PUT" | "POST"): Promise<void> {
         const result = await saneResponse(WebRequest.create<any>(
             `${this.adEndpoint}/${handle}`, {
                 method: httpMethod,
@@ -139,7 +139,7 @@ export class AppendableDataClient extends ApiClient {
      *
      * @param handle - the appendable data handle
      */
-    public async save(handle: AppendableDataId): Promise<void> {
+    public async save(handle: AppendableDataHandle): Promise<void> {
         return this.saveImpl(handle, "PUT");
     }
 
@@ -148,7 +148,7 @@ export class AppendableDataClient extends ApiClient {
      *
      * @param handle - the appendable data handle
      */
-    public async update(handle: AppendableDataId): Promise<void> {
+    public async update(handle: AppendableDataHandle): Promise<void> {
         return this.saveImpl(handle, "POST");
     }
 
@@ -187,7 +187,7 @@ export class AppendableDataClient extends ApiClient {
      * @param handle - the appendable data to append to
      * @param dataId - the data id handle to be appended
      */
-    public async append(handle: AppendableDataId, dataId: DataIDHandle): Promise<void> {
+    public async append(handle: AppendableDataHandle, dataId: DataIDHandle): Promise<void> {
 
         const result = await saneResponse(WebRequest.create<any>(
             `${this.adEndpoint}/${handle}/${dataId}`, {
@@ -211,7 +211,7 @@ export class AppendableDataClient extends ApiClient {
      * @param index - the index to get the data id from
      * @returns the `DataIDHandle` at the index
      */
-    public async at(handle: AppendableDataId, index: number): Promise<DataIDHandle> {
+    public async at(handle: AppendableDataHandle, index: number): Promise<DataIDHandle> {
         const result = await saneResponse(WebRequest.create<any>(
             `${this.adEndpoint}/${handle}/${index}`, {
                 method: "GET",
@@ -232,7 +232,7 @@ export class AppendableDataClient extends ApiClient {
      * @param handle - the appendable data handle
      * @returns the metadata associated with the appendable data
      */
-    public async getMetadata(handle: AppendableDataId): Promise<AppedableDataMetadata> {
+    public async getMetadata(handle: AppendableDataHandle): Promise<AppedableDataMetadata> {
         const result = await saneResponse(WebRequest.create<any>(
             `${this.adEndpoint}/metadata/${handle}`, {
                 method: "GET",
@@ -253,7 +253,7 @@ export class AppendableDataClient extends ApiClient {
      *
      * @param handle - the appendable data to drop
      */
-    public async drop(handle: AppendableDataId): Promise<void> {
+    public async drop(handle: AppendableDataHandle): Promise<void> {
         const result = await saneResponse(WebRequest.create<any>(
             `${this.adEndpoint}/handle/${handle}`, {
                 method: "DELETE",
