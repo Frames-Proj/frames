@@ -9,8 +9,6 @@ const app = electron.app;
 import Config from "./global-config";
 const CONFIG : Config = Config.getInstance();
 
-import { SafeClient } from "safe-launcher-client";
-
 let win;
 
 function createWindow(): void {
@@ -20,8 +18,6 @@ function createWindow(): void {
     win.loadURL(`file://${__dirname}/index.html`);
 
     win.webContents.openDevTools();
-
-    let safeClient : SafeClient = new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
 
     console.log(CONFIG.APP_HOME_DIR);
 

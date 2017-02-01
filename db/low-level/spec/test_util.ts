@@ -13,7 +13,8 @@ const testAuthPayload : AuthorizationPayload = {
         "vendor": "SafeClient"
     },
     "permissions": [
-        "SAFE_DRIVE_ACCESS"
+        "SAFE_DRIVE_ACCESS",
+        "LOW_LEVEL_API"
     ]
 };
 
@@ -31,13 +32,12 @@ export function makeid()
     return text;
 }
 
-export const client : SafeClient = new SafeClient(testAuthPayload, endpoint);
+export const client: SafeClient = new SafeClient(testAuthPayload, endpoint);
 
-export const TEST_DATA_DIR : string = `${__dirname}/../../spec/test_data`;
+export const TEST_DATA_DIR: string = `${__dirname}/../../spec/test_data`;
 
 // really javascript?
-export function exists<T>(list : T[], pred : (elem : T) => boolean) : boolean
-{
+export function exists<T>(list: T[], pred: (elem: T) => boolean): boolean {
     for (let e of list) {
         if (pred(e)) return true;
     }
@@ -45,10 +45,9 @@ export function exists<T>(list : T[], pred : (elem : T) => boolean) : boolean
 }
 
 export function failDone<T>(promise: Promise<T>,
-                            done : () => void) : Promise<T>
-{
+                            done: () => void): Promise<T> {
     return promise.catch((err) => {
-        console.log(err);
+        console.error(JSON.stringify(err));
         fail(err); done(); throw err;
     });
 }

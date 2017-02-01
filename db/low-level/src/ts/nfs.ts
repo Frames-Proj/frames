@@ -4,20 +4,20 @@
 // For talking to the nfs portion of the safe_launcer api
 //
 
-import { AuthResponse } from './auth';
-import { ApiClient, ApiClientConfig } from './client';
-import { saneResponse, SafeError } from './util';
+import { AuthResponse } from "./auth";
+import { ApiClient, ApiClientConfig } from "./client";
+import { saneResponse, SafeError } from "./util";
 import * as stream from "stream";
 import * as fs from "fs";
 
-import * as WebRequest from 'web-request';
-import { Response } from 'web-request';
+import * as WebRequest from "web-request";
+import { Response } from "web-request";
 
-export type RootPath = 'app' | 'drive';
+export type RootPath = "app" | "drive";
 
 export class NfsClient extends ApiClient {
 
-    public readonly dir : NfsDirectoryClient;
+    public readonly dir: NfsDirectoryClient;
     public readonly file: NfsFileClient;
 
     constructor(conf: ApiClientConfig){
@@ -29,30 +29,30 @@ export class NfsClient extends ApiClient {
 }
 
 export interface NfsFileData {
-    name : string,
-    createdOn: string,
-    modifiedOn: string,
-    metadata: string
+    name: string;
+    createdOn: string;
+    modifiedOn: string;
+    metadata: string;
 }
 export interface NfsDirectoryData {
-    name : string,
-    isPrivate : boolean,
-    createdOn: string,
-    modifiedOn: string,
-    metadata: string
+    name: string;
+    isPrivate: boolean;
+    createdOn: string;
+    modifiedOn: string;
+    metadata: string;
 }
 export interface NfsDirectoryInfo {
-    info : NfsDirectoryData
-    files: NfsFileData[],
-    subDirectories: NfsDirectoryData[] 
+    info: NfsDirectoryData;
+    files: NfsFileData[];
+    subDirectories: NfsDirectoryData[];
 }
 
 export class NfsDirectoryClient extends ApiClient {
-    private mkendpoint(rootPath : RootPath, dirPath : string) : string {
+    private mkendpoint(rootPath: RootPath, dirPath: string): string {
         return this.endpoint + `/nfs/directory/${rootPath}/${dirPath}`;
     }
 
-    constructor(conf: ApiClientConfig){
+    constructor(conf: ApiClientConfig) {
         super(conf);
     }
 
@@ -60,7 +60,7 @@ export class NfsDirectoryClient extends ApiClient {
      *  @arg directoryPath - the path to the directory
      *  @returns a promise to deliver some directory information
      */
-    public async get(rootPath : RootPath, directoryPath : string) : Promise<NfsDirectoryInfo> {
+    public async get(rootPath: RootPath, directoryPath: string): Promise<NfsDirectoryInfo> {
         const res : Response<string> = await saneResponse(WebRequest.get(
             this.mkendpoint(rootPath, directoryPath), {
                 auth: {
@@ -79,14 +79,14 @@ export class NfsDirectoryClient extends ApiClient {
      *  @arg metadata - optional metadata about the directory.
      *  @returns a promise to say if the directory was really created
      */
-    public async create(rootPath : RootPath, directoryPath : string,
-                        isPrivate : boolean, metadata ?: string) : Promise<void> {
+    public async create(rootPath: RootPath, directoryPath: string,
+                        isPrivate: boolean, metadata ?: string): Promise<void> {
 
         let recBody = {
-            'isPrivate': isPrivate
-        }
+            "isPrivate": isPrivate
+        };
         if (metadata !== undefined) {
-            recBody['metadata'] = new Buffer(metadata).toString('base64');
+            recBody["metadata"] = new Buffer(metadata).toString("base64");
         }
 
         const result = await saneResponse(WebRequest.post(
@@ -107,7 +107,7 @@ export class NfsDirectoryClient extends ApiClient {
      *  @arg directoryPath - the path to the directory
      *  @returns a promise to say if the directory was really deleted 
      */
-    public async delete(rootPath : RootPath, directoryPath : string) : Promise<void>
+    public async delete(rootPath: RootPath, directoryPath: string): Promise<void>
     {
         const result = await saneResponse(WebRequest.delete(
             this.mkendpoint(rootPath, directoryPath), {
@@ -129,8 +129,8 @@ export class NfsDirectoryClient extends ApiClient {
      *  @arg newMetadata - the new directory metadata
      *  @returns a promise to say if the directory was really deleted 
      */
-    public async update(rootPath : RootPath, directoryPath : string,
-                        newName : string, newMetadata ?: string) : Promise<void>
+    public async update(rootPath: RootPath, directoryPath: string,
+                        newName: string, newMetadata ?: string): Promise<void>
     {
         let recBody = {
             'name': newName
