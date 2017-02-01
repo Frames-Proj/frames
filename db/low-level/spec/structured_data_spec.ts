@@ -78,18 +78,36 @@ describe("A structured data client", () => {
         done();
     });
 
-    fit("can create a structured data and read it back", async (done) => {
-        const data = {"hello": "world"};
-
+    it("can create a structured data and read it back", async (done) => {
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
-                "Some Name" + makeid(), TYPE_TAG_VERSIONED, data), done);
+                "Some Name" + makeid(), TYPE_TAG_VERSIONED, {"hello": "world"}), done);
         await failDone(client.structured.save(structuredData), done);
 
-        const result = await failDone(client.structured.readAsObject(structuredData), done);
+        const result: any =
+            await failDone(client.structured.readAsObject(structuredData), done);
+        expect(result.hello).toBe("world");
+
         await failDone(client.structured.drop(structuredData), done);
 
         done();
     });
+
+    it("can create a structured data and read it back with a string as the input data", async (done) => {
+        const structuredData: StructuredDataHandle =
+            await failDone(client.structured.create(
+                "Some Name" + makeid(), TYPE_TAG_VERSIONED, "hello world"), done);
+        await failDone(client.structured.save(structuredData), done);
+
+        const result: any =
+            await failDone(client.structured.read(structuredData), done);
+        expect(result).toBe("hello world");
+
+        await failDone(client.structured.drop(structuredData), done);
+
+        done();
+    });
+
+
 });
 

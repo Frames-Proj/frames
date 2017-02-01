@@ -65,14 +65,12 @@ export class StructuredDataClient extends ApiClient {
         }
 
         if (typeof data === "string") {
-            data = crypto.createHash("sha256").update(data).digest("base64");
+            data = Buffer.from(data).toString("base64");
         } else if (data instanceof Buffer) {
             data = data.toString("base64");
         } else if (data instanceof Object) {
-            data = crypto.createHash("sha256").update(JSON.stringify(data)).digest("base64");
+            data = Buffer.from(JSON.stringify(data)).toString("base64");
         }
-
-        console.log(data);
 
         if (!isValidTypeTag(typeTag)) {
             throw new Error(`Invalid TypeTag=${typeTag}`);
@@ -229,13 +227,12 @@ export class StructuredDataClient extends ApiClient {
      * @param version - optional version number if the typeTag for this
      *                  appendable data is `TYPE_TAG_VERSIONED`
      */
-    public async read(handle: StructuredDataHandle, version ?: number): Promise<Buffer> {
+    public async read(handle: StructuredDataHandle, version ?: number): Promise<string> {
         const endpoint = `${this.sdEndpoint}/${handle}`
             + (typeof version === "undefined" ? "" : `/${version}`);
-        const result: Response<string> = await saneResponse(WebRequest.create<string>(
+        const result: Response<any> = await saneResponse(WebRequest.create<any>(
             endpoint, {
                 method: "GET",
-                json: true,
                 auth: {
                     bearer: (await this.authRes).token
                 }
@@ -244,9 +241,7 @@ export class StructuredDataClient extends ApiClient {
             throw new SafeError(`Bad statusCode=${result.statusCode}`, result);
         }
 
-        console.log(result.content);
-        console.log(new Buffer(result.content).toString("base64"));
-        return Buffer.from(result.content, "base64");
+        return result.content;
     }
 
     /**
@@ -255,14 +250,11 @@ export class StructuredDataClient extends ApiClient {
      * @param version - optional version number if the typeTag for this
      *                  appendable data is `TYPE_TAG_VERSIONED`
      */
-    public async readAsObject(handle: StructuredDataHandle, version ?: number): Promise<Object> {
-        const res: Buffer = await this.read(handle, version);
+    public async readAsObject(handle: StructuredDataHandle, version ?: number): Promise<any> {
+        const res: string = await this.read(handle, version);
 
-        console.log(res instanceof Buffer);
-        console.log(res.toString());
-        console.log(res.toJSON());
-
-        return res.toJSON();
+        // the error condition is handled smoothly by the promise
+        return JSON.parse(res);
     }
 
 };

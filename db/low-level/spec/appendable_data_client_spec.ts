@@ -52,7 +52,7 @@ describe("An appendable data client", () => {
         done();
     });
 
-    it("can append one appendable data to another", async (done) => {
+    it("can append a structured data to an appendable data", async (done) => {
         const parentName: string = "Parent " + makeid();
         const childName: string = "Child " + makeid();
 
@@ -67,7 +67,7 @@ describe("An appendable data client", () => {
         // make the structured data, and save it to the network
         const child: StructuredDataHandle =
             await failDone(client.structured.create(
-                childName, TYPE_TAG_VERSIONED, JSON.stringify({"child": true})), done);
+                childName, TYPE_TAG_VERSIONED, {"child": true}), done);
         await failDone(client.structured.save(child), done);
 
         // append the data, creating a cleaning up a dataID handle along the way
@@ -82,49 +82,20 @@ describe("An appendable data client", () => {
 
         const refreshedParent: FromDataIDHandleResponse =
             await failDone(client.ad.fromDataIdHandle(parentDataID), done);
-        console.log(refreshedParent);
         expect(refreshedParent.dataLength).toBe(1);
         const refreshedParrentHandle: AppendableDataId = refreshedParent.handleId;
 
         const childDataId2: DataIDHandle =
             await failDone(client.ad.at(refreshedParrentHandle, 0), done);
-        // TODO some assertions
+        const child2: StructuredDataHandle =
+            (await failDone(client.structured.fromDataIdHandle(childDataId2), done)).handleId;
+        const childContent = await failDone(client.structured.readAsObject(child2), done);
+        expect(childContent.child).toBe(true);
 
+        await failDone(client.structured.drop(child2), done);
         await failDone(client.ad.drop(refreshedParent.handleId), done);
-        // await failDone(client.dataID.drop(childDataId2), done);
+        await failDone(client.dataID.drop(childDataId2), done);
         await failDone(client.dataID.drop(parentDataID), done);
-
-
-        /*
-        const childDataID: DataIDHandle =
-            await failDone(client.structured.toDataIdHandle(child), done);
-
-        console.log(await failDone(client.ad.getMetadata(parent), done));
-        await failDone(client.ad.append(parent, childDataID), done);
-        console.log(await failDone(client.ad.getMetadata(parent), done));
-
-        // now drop the two metadata handles so that the change will be reflected
-        // when we refresh
-        await failDone(client.ad.drop(parent), done);
-        // await failDone(client.ad.drop(child), done);
-
-        // Get a refreshed version of the parent
-        parent = await failDone(client.ad.create(parentName), done);
-        console.log(await failDone(client.ad.getMetadata(parent), done));
-
-
-        // await failDone(client.ad.update(parent), done);
-
-        const parentMetadata: AppedableDataMetadata =
-            await failDone(client.ad.getMetadata(parent), done);
-        console.log(parentMetadata);
-
-        const childDataId2: DataIDHandle =
-            await failDone(client.ad.at(parent, 0), done);
-
-        console.log(childDataId2);
-        console.log(childDataID);
-        */
 
         done();
     });
