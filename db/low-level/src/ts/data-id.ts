@@ -61,12 +61,10 @@ export class DataIDClient extends ApiClient {
         let req: Request<any>;
         if (serializedHandle instanceof Buffer) {
             payload["body"] = serializedHandle;
-            req = WebRequest.create<any>(
-                `${this.endpoint}/data-id`, payload);
+            req = WebRequest.create<any>(`${this.endpoint}/data-id`, payload);
         } else {
             req = serializedHandle.pipe(
-                WebRequest.create<any>(
-                    `${this.endpoint}/data-id`, payload));
+                WebRequest.create<any>(`${this.endpoint}/data-id`, payload));
         }
         const response: Response<any> = await saneResponse(req.response);
 
@@ -80,7 +78,26 @@ export class DataIDClient extends ApiClient {
             throw new UnexpectedResponseContent(response);
         }
         return resObj.handleId;
-    };
+    }
+
+    /**
+     *
+     * @param handle - the structured data handle
+     */
+    public async drop(handle: DataIDHandle): Promise<void> {
+        const result = await saneResponse(WebRequest.create<any>(
+            `${this.endpoint}/data-id/${handle}`, {
+                method: "DELETE",
+                json: true,
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }).response);
+        if (result.statusCode !== 200) {
+            throw new SafeError(`Bad statusCode=${result.statusCode}`, result);
+        }
+    }
+
 
 }
 
