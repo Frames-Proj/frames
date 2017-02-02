@@ -8,10 +8,12 @@ describe("A data id client", () => {
         const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some random name"), done);
         const dataID: DataIDHandle =
-            await failDone(client.ad.toDataIdHandle(appDataID), done);
+            await failDone(appDataID.toDataIdHandle(), done);
 
         const serialised: Buffer =
-            await failDone(client.dataID.serialise(dataID), done);
+            await failDone(dataID.serialise(), done);
+
+        await failDone(dataID.drop(), done);
         done();
     });
 
@@ -19,12 +21,14 @@ describe("A data id client", () => {
         const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some random name"), done);
         const dataID: DataIDHandle =
-            await failDone(client.ad.toDataIdHandle(appDataID), done);
+            await failDone(appDataID.toDataIdHandle(), done);
 
         const serialised: Buffer =
-            await failDone(client.dataID.serialise(dataID), done);
+            await failDone(dataID.serialise(), done);
         const deserialised: DataIDHandle =
             await failDone(client.dataID.deserialise(serialised), done);
+
+        await failDone(dataID.drop(), done);
 
         done();
     });

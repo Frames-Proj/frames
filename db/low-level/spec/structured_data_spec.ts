@@ -12,8 +12,8 @@ describe("A structured data client", () => {
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, JSON.stringify(data)), done);
-        await failDone(client.structured.save(structuredData), done);
-        await failDone(client.structured.drop(structuredData), done);
+        await failDone(structuredData.save(), done);
+        await failDone(structuredData.drop(), done);
 
         done();
     });
@@ -24,8 +24,8 @@ describe("A structured data client", () => {
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, Buffer.from(JSON.stringify(data))), done);
-        await failDone(client.structured.save(structuredData), done);
-        await failDone(client.structured.drop(structuredData), done);
+        await failDone(structuredData.save(), done);
+        await failDone(structuredData.drop(), done);
 
         done();
     });
@@ -36,8 +36,8 @@ describe("A structured data client", () => {
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, data), done);
-        await failDone(client.structured.save(structuredData), done);
-        await failDone(client.structured.drop(structuredData), done);
+        await failDone(structuredData.save(), done);
+        await failDone(structuredData.drop(), done);
 
         done();
     });
@@ -49,16 +49,16 @@ describe("A structured data client", () => {
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, JSON.stringify(data)), done);
-        await failDone(client.structured.save(structuredData), done);
+        await failDone(structuredData.save(), done);
 
         const dataID: DataIDHandle =
-            await failDone(client.structured.toDataIdHandle(structuredData), done);
+               await failDone(structuredData.toDataIdHandle(), done);
         const anotherStructuredData: FromDataIDHandleReponse =
             await failDone(client.structured.fromDataIdHandle(dataID), done);
 
-        await failDone(client.structured.drop(structuredData), done);
-        await failDone(client.structured.drop(anotherStructuredData.handleId), done);
-        await failDone(client.dataID.drop(dataID), done);
+        await failDone(structuredData.drop(), done);
+        await failDone(anotherStructuredData.handleId.drop(), done);
+        await failDone(dataID.drop(), done);
 
         done();
     });
@@ -69,11 +69,11 @@ describe("A structured data client", () => {
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, JSON.stringify(data)), done);
-        await failDone(client.structured.save(structuredData), done);
+        await failDone(structuredData.save(), done);
 
         const metadata: StructuredDataMetadata =
-            await failDone(client.structured.getMetadata(structuredData), done);
-        await failDone(client.structured.drop(structuredData), done);
+            await failDone(structuredData.getMetadata(), done);
+        await failDone(structuredData.drop(), done);
 
         done();
     });
@@ -82,13 +82,13 @@ describe("A structured data client", () => {
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, {"hello": "world"}), done);
-        await failDone(client.structured.save(structuredData), done);
+        await failDone(structuredData.save(), done);
 
         const result: any =
-            await failDone(client.structured.readAsObject(structuredData), done);
+            await failDone(structuredData.readAsObject(), done);
         expect(result.hello).toBe("world");
 
-        await failDone(client.structured.drop(structuredData), done);
+        await failDone(structuredData.drop(), done);
 
         done();
     });
@@ -97,13 +97,13 @@ describe("A structured data client", () => {
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, "hello world"), done);
-        await failDone(client.structured.save(structuredData), done);
+        await failDone(structuredData.save(), done);
 
         const result: any =
-            await failDone(client.structured.read(structuredData), done);
+            await failDone(structuredData.read(), done);
         expect(result).toBe("hello world");
 
-        await failDone(client.structured.drop(structuredData), done);
+        await failDone(structuredData.drop(), done);
 
         done();
     });
