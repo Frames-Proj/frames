@@ -19,10 +19,11 @@ import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
 import { AppendableDataClient } from "./src/ts/appendable-data";
 import { StructuredDataClient } from "./src/ts/structured-data"
 import { DataIDClient } from "./src/ts/data-id";
+import { Drop, withDrop, withDropP } from "./src/ts/raii";
 
 export { NfsClient, NfsFileClient, NfsDirectoryClient,
          NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
-         AuthResponse
+         AuthResponse, Drop, withDrop, withDropP
        };
 
 
