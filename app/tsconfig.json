@@ -1,11 +1,13 @@
 {
     "compilerOptions": {
+        "inlineSources": true,
         "sourceMap": true,
         "module": "commonjs",
         "target": "es6",
         "removeComments": true,
         "moduleResolution": "node",
-        "outDir": "client/"
+        "outDir": "client/js/",
+        "baseUrl": "."
    },
    "files": [
 	"./src/ts/app.ts",

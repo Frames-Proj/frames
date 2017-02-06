@@ -3,8 +3,9 @@
 // The script for uploading a file
 
 import * as $ from "jquery";
-
 import { remote } from "electron";
+
+
 import { fileExists, safeClient } from "./util";
 
 async function uploadVideo(localVideoFile: string,
