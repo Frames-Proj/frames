@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jquery": "^2.0.40",
     "electron": "^1.4.4",
     "typescript": "^2.0.6"
   },

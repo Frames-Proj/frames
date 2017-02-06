@@ -3,8 +3,8 @@
 // The script for uploading a file
 
 import * as $ from "jquery";
+const remote = require('electron').remote;
 
-import { remote } from "electron";
 import { fileExists, safeClient } from "./util";
 
 async function uploadVideo(localVideoFile: string,

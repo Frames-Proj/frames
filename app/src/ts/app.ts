@@ -15,8 +15,11 @@ function createWindow(): void {
     win = new BrowserWindow({ width: 800, height: 600 });
 
     console.log(`${__dirname}`);
-    win.loadURL(`file://${__dirname}/index.html`);
 
+    // Load Index, I did this to accomadate reorganizing the js dir
+    win.loadURL('file://' + __dirname + '/../index.html');
+
+    // Open up dev tools
     win.webContents.openDevTools();
 
     console.log(CONFIG.APP_HOME_DIR);
