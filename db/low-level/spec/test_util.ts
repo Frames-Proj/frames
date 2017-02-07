@@ -31,6 +31,16 @@ export function makeid() {
     return text;
 }
 
+export function makeAlphaid() {
+    let text = "";
+    let possible = "abcdefghijklmnopqrstuvwxyz";
+
+    for (let i = 0; i < 15; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
 export const client: SafeClient = new SafeClient(testAuthPayload, endpoint);
 
 export const TEST_DATA_DIR: string = `${__dirname}/../../spec/test_data`;

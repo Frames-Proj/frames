@@ -32,9 +32,15 @@ export class DnsClient extends ApiClient {
         return this.endpoint + `/dns${endpoint}`;
     }
 
+    constructor(conf: ApiClientConfig) {
+        super(conf);
+    }
+
     /** @arg longName - public name that can be shared
      *  @returns a promise to say if the longName was registered
      */
+    //NOTE only 'human readable' longNames are accepted
+    // How that is defined, I have no clue, but try to use real words no random capitals
     public async register(longName: string): Promise<void> {
         const response = await saneResponse(WebRequest.post(
             this.mkendpoint(`/${longName}`), {

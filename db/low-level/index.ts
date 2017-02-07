@@ -18,6 +18,7 @@ import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
        } from "./src/ts/nfs";
 import { AppendableDataClient } from "./src/ts/appendable-data";
 import { StructuredDataClient } from "./src/ts/structured-data"
+import { DnsClient } from "./src/ts/dns"
 import { DataIDClient } from "./src/ts/data-id";
 import { Drop, withDrop, withDropP } from "./src/ts/raii";
 
@@ -38,6 +39,7 @@ export class SafeClient {
     public readonly ad: AppendableDataClient;
     public readonly dataID: DataIDClient;
     public readonly structured: StructuredDataClient;
+    public readonly dns: DnsClient;
 
     constructor(authPayload: AuthorizationPayload, endpoint: string) {
         this.endpoint = endpoint;
@@ -54,6 +56,7 @@ export class SafeClient {
         this.ad = new AppendableDataClient(apiClientConfig);
         this.dataID = new DataIDClient(apiClientConfig);
         this.structured = new StructuredDataClient(apiClientConfig);
+        this.dns = new DnsClient(apiClientConfig);
     }
 
     public authenticated(): Promise<boolean> {
