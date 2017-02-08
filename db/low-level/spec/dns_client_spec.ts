@@ -8,7 +8,7 @@ import * as fs from "fs";
 
 describe("An dns client", () => {
 
-    fit("can register a longName", async (done) => {
+    it("can register a longName", async (done) => {
         const longName: string = makeAlphaid();
 
         await client.dns.register(longName).catch((err) => {
@@ -17,5 +17,16 @@ describe("An dns client", () => {
         });
 
         done();
-    })
+    });
+
+    it("can register a longName and service", async (done) => {
+        const longName: string = makeAlphaid();
+
+        await client.dns.registerAndAddService(longName, "www", "app", "/").catch((err) => {
+            fail(err);
+            done();
+        });
+
+        done();
+    });
 });

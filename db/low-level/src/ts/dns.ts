@@ -53,4 +53,34 @@ export class DnsClient extends ApiClient {
             throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
         }
     }
+
+    /** @arg longName - public name that can be shared
+     *  @arg serviceName - name of service mapped to longName
+     *  @arg rootPath - app or drive
+     *  @arg serviceHomeDirPath - the full path of the directory to be associated with to the service
+     *  @returns a promise to say if the longName and service were registered
+     */
+    public async registerAndAddService(longName: string, serviceName: string,
+                                       rootPath: RootPath, serviceHomeDirPath: string): Promise<void> {
+        let Body = {
+            "longName": longName,
+            "serviceName": serviceName,
+            "rootPath": rootPath,
+            "serviceHomeDirPath": serviceHomeDirPath
+        }
+
+        const response = await saneResponse(WebRequest.post(
+            this.mkendpoint(""), {
+                auth: {
+                    bearer: (await this.authRes).token
+                },
+                json: true,
+                body: Body
+            }));
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
+    }
+
 }
