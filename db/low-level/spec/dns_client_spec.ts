@@ -42,4 +42,16 @@ describe("An dns client", () => {
         expect(expectedServices.sort()).toEqual(services.sort());
         done();
     });
+
+    fit("can fetch a home directory associated with a service", async (done) => {
+        const longName: string = makeAlphaid();
+        const dir: string = makeAlphaid();
+        await failDone(client.nfs.dir.create("app", dir, false), done);
+        await failDone(client.dns.registerAndAddService(longName, "www", "app", dir), done);
+
+        const exampleDir: DnsHomeDirectory = await client.dns.getHomeDirectory(longName, "www");
+
+        expect(exampleDir.info.name).toEqual(dir);
+        done();
+    });
 });

@@ -136,4 +136,24 @@ export class DnsClient extends ApiClient {
         }
     }
 
+    /** @arg longName - public name that can be shared
+     *  @arg serviceName - name of service mapped to longName
+     *  @returns a promise to a DnsHomeDirectory holding files and metadata
+     *  TODO: (Abdi) Maybe make this a generic function with the get services method?
+     */
+    public async getHomeDirectory(longName: string, serviceName: string): Promise<DnsHomeDirectory> {
+        const response = await saneResponse(WebRequest.get(
+            this.mkendpoint(`/${serviceName}/${longName}`), {
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }));
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
+
+        return JSON.parse(response.content); //also little sketchy
+    }
+
 }
