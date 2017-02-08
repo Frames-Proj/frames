@@ -27,6 +27,8 @@ export interface DnsHomeDirectory {
     files: string[];
 }
 
+export type DnsServiceList = string[];
+
 export class DnsClient extends ApiClient {
     private mkendpoint(endpoint: string): string {
         return this.endpoint + `/dns${endpoint}`;
@@ -70,6 +72,57 @@ export class DnsClient extends ApiClient {
         }
 
         const response = await saneResponse(WebRequest.post(
+            this.mkendpoint(""), {
+                auth: {
+                    bearer: (await this.authRes).token
+                },
+                json: true,
+                body: Body
+            }));
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
+    }
+
+    /** @arg longName - public name that can be shared
+     *  @returns a list of services mapped to the longName
+     */
+    public async getServices(longName: string): Promise<DnsServiceList> {
+        const response = await saneResponse(WebRequest.get(
+            this.mkendpoint(`/${longName}`), {
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }));
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
+
+        return JSON.parse(response.content); //little sketchy
+    }
+
+    /** @arg longName - public name that can be shared
+     *  @arg serviceName - name of service mapped to longName
+     *  @arg rootPath - app or drive
+     *  @arg serviceHomeDirPath - the full path of the directory to be associated with to the service
+     *  @returns a promise to say if the longName and service were registered
+     *
+     *  TODO: (Abdi) maybe make this a generic function for the one above?
+     */
+
+    public async addService(longName: string, serviceName: string,
+                            rootPath: RootPath, serviceHomeDirPath: string): Promise<void> {
+
+        let Body = {
+            "longName": longName,
+            "serviceName": serviceName,
+            "rootPath": rootPath,
+            "serviceHomeDirPath": serviceHomeDirPath
+        }
+
+        const response = await saneResponse(WebRequest.put(
             this.mkendpoint(""), {
                 auth: {
                     bearer: (await this.authRes).token
