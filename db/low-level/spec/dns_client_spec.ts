@@ -1,7 +1,7 @@
 
 import { makeid, client, TEST_DATA_DIR, exists, failDone, makeAlphaid } from "./test_util";
 import { AuthorizationPayload } from "../src/ts/auth";
-import { DnsClient, DnsServiceList, DnsHomeDirectory } from "../src/ts/dns";
+import { DnsClient, DnsServiceList, DnsHomeDirectory, DnsLongNameList } from "../src/ts/dns";
 import { SafeFile, RootPath } from "../src/ts/nfs";
 import * as stream from "stream";
 import * as fs from "fs";
@@ -101,6 +101,15 @@ describe("An dns client", () => {
         services = await client.dns.getServices(longName);
         expect(services.length).toEqual(0);
 
+        done();
+    });
+
+    it("can list the longNames registered by the user", async (done) => {
+        const longName: string = makeAlphaid();
+        await failDone(client.dns.registerAndAddService(longName, "www", "app", "/"), done);
+
+        const longNames: DnsLongNameList = await client.dns.getLongNames();
+        expect(longNames.length).not.toBe(null);
         done();
     });
 });

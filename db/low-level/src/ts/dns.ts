@@ -28,6 +28,7 @@ export interface DnsHomeDirectory {
 }
 
 export type DnsServiceList = string[];
+export type DnsLongNameList = string[];
 
 export class DnsClient extends ApiClient {
     private mkendpoint(endpoint: string): string {
@@ -200,5 +201,20 @@ export class DnsClient extends ApiClient {
         if (response.statusCode !== 200) {
             throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
         }
+    }
+
+    public async getLongNames(): Promise<DnsLongNameList> {
+        const response = await saneResponse(WebRequest.get(
+            this.mkendpoint(""), {
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }));
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
+
+        return JSON.parse(response.content); //little sketchy
     }
 }
