@@ -189,7 +189,10 @@ export class DnsClient extends ApiClient {
         }
     }
 
-
+    /** @arg longName - public name
+     *  @arg serviceName - name of service mapped to longName
+     *  @returns a promise that the service was removed
+     */
     public async removeService(longName: string, serviceName: string): Promise<void> {
         const response = await saneResponse(WebRequest.delete(
             this.mkendpoint(`/${serviceName}/${longName}`), {
@@ -203,6 +206,8 @@ export class DnsClient extends ApiClient {
         }
     }
 
+    /** @returns a promise of the list of longNames registered by the user
+     */
     public async getLongNames(): Promise<DnsLongNameList> {
         const response = await saneResponse(WebRequest.get(
             this.mkendpoint(""), {
@@ -216,5 +221,21 @@ export class DnsClient extends ApiClient {
         }
 
         return JSON.parse(response.content); //little sketchy
+    }
+
+    /** @arg longName - public name to deregister
+     *  @returns a promise that the longName has been deleted
+     */
+    public async deregister(longName: string): Promise<void> {
+        const response = await saneResponse(WebRequest.delete(
+            this.mkendpoint(`/${longName}`), {
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }));
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
     }
 }

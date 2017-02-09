@@ -110,6 +110,22 @@ describe("An dns client", () => {
 
         const longNames: DnsLongNameList = await client.dns.getLongNames();
         expect(longNames.length).not.toBe(null);
+
+        done();
+    });
+
+    it("can deregister a longName from the user", async (done) => {
+        const longName: string = makeAlphaid();
+        await failDone(client.dns.registerAndAddService(longName, "www", "app", "/"), done);
+
+        let longNames: DnsLongNameList = await client.dns.getLongNames();
+        expect(longNames).toContain(longName);
+
+        await failDone(client.dns.deregister(longName), done);
+
+        longNames = await client.dns.getLongNames();
+        expect(longNames).not.toContain(longName);
+
         done();
     });
 });
