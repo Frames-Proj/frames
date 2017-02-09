@@ -88,4 +88,19 @@ describe("An dns client", () => {
 
         done();
     });
+
+    it("can remove a service from a longName", async (done) => {
+        const longName: string = makeAlphaid();
+        await failDone(client.dns.registerAndAddService(longName, "www", "app", "/"), done);
+
+        let services: DnsServiceList = await client.dns.getServices(longName);
+        expect(services.length).toEqual(1);
+
+        await failDone(client.dns.removeService(longName, "www"), done);
+
+        services = await client.dns.getServices(longName);
+        expect(services.length).toEqual(0);
+
+        done();
+    });
 });

@@ -187,4 +187,18 @@ export class DnsClient extends ApiClient {
             body: response.content
         }
     }
+
+
+    public async removeService(longName: string, serviceName: string): Promise<void> {
+        const response = await saneResponse(WebRequest.delete(
+            this.mkendpoint(`/${serviceName}/${longName}`), {
+                auth: {
+                    bearer: (await this.authRes).token
+                }
+            }));
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
+    }
 }
