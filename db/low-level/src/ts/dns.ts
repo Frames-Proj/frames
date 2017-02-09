@@ -5,7 +5,7 @@
 //
 
 import { AuthResponse } from "./auth";
-import { RootPath } from "./nfs";
+import { RootPath, SafeFile } from "./nfs";
 import { ApiClient, ApiClientConfig } from "./client";
 import { saneResponse, SafeError } from "./util";
 import * as stream from "stream";
@@ -156,4 +156,35 @@ export class DnsClient extends ApiClient {
         return JSON.parse(response.content); //also little sketchy
     }
 
+    /** @arg longName - public name that can be shared
+     *  @arg serviceName - name of service mapped to longName
+     *  @arg filePath - path to file you want
+     *  @returns binary data of the file
+     */
+    public async getFile(longName: string, serviceName: string,
+                         filePath: string, range?: [number, number]): Promise<SafeFile> {
+
+        let payload: WebRequest.RequestOptions = {
+            method: "GET",
+            encoding: null,
+            auth: {
+                bearer: (await this.authRes).token
+            }
+        }
+
+        if (range !== undefined) {
+            payload["headers"] = {
+                "Range": `bytes=${range[0]}-${range[1]}`
+            };
+        }
+
+        const response: Response<Buffer> =
+            await saneResponse(WebRequest.create<Buffer>(
+                this.mkendpoint(`/${serviceName}/${longName}/${filePath}`), payload).response);
+
+        return {
+            headers: response.headers,
+            body: response.content
+        }
+    }
 }

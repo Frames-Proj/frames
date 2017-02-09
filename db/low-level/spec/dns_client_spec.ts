@@ -2,6 +2,7 @@
 import { makeid, client, TEST_DATA_DIR, exists, failDone, makeAlphaid } from "./test_util";
 import { AuthorizationPayload } from "../src/ts/auth";
 import { DnsClient, DnsServiceList, DnsHomeDirectory } from "../src/ts/dns";
+import { SafeFile, RootPath } from "../src/ts/nfs";
 import * as stream from "stream";
 import * as fs from "fs";
 
@@ -43,7 +44,7 @@ describe("An dns client", () => {
         done();
     });
 
-    fit("can fetch a home directory associated with a service", async (done) => {
+    it("can fetch a home directory associated with a service", async (done) => {
         const longName: string = makeAlphaid();
         const dir: string = makeAlphaid();
         await failDone(client.nfs.dir.create("app", dir, false), done);
@@ -52,6 +53,39 @@ describe("An dns client", () => {
         const exampleDir: DnsHomeDirectory = await client.dns.getHomeDirectory(longName, "www");
 
         expect(exampleDir.info.name).toEqual(dir);
+        done();
+    });
+
+    it("can fetch a file from a service home directory", async (done) => {
+        //create a directory, put a file in it,
+        //register a long name and service to that directory, get file
+        const dir: string = makeAlphaid();
+        const filename: string = makeAlphaid() + ".txt";
+        const dirFilename: string = `${dir}/${filename}`;
+
+        let testStream: stream.Transform = new stream.PassThrough();
+        const one_piece: Buffer = Buffer.from(`There once was a man named Gold Roger.`);
+        await new Promise((resolve, reject) => {
+            testStream.write(one_piece, (err) => {
+                expect(err).toBeUndefined();
+                resolve();
+            });
+        })
+
+        await failDone(client.nfs.dir.create("app", dir, false), done);
+        const mkFile: Promise<void> = client.nfs.file.create("app", dirFilename, testStream,
+                                                             one_piece.byteLength, "text/plain");
+        await mkFile.catch((err) => {
+            fail(err);
+            done();
+        });
+
+        const longName: string = makeAlphaid();
+        await failDone(client.dns.registerAndAddService(longName, "www", "app", dir), done);
+
+        const fileInfo: SafeFile = await client.dns.getFile(longName, "www", filename);
+        expect(fileInfo.body).toEqual(one_piece);
+
         done();
     });
 });
