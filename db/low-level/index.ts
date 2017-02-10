@@ -9,22 +9,29 @@
 //   For example:
 //      - sc.nfs.createFile(...) : Promise<whatever>
 //
+//   Where appropriate, API calls are instead attached to the handle
+//   objects returned by previous API calls.
+//
 
 import * as fs from "fs";
 import { getAuth, AuthorizationPayload, AuthResponse } from "./src/ts/auth";
 import { ApiClientConfig } from "./src/ts/client";
 import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
-         NfsDirectoryInfo, NfsFileData
+         NfsDirectoryInfo, NfsFileData, SafeFile
        } from "./src/ts/nfs";
-import { AppendableDataClient } from "./src/ts/appendable-data";
-import { StructuredDataClient } from "./src/ts/structured-data"
 import { DnsClient } from "./src/ts/dns"
-import { DataIDClient } from "./src/ts/data-id";
-import { Drop, withDrop, withDropP } from "./src/ts/raii";
+import { AppendableDataClient, AppendableDataHandle,
+         AppedableDataMetadata } from "./src/ts/appendable-data";
+import { StructuredDataClient, StructuredDataHandle, TYPE_TAG_UNVERSIONED,
+         TYPE_TAG_VERSIONED } from "./src/ts/structured-data";
+import { DataIDClient, DataIDHandle, SerializedDataID } from "./src/ts/data-id";
+import { Drop, withDrop, withDropP, Handle } from "./src/ts/raii";
 
 export { NfsClient, NfsFileClient, NfsDirectoryClient,
          NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
-         AuthResponse, Drop, withDrop, withDropP
+         AuthResponse, Drop, withDrop, withDropP, SafeFile, DataIDHandle,
+         AppendableDataHandle, AppedableDataMetadata, Handle, StructuredDataHandle,
+         TYPE_TAG_VERSIONED, TYPE_TAG_UNVERSIONED, SerializedDataID
        };
 
 

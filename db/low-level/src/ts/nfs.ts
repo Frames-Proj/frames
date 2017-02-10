@@ -192,8 +192,8 @@ export class NfsDirectoryClient extends ApiClient {
 }
 
 export interface SafeFile {
-    headers: WebRequest.Headers,
-    body: Buffer
+    headers: WebRequest.Headers;
+    body: Buffer;
 }
 
 export class NfsFileClient extends ApiClient {
@@ -201,7 +201,7 @@ export class NfsFileClient extends ApiClient {
         return `${this.endpoint}/nfs/file/${rootPath}/${filePath}`;
     }
 
-    constructor(conf: ApiClientConfig){
+    constructor(conf: ApiClientConfig) {
         super(conf);
     }
 
