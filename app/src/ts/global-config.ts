@@ -38,7 +38,7 @@ export default class Config {
     public readonly APP_ID: string = "todo.get.actual.domain";
     public readonly APP_VERSION: string = "0.0.1";
     public readonly APP_VENDOR: string = "Safety in Numbers";
-    public readonly APP_PERMISSIONS: string[] = [ "SAFE_DRIVE_ACCESS" ];
+    public readonly APP_PERMISSIONS: string[] = [ "SAFE_DRIVE_ACCESS", "LOW_LEVEL_API"];
     public readonly SAFE_LAUNCHER_ENDPOINT: string = "http://localhost:8100";
 
     public makeAuthPayload(): AuthorizationPayload {

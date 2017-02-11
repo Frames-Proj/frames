@@ -23,7 +23,7 @@ import { DnsClient } from "./src/ts/dns"
 import { AppendableDataClient, AppendableDataHandle,
          AppedableDataMetadata } from "./src/ts/appendable-data";
 import { StructuredDataClient, StructuredDataHandle, TYPE_TAG_UNVERSIONED,
-         TYPE_TAG_VERSIONED } from "./src/ts/structured-data";
+         TYPE_TAG_VERSIONED, StructuredDataMetadata } from "./src/ts/structured-data";
 import { DataIDClient, DataIDHandle, SerializedDataID } from "./src/ts/data-id";
 import { Drop, withDrop, withDropP, Handle } from "./src/ts/raii";
 
@@ -31,7 +31,8 @@ export { NfsClient, NfsFileClient, NfsDirectoryClient,
          NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
          AuthResponse, Drop, withDrop, withDropP, SafeFile, DataIDHandle,
          AppendableDataHandle, AppedableDataMetadata, Handle, StructuredDataHandle,
-         TYPE_TAG_VERSIONED, TYPE_TAG_UNVERSIONED, SerializedDataID
+         TYPE_TAG_VERSIONED, TYPE_TAG_UNVERSIONED, SerializedDataID,
+         StructuredDataMetadata
        };
 
 

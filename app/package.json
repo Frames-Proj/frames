@@ -9,8 +9,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jasmine": "^2.5.41",
     "@types/jquery": "^2.0.40",
     "electron": "^1.4.4",
+    "jasmine": "^2.5.3",
+    "jasmine-check": "^0.1.5",
+    "ts-node": "^2.1.0",
     "typescript": "^2.0.6"
   },
   "dependencies": {
