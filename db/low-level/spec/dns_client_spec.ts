@@ -75,11 +75,7 @@ describe("An dns client", () => {
         await failDone(client.nfs.dir.create("app", dir, false), done);
         const mkFile: Promise<void> = client.nfs.file.create("app", dirFilename, testStream,
                                                              one_piece.byteLength, "text/plain");
-        await mkFile.catch((err) => {
-            fail(err);
-            done();
-        });
-
+        await failDone(mkFile, done);
         const longName: string = makeAlphaid();
         await failDone(client.dns.registerAndAddService(longName, "www", "app", dir), done);
 
