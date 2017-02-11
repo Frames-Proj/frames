@@ -116,7 +116,7 @@ export class DnsClient extends ApiClient {
     public async addService(longName: string, serviceName: string,
                             rootPath: RootPath, serviceHomeDirPath: string): Promise<void> {
 
-        let Body = {
+        const Body = {
             "longName": longName,
             "serviceName": serviceName,
             "rootPath": rootPath,
