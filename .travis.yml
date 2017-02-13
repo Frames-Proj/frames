@@ -1,0 +1,7 @@
+language: node_js
+node_js:
+  - "6.9"
+before_install:
+  - npm install -g typescript@2.0.6
+script:
+  - cd app && make setup && make
