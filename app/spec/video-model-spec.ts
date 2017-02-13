@@ -28,13 +28,6 @@ describe("A frames Video model", () => {
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
         await failDone(video.write(), done);
 
-        /*
-        const it =
-            await failDone(safeClient.structured.create(makeid(), TYPE_TAG_VERSIONED, {"foo":"bar"}), done);
-        await it.save();
-        */
-
-
         done();
     });
 
