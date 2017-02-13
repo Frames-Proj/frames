@@ -74,16 +74,16 @@ export class Video implements Drop {
         await this.commentReplies.save().catch(err => {
             // if the appendable data already exists, ignore the error. We don't need
             // to update it.
-            if ((typeof err.res.statusCode !== "undefined" && err.res.statusCode === 400)
-                && (typeof err.res.body !== "undefined" && typeof err.res.body.errorCode !== "undefined"
+            if ((err.res != null && err.res.statusCode === 400)
+                && (err.res != null && err.res.body != null
                     && err.res.body.errorCode === -23) ) {
                 return;
             }
             throw err;
         });
         await this.videoReplies.save().catch(err => {
-            if ((typeof err.res.statusCode !== "undefined" && err.res.statusCode === 400)
-                && (typeof err.res.body !== "undefined" && typeof err.res.body.errorCode !== "undefined"
+            if ((err.res != null && err.res.statusCode === 400)
+                && (err.res != null && err.res.body != null
                     && err.res.body.errorCode === -23) ) {
                 return;
             }
@@ -186,10 +186,9 @@ function toVIStringy(vi: VideoInfo): VideoInfoStringy {
     };
 }
 function isVideoInfo(x: any): x is VideoInfo {
-    return ((typeof x.videoReplies !== "undefined" && x.videoReplies instanceof Buffer)
-            && (typeof x.commentReplies !== "undefined" && x.commentReplies instanceof Buffer))
-        && isVideoInfoBase(x);
-}
+    return (x.videoReplies instanceof Buffer && x.commentReplies instanceof Buffer)
+                                && isVideoInfoBase(x);
+    }
 
 
 export async function getVideo(dataId: DataIDHandle): Promise<Video> {
