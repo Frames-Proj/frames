@@ -28,6 +28,12 @@ export class UnexpectedResponseContent extends SafeError {
     }
 }
 
+export class InvalidHandleError extends Error {
+    constructor(handle: number) {
+        super(`Handle=${handle} is invalid`);
+    }
+}
+
 // for use in a promise context
 export async function saneResponse<T>(response: Promise<Response<T>>): Promise<Response<T>> {
     return response.then( (res) => {
