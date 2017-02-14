@@ -13,8 +13,7 @@
 	"src/ts/app.ts",
     "src/ts/upload.ts",
     "src/ts/play.ts",
-	"src/ts/video.ts",
-     "src/ts/bootstrap.js"
+	"src/ts/video.ts"
    ],
    "exclude": [
         "node_modules"
