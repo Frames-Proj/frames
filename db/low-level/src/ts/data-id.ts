@@ -17,6 +17,8 @@ import { Response, Request } from "web-request";
 import * as stream from "stream";
 import { Handle } from "./raii";
 
+export type SerializedDataID = Buffer;
+
 export class DataIDClient extends ApiClient {
 
     constructor(conf: ApiClientConfig) {
@@ -29,7 +31,7 @@ export class DataIDClient extends ApiClient {
     *                           as returned by the serialize method.
     * @returns the handle that was serialized
     */
-    public async deserialise(serializedHandle: Buffer | NodeJS.ReadableStream): Promise<DataIDHandle> {
+    public async deserialise(serializedHandle: SerializedDataID | NodeJS.ReadableStream): Promise<DataIDHandle> {
 
         const payload = {
             method: "POST",
@@ -73,7 +75,7 @@ export class DataIDHandle extends Handle {
     *
     * @returns The serialized handleId
     */
-    public async serialise(): Promise<Buffer> {
+    public async serialise(): Promise<SerializedDataID> {
         if (!this.valid) throw new InvalidHandleError(this.handle);
 
         const res: Response<string> =

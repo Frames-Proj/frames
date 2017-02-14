@@ -10,6 +10,9 @@ setup:
 run:
 	npm start 2>/dev/null
 
+test:
+	node node_modules/ts-node/dist/bin.js node_modules/jasmine/bin/jasmine.js
+
 watch:
 	./node_modules/typescript/bin/tsc -w
 
