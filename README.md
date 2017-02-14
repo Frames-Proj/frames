@@ -2,6 +2,8 @@
 
 Building a database framework for use on the SafeNet.
 
+[![Build Status](https://travis-ci.org/Frames-Proj/frames.svg?branch=master)](https://travis-ci.org/Frames-Proj/frames)
+
 ## Setup
 1. Fork the project to your own namespace
 2. Make pull requests (must be approved by another person)
