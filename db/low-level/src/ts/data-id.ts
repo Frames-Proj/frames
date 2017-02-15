@@ -73,21 +73,22 @@ export class DataIDHandle extends Handle {
 
     /**
     *
-    * @returns The serialized handleId
+    * @returns The serialised handleId
     */
     public async serialise(): Promise<SerializedDataID> {
         if (!this.valid) throw new InvalidHandleError(this.handle);
 
-        const res: Response<string> =
-            await saneResponse(WebRequest.create<string>(
+        const res: Response<Buffer> =
+            await saneResponse(WebRequest.create<Buffer>(
             `${this.client.endpoint}/data-id/${this.handle}`, {
                 method: "GET",
                 auth: {
                     bearer: (await this.client.authRes).token
-                }
+                },
+                encoding: null
             }).response);
 
-        return Buffer.from(res.content);
+        return res.content;
     }
 
 

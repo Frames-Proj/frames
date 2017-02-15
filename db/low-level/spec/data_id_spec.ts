@@ -1,6 +1,6 @@
 import { makeid, client, TEST_DATA_DIR, exists, failDone } from "./test_util";
 import { AppendableDataHandle } from "../src/ts/appendable-data";
-import { DataIDHandle } from "../src/ts/data-id";
+import { DataIDHandle, SerializedDataID } from "../src/ts/data-id";
 
 describe("A data id client", () => {
 
@@ -23,7 +23,7 @@ describe("A data id client", () => {
         const dataID: DataIDHandle =
             await failDone(appDataID.toDataIdHandle(), done);
 
-        const serialised: Buffer =
+        const serialised: SerializedDataID =
             await failDone(dataID.serialise(), done);
         const deserialised: DataIDHandle =
             await failDone(client.dataID.deserialise(serialised), done);

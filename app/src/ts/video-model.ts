@@ -115,9 +115,11 @@ export class Video implements Drop {
             commentReplies: await (await this.commentReplies.toDataIdHandle()).serialise(),
         };
 
+        // TODO: does this ever get dropped?
         const viH: StructuredDataHandle =
             await safeClient.structured.create(this.title, TYPE_TAG_VERSIONED, toVIStringy(payload));
         return withDropP(viH, async (vi: StructuredDataHandle) => {
+            console.log(`video-model::Video::write vi=${JSON.stringify(vi)}`);
             await vi.save();
             return await vi.toDataIdHandle();
         });
@@ -192,8 +194,13 @@ function isVideoInfo(x: any): x is VideoInfo {
 
 
 export async function getVideo(dataId: DataIDHandle): Promise<Video> {
+    console.log(`video-model::getVideo dataId=${JSON.stringify(dataId)}`);
+
     const sdH: StructuredDataHandle =
         (await safeClient.structured.fromDataIdHandle(dataId)).handleId;
+
+    console.log("got SD");
+
     return withDropP(sdH, async (viHandle: StructuredDataHandle) => {
         const vis = await viHandle.readAsObject();
         if (!isVideoInfoStringy(vis))

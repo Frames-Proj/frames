@@ -1,3 +1,0 @@
-[submodule "db/safe_app_nodejs"]
-	path = db/safe_app_nodejs
-	url = git@github.com:ethanpailes/safe_app_nodejs.git
