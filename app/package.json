@@ -2,7 +2,7 @@
   "name": "frames",
   "version": "0.1.0",
   "description": "",
-  "main": "client/app.js",
+  "main": "client/js/app.js",
   "scripts": {
     "start": "./node_modules/.bin/electron ."
   },
@@ -20,6 +20,7 @@
   "dependencies": {
     "@types/electron": "1.4.31",
     "@types/jquery": "^2.0.40",
+    "@types/mkpath": "^0.1.29",
     "@types/node": "^6.0.52",
     "file-type": "^4.1.0",
     "jquery": "^3.1.1",

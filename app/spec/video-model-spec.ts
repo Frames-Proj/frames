@@ -7,19 +7,21 @@ import Config from "../src/ts/global-config";
 const CONFIG: Config = Config.getInstance();
 
 import { TYPE_TAG_VERSIONED, DataIDHandle,
-         SerializedDataID, withDropP } from "safe-launcher-client";
+         SerializedDataID, withDropP, StructuredDataHandle
+       } from "safe-launcher-client";
 import { safeClient } from "../src/ts/util";
+
+import startupHook from "../src/ts/startup-hooks";
+
+let started: boolean = false;
 
 describe("A frames Video model", () => {
 
     beforeEach(async (done) => {
-        await safeClient.nfs.dir.create("app", CONFIG.SAFENET_VIDEO_DIR, false).catch(err => {
-            if (err.res.statusCode === 400) {
-                // the directory already exists! Yay!
-                return;
-            }
-        });
-
+        if (!started) {
+            await startupHook();
+            started = true;
+        }
         done();
     });
 
@@ -34,33 +36,26 @@ describe("A frames Video model", () => {
         done();
     });
 
-    fit("can be recovered from a serialized dataID.", async (done) => {
+    it("can be recovered from a serialized dataID.", async (done) => {
         const video: Video =
             await failDone(Video.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const dataId: SerializedDataID =
-            await withDropP(await failDone(video.write(), done), (dId: DataIDHandle) => {
-                return failDone(dId.serialise(), done);
-            });
+            await failDone(withDropP(await video.write(), (dId: DataIDHandle) => {
+                return dId.serialise();
+            }), done);
 
         const recoveredVideo: Video =
-            await withDropP(await failDone(safeClient.dataID.deserialise(dataId), done),
-                            (dIdH: DataIDHandle) => {
-                                return failDone(getVideo(dIdH), done);
-            });
+            await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH: DataIDHandle) => {
+                return getVideo(dIdH);
+            }), done);
 
-        /*
-        expect(recoveredVideo.description).toBe(video.description);
-        expect(recoveredVideo.file).toBe(video.file);
         expect(recoveredVideo.title).toBe(video.title);
-        expect(recoveredVideo.owner).toBe(video.owner);
-        expect(await recoveredVideo.getNumReplyVideos()).toBe(await video.getNumReplyVideos());
-        expect(await recoveredVideo.getNumComments()).toBe(await video.getNumComments());
+        expect(recoveredVideo.description).toBe(video.description);
 
-        video.drop();
-        recoveredVideo.drop();
-        */
+        await failDone(video.drop(), done);
+        await failDone(recoveredVideo.drop(), done);
 
         done();
     });
