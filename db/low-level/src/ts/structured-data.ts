@@ -5,11 +5,12 @@ import { saneResponse } from "./util";
 import { DataIDHandle } from "./data-id";
 import { CipherOptsHandle } from "./cipher-opts";
 import * as WebRequest from "web-request";
-import { Response } from "web-request";
+import { Response, Request } from "web-request";
 import { Handle } from "./raii";
 
 import * as crypto from "crypto";
 
+export type SerializedStructuredData = Buffer;
 export type TypeTag = number;
 function isValidTypeTag(tt: TypeTag): boolean {
     return (tt === 500 || tt === 501 || tt > 15000);
@@ -27,17 +28,17 @@ function isStructuredDataMetadata(x: any): x is StructuredDataMetadata {
             || typeof x.version === "undefined"
             || typeof x.dataVersionLength === "undefined");
 }
-export interface FromDataIDHandleReponse extends StructuredDataMetadata {
+export interface DeserializeReponse extends StructuredDataMetadata {
     handleId: StructuredDataHandle;
 };
-function isFromDataIDHandleResponse(x: any): x is FromDataIDHandleReponse {
+function isDeserializeResponse(x: any): x is DeserializeReponse {
     return typeof x.handleId !== "undefined" && isStructuredDataMetadata(x);
 }
 
-interface FromDataIDHandleReponseImpl extends StructuredDataMetadata {
+interface DeserializeReponseImpl extends StructuredDataMetadata {
     handleId: number;
 };
-function isFromDataIDHandleResponseImpl(x: any): x is FromDataIDHandleReponseImpl {
+function isDeserializeResponseImpl(x: any): x is DeserializeReponseImpl {
     return typeof x.handleId !== "undefined" && isStructuredDataMetadata(x);
 }
 
@@ -112,7 +113,7 @@ export class StructuredDataClient extends ApiClient {
      * @param id - the data id handle to be converted
      * @returns an appendable data id
      */
-    public async fromDataIdHandle(id: DataIDHandle): Promise<FromDataIDHandleReponse> {
+    public async fromDataIdHandle(id: DataIDHandle): Promise<DeserializeReponse> {
 
         const result = await saneResponse(WebRequest.create<any>(
             `${this.sdEndpoint}/handle/${id.handle}`, {
@@ -123,8 +124,8 @@ export class StructuredDataClient extends ApiClient {
                 }
             }).response);
 
-        if (isFromDataIDHandleResponseImpl(result.content)) {
-            let res: FromDataIDHandleReponse = {
+        if (isDeserializeResponseImpl(result.content)) {
+            const res: DeserializeReponse = {
                 isOwner: result.content.isOwner,
                 version: result.content.version,
                 dataVersionLength: result.content.dataVersionLength,
@@ -133,6 +134,41 @@ export class StructuredDataClient extends ApiClient {
             return res;
         } else {
             throw new UnexpectedResponseContent(result);
+        }
+    }
+
+    public async deserialise(s: SerializedStructuredData | NodeJS.ReadableStream): Promise<DeserializeReponse> {
+
+        const payload = {
+            method: "POST",
+            auth: {
+                bearer: (await this.authRes).token
+            }
+        };
+        let req: Request<any>;
+        if (s instanceof Buffer) {
+            payload["body"] = s;
+            req = WebRequest.create<any>(`${this.sdEndpoint}/deserialise`, payload);
+        } else {
+            req = s.pipe(WebRequest.create<any>(`${this.sdEndpoint}/deserialise`, payload));
+        }
+        const response: Response<any> = await saneResponse(req.response);
+
+        if (response.statusCode !== 200) {
+            throw new SafeError(`statusCode=${response.statusCode} !== 200`, response);
+        }
+
+        const resObj = JSON.parse(response.content);
+        if (isDeserializeResponseImpl(resObj)) {
+            const res: DeserializeReponse = {
+                isOwner: resObj.isOwner,
+                version: resObj.version,
+                dataVersionLength: resObj.dataVersionLength,
+                handleId: new StructuredDataHandle(this, resObj.handleId)
+            };
+            return res;
+        } else {
+            throw new UnexpectedResponseContent(resObj);
         }
     }
 
@@ -271,6 +307,27 @@ export class StructuredDataHandle extends Handle {
 
         // the error condition is handled smoothly by the promise
         return JSON.parse(res);
+    }
+
+    /**
+     *
+     * @returns the serialized structured data
+     */
+    public async serialise(): Promise<SerializedStructuredData> {
+        const endpoint = `${this.client.sdEndpoint}/serialise/${this.handle}`;
+        const res: Response<string> =
+            await saneResponse(WebRequest.create<string>(endpoint, {
+                method: "GET",
+                auth: {
+                    bearer: (await this.client.authRes).token
+                }
+            }).response);
+
+        if (res.statusCode !== 200) {
+            throw new SafeError(`Bad statusCode=${res.statusCode}`, res);
+        }
+
+        return Buffer.from(res.content);
     }
 
 };
