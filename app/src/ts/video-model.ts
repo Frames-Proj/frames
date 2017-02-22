@@ -129,7 +129,7 @@ export class Video implements Drop {
         return (await this.commentMetadata).dataLength;
     }
     public async getComment(i: number): Promise<VideoComment> {
-        return undefined(); // TODO
+        return Promise.resolve(new VideoComment());
     }
 
     public async getNumReplyVideos(): Promise<number> {
