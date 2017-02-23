@@ -21,6 +21,7 @@
   "dependencies": {
     "@types/electron": "^1.4.33",
     "@types/jquery": "^2.0.40",
+    "@types/mkpath": "^0.1.29",
     "@types/node": "^6.0.52",
     "@types/react": "^15.0.13",
     "@types/react-bootstrap": "0.0.45",
