@@ -1,5 +1,6 @@
 body {
     background: #eeeeee;
+    /*overflow: hidden;*/
 }
 
 #navbar .navbutton a {

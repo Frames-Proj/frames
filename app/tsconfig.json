@@ -6,7 +6,7 @@
         "target": "es6",
         "removeComments": true,
         "moduleResolution": "node",
-        "outDir": "client/js/",
+        "outDir": "client/js",
         "baseUrl": "."
    },
    "files": [

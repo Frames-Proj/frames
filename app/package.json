@@ -19,7 +19,7 @@
     "jasmine": "^2.5.3",
     "jasmine-check": "^0.1.5",
     "ts-node": "^2.1.0",
-    "typescript": "^2.0.6"
+    "typescript": "^2.2"
   },
   "dependencies": {
     "@types/electron": "1.4.31",
