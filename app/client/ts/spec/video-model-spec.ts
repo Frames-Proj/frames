@@ -1,7 +1,7 @@
 
 import { TEST_DATA_DIR, failDone, makeid } from "./test-util";
 
-import { Video, getVideo } from "../video-model";
+import Video from "../video-model";
 
 import Config from "../global-config";
 const CONFIG: Config = Config.getInstance();
@@ -47,8 +47,8 @@ describe("A frames Video model", () => {
             }), done);
 
         const recoveredVideo: Video =
-            await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH: DataIDHandle) => {
-                return getVideo(dIdH);
+            await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
+                return Video.read(dIdH);
             }), done);
 
         expect(recoveredVideo.title).toBe(video.title);

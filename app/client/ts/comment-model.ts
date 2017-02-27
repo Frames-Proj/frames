@@ -10,7 +10,7 @@ import * as crypto from "crypto";
 import { safeClient } from "./util";
 const sc = safeClient;
 
-export class VideoComment implements Drop {
+export default class VideoComment implements Drop {
 
     public readonly owner: string;
     public readonly text: string;
@@ -113,7 +113,12 @@ export class VideoComment implements Drop {
     };
 
     public async getReply(i: number): Promise<VideoComment> {
-        return VideoComment.read(await this.replies.at(i));
+        if (i >= await this.getNumReplies() || i < 0)
+            throw new Error(`VideoComment::getReply(${i}) index out of range!`);
+
+        return withDropP(await this.replies.at(i), (di) => {
+            return VideoComment.read(di);
+        })
     };
 
 }
