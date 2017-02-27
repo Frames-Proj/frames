@@ -12,7 +12,7 @@ const CONFIG : Config = Config.getInstance();
 let win;
 
 function createWindow(): void {
-    win = new BrowserWindow({ width: 800, height: 600 });
+    win = new BrowserWindow({ width: 1200, height: 800 });
 
     console.log(`${__dirname}`);
 
