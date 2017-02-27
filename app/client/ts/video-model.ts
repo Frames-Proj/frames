@@ -10,6 +10,7 @@ import * as fs from "fs";
 import * as fileType from "file-type";
 import * as readChunk from "read-chunk";
 import * as stream from "stream";
+import { VideoComment } from "./comment-model";
 
 import Config from "./global-config";
 const CONFIG: Config = Config.getInstance();
@@ -186,8 +187,9 @@ function toVIStringy(vi: VideoInfo): VideoInfoStringy {
     };
 }
 function isVideoInfo(x: any): x is VideoInfo {
-    return (x.videoReplies instanceof Buffer && x.commentReplies instanceof Buffer)
-                                && isVideoInfoBase(x);
+    return (x.videoReplies instanceof Buffer
+            && x.commentReplies instanceof Buffer)
+            && isVideoInfoBase(x);
     }
 
 
