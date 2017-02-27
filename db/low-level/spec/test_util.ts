@@ -1,11 +1,11 @@
 
-const mkpath = require('mkpath');
-import { AuthorizationPayload, AuthResponse } from '../src/ts/auth';
-import { SafeClient } from '../index';
-import { ApiClientConfig } from '../src/ts/client';
-import * as stream from 'stream';
+const mkpath = require("mkpath");
+import { AuthorizationPayload, AuthResponse } from "../src/ts/auth";
+import { SafeClient } from "../index";
+import { ApiClientConfig } from "../src/ts/client";
+import * as stream from "stream";
 
-const testAuthPayload : AuthorizationPayload = {
+const testAuthPayload: AuthorizationPayload = {
     "app": {
         "name": "Safe Client Test",
         "id": "fee.fi.fo.fum",
@@ -18,15 +18,24 @@ const testAuthPayload : AuthorizationPayload = {
     ]
 };
 
-const endpoint : string = 'http://localhost:8100';
+const endpoint : string = "http://localhost:8100";
 
 // for generating a tmp file to use in caching
-export function makeid()
-{
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+export function makeid() {
+    let text = "";
+    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < 15; i++ )
+    for (let i = 0; i < 15; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+export function makeAlphaid() {
+    let text = "";
+    let possible = "abcdefghijklmnopqrstuvwxyz";
+
+    for (let i = 0; i < 15; i++ )
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;

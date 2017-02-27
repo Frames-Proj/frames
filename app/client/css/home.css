@@ -22,3 +22,40 @@
     background-color: gray; 
     margin-bottom: 10px;
 }
+
+
+#featured-videos {
+    margin-bottom: 15px;
+}
+
+.video-thumb {
+    box-shadow: 3px 3px 3px #888888;
+    margin-bottom: 8px;
+}
+
+.video-thumb-link {
+    cursor: pointer;
+}
+
+.video-thumb-link:hover {
+    text-decoration: none;
+}
+
+.video-thumb-text {
+    font-size: large;
+    font-weight: bolder;
+}
+
+.video-thumb {
+    width: 100%;
+}
+
+.main-featured {
+    width: 50%;
+    float: left;
+}
+
+.side-featured {
+    width: 40%;
+    float: right;
+}

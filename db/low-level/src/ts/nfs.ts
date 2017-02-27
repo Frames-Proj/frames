@@ -20,7 +20,7 @@ export class NfsClient extends ApiClient {
     public readonly dir: NfsDirectoryClient;
     public readonly file: NfsFileClient;
 
-    constructor(conf: ApiClientConfig){
+    constructor(conf: ApiClientConfig) {
         super(conf);
         this.dir = new NfsDirectoryClient(conf);
         this.file = new NfsFileClient(conf);
@@ -192,8 +192,8 @@ export class NfsDirectoryClient extends ApiClient {
 }
 
 export interface SafeFile {
-    headers: WebRequest.Headers,
-    body: Buffer
+    headers: WebRequest.Headers;
+    body: Buffer;
 }
 
 export class NfsFileClient extends ApiClient {
@@ -201,7 +201,7 @@ export class NfsFileClient extends ApiClient {
         return `${this.endpoint}/nfs/file/${rootPath}/${filePath}`;
     }
 
-    constructor(conf: ApiClientConfig){
+    constructor(conf: ApiClientConfig) {
         super(conf);
     }
 
@@ -217,7 +217,6 @@ export class NfsFileClient extends ApiClient {
     public async create(rootPath: RootPath, filePath: string, file: NodeJS.ReadableStream,
                         size: number, contentType: string, metadata ?: Buffer): Promise<void>
     {
-
         let payload = {
             encoding: null,
             method: "POST",
@@ -235,7 +234,6 @@ export class NfsFileClient extends ApiClient {
         }
 
         const request = file.pipe(WebRequest.create(this.mkendpoint(rootPath, filePath), payload));
-
         const response = await saneResponse(request.response);
 
         if (response.statusCode !== 200) {

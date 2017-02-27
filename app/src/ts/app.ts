@@ -9,17 +9,19 @@ const app = electron.app;
 import Config from "./global-config";
 const CONFIG : Config = Config.getInstance();
 
+import { SafeClient } from "safe-launcher-client";
+
 let win;
 
 function createWindow(): void {
-
-    const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize
-    win = new BrowserWindow({ width: width, height: height });
+    win = new BrowserWindow({ width: 800, height: 600 });
 
     console.log(`${__dirname}`);
     win.loadURL(`file://${__dirname}/index.html`);
 
     win.webContents.openDevTools();
+
+    let safeClient : SafeClient = new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
 
     console.log(CONFIG.APP_HOME_DIR);
 

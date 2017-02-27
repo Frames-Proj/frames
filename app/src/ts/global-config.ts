@@ -12,11 +12,11 @@ export default class Config {
     // Contains global immutable state about our app. This is where we should stuff
     // all the config vars. Config member vars should be in SCREAMING_SNAKE_CASE.
 
-    
-    private static _instance:Config = new Config();
+
+    private static _instance: Config = new Config();
 
     constructor() {
-        if(Config._instance){
+        if (Config._instance) {
             throw new InstantiationError("Config");
         }
 
@@ -28,16 +28,20 @@ export default class Config {
 
     public static getInstance(): Config { return Config._instance; }
 
-    public readonly APP_HOME_DIR : string = "/tmp/wha-wha-home";
-    public readonly APP_NAME : string = "Frames";
+    public readonly APP_HOME_DIR: string = "/tmp/frames-home";
+    public readonly APP_VIDEO_DIR: string = this.APP_HOME_DIR + "/video-cache";
+    public readonly SAFENET_VIDEO_DIR: string = "videos";
+    public readonly APP_NAME: string = "Frames";
+
+    public readonly SUPPORTED_VIDEO_MIME_TYPES = ["video/mp4"];
 
     public readonly APP_ID: string = "todo.get.actual.domain";
     public readonly APP_VERSION: string = "0.0.1";
     public readonly APP_VENDOR: string = "Safety in Numbers";
-    public readonly APP_PERMISSIONS: string[] = [ "SAFE_DRIVE_ACCESS" ];
-    public readonly SAFE_LAUNCHER_ENDPOINT: string = 'http://localhost:8100';
+    public readonly APP_PERMISSIONS: string[] = [ "SAFE_DRIVE_ACCESS", "LOW_LEVEL_API"];
+    public readonly SAFE_LAUNCHER_ENDPOINT: string = "http://localhost:8100";
 
-    public makeAuthPayload() : AuthorizationPayload {
+    public makeAuthPayload(): AuthorizationPayload {
         return {
             "app": {
                 "name": this.APP_NAME,

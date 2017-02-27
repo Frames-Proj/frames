@@ -1,5 +1,5 @@
 
-build: setup
+build:
 	./node_modules/typescript/bin/tsc
 
 test:

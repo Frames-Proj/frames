@@ -10,12 +10,14 @@
  */
 
 import { ApiClient, ApiClientConfig } from "./client";
-import { saneResponse, SafeError, UnexpectedResponseContent } from "./util";
+import { saneResponse, SafeError, UnexpectedResponseContent
+         , InvalidHandleError } from "./util";
 import * as WebRequest from "web-request";
 import { Response, Request } from "web-request";
 import * as stream from "stream";
+import { Handle } from "./raii";
 
-export type DataIDHandle = number;
+export type SerializedDataID = Buffer;
 
 export class DataIDClient extends ApiClient {
 
@@ -25,32 +27,11 @@ export class DataIDClient extends ApiClient {
 
     /**
     *
-    * @param handleId - a handleId as obtained by creating and appendable or
-    *                   structured data, and then converting it to a data-id.
-    *                   This can be confusing, so see the tests in
-    *                   `spec/data_id_spec.ts` for an example.
-    * @returns The serialized handleId
-    */
-    public async serialise(handleId: DataIDHandle): Promise<Buffer> {
-        const res: Response<string> =
-            await saneResponse(WebRequest.create<string>(
-            `${this.endpoint}/data-id/${handleId}`, {
-                method: "GET",
-                auth: {
-                    bearer: (await this.authRes).token
-                }
-            }).response);
-
-        return Buffer.from(res.content);
-    };
-
-    /**
-    *
     * @param serializedHandle - The binary representation of the data handle
     *                           as returned by the serialize method.
     * @returns the handle that was serialized
     */
-    public async deserialise(serializedHandle: Buffer | NodeJS.ReadableStream): Promise<DataIDHandle> {
+    public async deserialise(serializedHandle: SerializedDataID | NodeJS.ReadableStream): Promise<DataIDHandle> {
 
         const payload = {
             method: "POST",
@@ -61,12 +42,10 @@ export class DataIDClient extends ApiClient {
         let req: Request<any>;
         if (serializedHandle instanceof Buffer) {
             payload["body"] = serializedHandle;
-            req = WebRequest.create<any>(
-                `${this.endpoint}/data-id`, payload);
+            req = WebRequest.create<any>(`${this.endpoint}/data-id`, payload);
         } else {
             req = serializedHandle.pipe(
-                WebRequest.create<any>(
-                    `${this.endpoint}/data-id`, payload));
+                WebRequest.create<any>(`${this.endpoint}/data-id`, payload));
         }
         const response: Response<any> = await saneResponse(req.response);
 
@@ -79,10 +58,62 @@ export class DataIDClient extends ApiClient {
         if (typeof resObj.handleId === "undefined") {
             throw new UnexpectedResponseContent(response);
         }
-        return resObj.handleId;
-    };
+
+        return new DataIDHandle(this, resObj.handleId);
+    }
 
 }
+
+
+export class DataIDHandle extends Handle {
+
+    constructor(c: ApiClient, handle: number) {
+        super(c, handle);
+    }
+
+    /**
+    *
+    * @returns The serialised handleId
+    */
+    public async serialise(): Promise<SerializedDataID> {
+        if (!this.valid) throw new InvalidHandleError(this.handle);
+
+        const res: Response<Buffer> =
+            await saneResponse(WebRequest.create<Buffer>(
+            `${this.client.endpoint}/data-id/${this.handle}`, {
+                method: "GET",
+                auth: {
+                    bearer: (await this.client.authRes).token
+                },
+                encoding: null
+            }).response);
+
+        return res.content;
+    }
+
+
+    /**
+     *
+     */
+    protected async dropImpl(): Promise<void> {
+        if (!this.valid) throw new InvalidHandleError(this.handle);
+
+        const result = await saneResponse(WebRequest.create<any>(
+            `${this.client.endpoint}/data-id/${this.handle}`, {
+                method: "DELETE",
+                json: true,
+                auth: {
+                    bearer: (await this.client.authRes).token
+                }
+            }).response);
+        if (result.statusCode !== 200) {
+            throw new SafeError(`Bad statusCode=${result.statusCode}`, result);
+        }
+    }
+
+
+}
+
 
 
 

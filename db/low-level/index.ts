@@ -9,19 +9,30 @@
 //   For example:
 //      - sc.nfs.createFile(...) : Promise<whatever>
 //
+//   Where appropriate, API calls are instead attached to the handle
+//   objects returned by previous API calls.
+//
 
 import * as fs from "fs";
 import { getAuth, AuthorizationPayload, AuthResponse } from "./src/ts/auth";
 import { ApiClientConfig } from "./src/ts/client";
 import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
-         NfsDirectoryInfo, NfsFileData
+         NfsDirectoryInfo, NfsFileData, SafeFile
        } from "./src/ts/nfs";
-import { AppendableDataClient } from "./src/ts/appendable-data";
-import { DataIDClient } from "./src/ts/data-id";
+import { DnsClient } from "./src/ts/dns"
+import { AppendableDataClient, AppendableDataHandle,
+         AppedableDataMetadata } from "./src/ts/appendable-data";
+import { StructuredDataClient, StructuredDataHandle, TYPE_TAG_UNVERSIONED,
+         TYPE_TAG_VERSIONED, StructuredDataMetadata } from "./src/ts/structured-data";
+import { DataIDClient, DataIDHandle, SerializedDataID } from "./src/ts/data-id";
+import { Drop, withDrop, withDropP, Handle } from "./src/ts/raii";
 
 export { NfsClient, NfsFileClient, NfsDirectoryClient,
          NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
-         AuthResponse
+         AuthResponse, Drop, withDrop, withDropP, SafeFile, DataIDHandle,
+         AppendableDataHandle, AppedableDataMetadata, Handle, StructuredDataHandle,
+         TYPE_TAG_VERSIONED, TYPE_TAG_UNVERSIONED, SerializedDataID,
+         StructuredDataMetadata
        };
 
 
@@ -35,6 +46,8 @@ export class SafeClient {
     public readonly nfs: NfsClient;
     public readonly ad: AppendableDataClient;
     public readonly dataID: DataIDClient;
+    public readonly structured: StructuredDataClient;
+    public readonly dns: DnsClient;
 
     constructor(authPayload: AuthorizationPayload, endpoint: string) {
         this.endpoint = endpoint;
@@ -50,6 +63,8 @@ export class SafeClient {
         this.nfs = new NfsClient(apiClientConfig);
         this.ad = new AppendableDataClient(apiClientConfig);
         this.dataID = new DataIDClient(apiClientConfig);
+        this.structured = new StructuredDataClient(apiClientConfig);
+        this.dns = new DnsClient(apiClientConfig);
     }
 
     public authenticated(): Promise<boolean> {
