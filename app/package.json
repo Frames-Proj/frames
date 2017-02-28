@@ -21,11 +21,21 @@
     "@types/electron": "1.4.31",
     "@types/jquery": "^2.0.40",
     "@types/node": "^6.0.52",
+    "@types/react": "^15.0.13",
+    "@types/react-bootstrap": "0.0.45",
+    "@types/react-dom": "^0.14.23",
+    "@types/react-router": "^2.0.49",
+    "awesome-typescript-loader": "^3.0.8",
+    "copy-webpack-plugin": "^4.0.1",
     "file-type": "^4.1.0",
     "jquery": "^3.1.1",
     "mkpath": "^1.0.0",
+    "react": "^15.4.2",
+    "react-bootstrap": "^0.30.7",
     "read-chunk": "^2.0.0",
     "safe-launcher-client": "../db/low-level",
-    "web-request": "^1.0.7"
+    "source-map-loader": "^0.1.6",
+    "web-request": "^1.0.7",
+    "webpack": "^2.2.1"
   }
 }
