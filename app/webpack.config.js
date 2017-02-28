@@ -10,13 +10,12 @@ module.exports = {
     // Enable sourcemaps for debugging webpack's output.
     devtool: "source-map",
     resolve: {
-        extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
+        extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
     },
     plugins: [
         new CopyWebpackPlugin([
                 { from: "node_modules/react/dist/react.min.js", to: distDir },
                 { from: "node_modules/react-dom/dist/react-dom.min.js", to: distDir },
-                { from: "src/styles/*.css", to: distDir }
             ])
     ],
 
@@ -24,7 +23,7 @@ module.exports = {
         loaders: [
             { test: /\.tsx?$/, loader: "awesome-typescript-loader" }
         ],
-        preLoaders: [
+        rules: [
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             { test: /\.js$/, loader: "source-map-loader" }
         ]
