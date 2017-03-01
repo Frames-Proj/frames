@@ -2,7 +2,7 @@
   "name": "frames",
   "version": "0.1.0",
   "description": "",
-  "main": "client/app.js",
+  "main": "dist/js/app.js",
   "scripts": {
     "start": "./node_modules/.bin/electron ."
   },
@@ -15,10 +15,10 @@
     "jasmine": "^2.5.3",
     "jasmine-check": "^0.1.5",
     "ts-node": "^2.1.0",
-    "typescript": "^2.0.6"
+    "typescript": "^2.2.1"
   },
   "dependencies": {
-    "@types/electron": "1.4.31",
+    "@types/electron": "^1.4.33",
     "@types/jquery": "^2.0.40",
     "@types/node": "^6.0.52",
     "@types/react": "^15.0.13",
@@ -32,10 +32,11 @@
     "mkpath": "^1.0.0",
     "react": "^15.4.2",
     "react-bootstrap": "^0.30.7",
+    "react-dom": "^15.4.2",
     "read-chunk": "^2.0.0",
     "safe-launcher-client": "../db/low-level",
     "source-map-loader": "^0.1.6",
     "web-request": "^1.0.7",
-    "webpack": "^2.2.1"
+    "webpack": "^1.14.0"
   }
 }

@@ -14,10 +14,12 @@ import { SafeClient } from "safe-launcher-client";
 let win;
 
 function createWindow(): void {
-    win = new BrowserWindow({ width: 800, height: 600 });
+
+    let display: any = electron.screen.getPrimaryDisplay().workAreaSize;
+    win = new BrowserWindow({ width: display.width, height: display.height });
 
     console.log(`${__dirname}`);
-    win.loadURL(`file://${__dirname}/index.html`);
+    win.loadURL(`file://${__dirname}/../../index.html`);
 
     win.webContents.openDevTools();
 

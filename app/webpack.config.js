@@ -1,7 +1,7 @@
 var CopyWebpackPlugin = require("copy-webpack-plugin");
 var distDir = __dirname + "/dist";
 module.exports = {
-    entry: "./src/index.tsx",
+    entry: "./client/index.tsx",
     output: {
         filename: "bundle.js",
         path: distDir
@@ -10,7 +10,7 @@ module.exports = {
     // Enable sourcemaps for debugging webpack's output.
     devtool: "source-map",
     resolve: {
-        extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
+        extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
     },
     plugins: [
         new CopyWebpackPlugin([
@@ -21,7 +21,9 @@ module.exports = {
 
     module: {
         loaders: [
-            { test: /\.tsx?$/, loader: "awesome-typescript-loader" }
+            { test: /\.tsx?$/, 
+              loader: "awesome-typescript-loader",
+              include: ["./client"] }
         ],
         rules: [
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.

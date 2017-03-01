@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "outDir": "../../dist/js",
+        "inlineSources": true,
+        "sourceMap": true,
+        "module": "commonjs",
+        "target": "es6",
+        "jsx": "react",
+        "removeComments": true,
+        "moduleResolution": "node"
+   },
+   "files": [
+        "app.ts",
+        "upload.ts",
+        "play.ts",
+        "video.ts",
+        "video-model.ts",
+        "comment-model.ts",
+        "spec/video-model-spec.ts",
+        "comment-model.ts"
+   ],
+   "exclude": [
+        "node_modules"
+   ]
+}
