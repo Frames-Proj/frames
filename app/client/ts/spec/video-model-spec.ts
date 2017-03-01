@@ -19,7 +19,7 @@ describe("A frames Video model", () => {
 
     beforeEach(async (done) => {
         if (!started) {
-            await startupHook();
+            await failDone(startupHook(), done);
             started = true;
         }
         done();
@@ -29,9 +29,7 @@ describe("A frames Video model", () => {
         const video: Video =
             await failDone(Video.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
-        (await failDone(video.write(), done)).drop();
-
-        video.drop();
+        await video.drop();
 
         done();
     });
@@ -42,7 +40,7 @@ describe("A frames Video model", () => {
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const dataId: SerializedDataID =
-            await failDone(withDropP(await video.write(), (dId: DataIDHandle) => {
+            await failDone(withDropP(await video.xorName, (dId: DataIDHandle) => {
                 return dId.serialise();
             }), done);
 

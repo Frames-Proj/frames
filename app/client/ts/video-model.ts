@@ -2,7 +2,7 @@
 import { SafeFile, withDropP, DataIDHandle,
          StructuredDataHandle, TYPE_TAG_VERSIONED,
          SerializedDataID, AppendableDataHandle,
-         Drop, AppedableDataMetadata
+         Drop, AppedableDataMetadata, StructuredDataMetadata
        } from "safe-launcher-client";
 
 import { safeClient } from "./util";
@@ -32,10 +32,14 @@ export default class Video implements Drop {
     public readonly commentReplies: AppendableDataHandle;
     public readonly videoReplies: AppendableDataHandle;
 
-    private readonly commentMetadata: Promise<AppedableDataMetadata>;
-    private readonly videoRepliesMetadata: Promise<AppedableDataMetadata>;
+    private commentMetadata: Promise<AppedableDataMetadata>;
+    private videoRepliesMetadata: Promise<AppedableDataMetadata>;
 
-    constructor(title: string, description: string, owner: string,
+    private videoData: StructuredDataHandle; // the data on the network
+    private metadata: Promise<StructuredDataMetadata>;
+
+
+    private constructor(title: string, description: string, owner: string,
                 file: Promise<string>, commentReplies: AppendableDataHandle,
                 videoReplies: AppendableDataHandle) {
         this.title = title;
@@ -46,12 +50,22 @@ export default class Video implements Drop {
         this.commentReplies = commentReplies;
         this.videoReplies = videoReplies;
 
-        this.commentMetadata = commentReplies.getMetadata();
-        this.videoRepliesMetadata = videoReplies.getMetadata();
+        this.commentMetadata = null;
+        this.videoRepliesMetadata = null;
+
+        this.videoData = null;
     }
     public async drop(): Promise<void> {
         await this.commentReplies.drop();
         await this.videoReplies.drop();
+        await this.videoData.drop();
+    }
+    private setVideoData(vd: StructuredDataHandle): void {
+        this.videoData = vd;
+        this.metadata = vd.getMetadata();
+    }
+    public get xorName(): Promise<DataIDHandle> {
+        return this.videoData.toDataIdHandle();
     }
 
     /**
@@ -68,17 +82,11 @@ export default class Video implements Drop {
         // Ownership of these guys is going to be passed to the created video
         const commentReplies: AppendableDataHandle =
             await sc.ad.create(title + " commentReplies");
+
         const videoReplies: AppendableDataHandle =
             await sc.ad.create(title + " videoReplies");
 
-        return new Video(title, description, "TODO OWNER",
-                         Promise.resolve(localVideoFile),
-                         commentReplies, videoReplies);
-    }
-
-    // @returns a promise for a dataID pointing to the written video meta-node
-    public async write(): Promise<DataIDHandle> {
-        await this.commentReplies.save().catch(err => {
+        await commentReplies.save().catch(err => {
             // if the appendable data already exists, ignore the error.
             // We don't need to update it.
             if ((err.res != null && err.res.statusCode === 400)
@@ -88,7 +96,8 @@ export default class Video implements Drop {
             }
             throw err;
         });
-        await this.videoReplies.save().catch(err => {
+
+        await videoReplies.save().catch(err => {
             if ((err.res != null && err.res.statusCode === 400)
                 && (err.res != null && err.res.body != null
                     && err.res.body.errorCode === -23) ) {
@@ -96,6 +105,20 @@ export default class Video implements Drop {
             }
             throw err;
         });
+
+        const v = new Video(title, description, "TODO OWNER",
+                         Promise.resolve(localVideoFile),
+                         commentReplies, videoReplies);
+        v.setVideoData(await v.write());
+        return v;
+    }
+
+    // @returns a promise for a dataID pointing to the written video meta-node
+    private async write(): Promise<StructuredDataHandle> {
+        this.commentMetadata = this.commentReplies.getMetadata().catch(err => {
+            console.error(`Video:write commentMetadata.getMetadata err=${err}`);
+        });
+        this.videoRepliesMetadata = this.videoReplies.getMetadata();
 
         const safeVideoFile: string = `${CONFIG.SAFENET_VIDEO_DIR}/${this.title}`;
         const localPath: string = await this.file;
@@ -126,47 +149,58 @@ export default class Video implements Drop {
         const viH: StructuredDataHandle =
             await sc.structured.create(this.title, TYPE_TAG_VERSIONED,
                                        toVIStringy(payload));
-        return withDropP(viH, async (vi: StructuredDataHandle) => {
-            await vi.save();
-            return await vi.toDataIdHandle();
-        });
+        await viH.save();
+        return viH;
     }
 
     public static async read(dataId: DataIDHandle): Promise<Video> {
         const sdH: StructuredDataHandle =
             (await sc.structured.fromDataIdHandle(dataId)).handleId;
 
-        return withDropP(sdH, async (viHandle: StructuredDataHandle) => {
-            const vis = await viHandle.readAsObject();
-            if (!isVideoInfoStringy(vis))
-                throw new Error("Malformed VideoInfo response.");
+        const vis = await sdH.readAsObject();
+        if (!isVideoInfoStringy(vis))
+            throw new Error("Malformed VideoInfo response.");
 
-            const vi: VideoInfo = toVI(vis);
-            const video: SafeFile =
-                await sc.nfs.file.get("app", vi.videoFile);
+        const vi: VideoInfo = toVI(vis);
+        const video: SafeFile =
+            await sc.nfs.file.get("app", vi.videoFile);
 
-            const mimeType = fileType(video.body).mime;
-            if (CONFIG.SUPPORTED_VIDEO_MIME_TYPES.indexOf(mimeType) === -1) {
-                throw new UnsupportedVideoFormatError(mimeType);
-            }
+        const mimeType = fileType(video.body).mime;
+        if (CONFIG.SUPPORTED_VIDEO_MIME_TYPES.indexOf(mimeType) === -1) {
+            throw new UnsupportedVideoFormatError(mimeType);
+        }
 
-            const videoReplies: AppendableDataHandle =
-                (await sc.ad.fromDataIdHandle(
-                    await sc.dataID.deserialise(vi.videoReplies))).handleId;
-            const commentReplies: AppendableDataHandle =
-                (await sc.ad.fromDataIdHandle(
-                    await sc.dataID.deserialise(vi.commentReplies))).handleId;
+        const videoReplies: AppendableDataHandle =
+            (await sc.ad.fromDataIdHandle(
+                await sc.dataID.deserialise(vi.videoReplies))).handleId;
+        const commentReplies: AppendableDataHandle =
+            (await sc.ad.fromDataIdHandle(
+                await sc.dataID.deserialise(vi.commentReplies))).handleId;
 
-            const videoFile = new Promise((resolve, reject) => {
-                fs.writeFile(`${CONFIG.APP_VIDEO_DIR}/${vi.title}`, video.body, (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                });
+        const videoFile = new Promise((resolve, reject) => {
+            fs.writeFile(`${CONFIG.APP_VIDEO_DIR}/${vi.title}`, video.body, (err) => {
+                if (err) reject(err);
+                else resolve();
             });
-
-            return new Video(vi.title, vi.description, vi.owner,
-                             videoFile, commentReplies, videoReplies);
         });
+
+        const v = new Video(vi.title, vi.description, vi.owner,
+                            videoFile, commentReplies, videoReplies);
+        v.setVideoData(sdH);
+        return v;
+    }
+
+    public async addComment(text: string): Promise<VideoComment> {
+        const comment = await VideoComment.new(
+            "TODO OWNER",
+            text,
+            Math.floor(new Date().getTime() / 1000),
+            (await this.metadata).version,
+            true,
+            await this.videoData.toDataIdHandle());
+
+        await this.commentReplies.append(await comment.xorName);
+        return comment;
     }
 
     public async getNumComments(): Promise<number> {
@@ -174,7 +208,7 @@ export default class Video implements Drop {
     }
     public async getComment(i: number): Promise<VideoComment> {
         if (i >= await this.getNumComments() || i < 0)
-            throw new Error(`Video::getComment(${i}) index not in range!`)
+            throw new Error(`Video::getComment(${i}) index not in range!`);
 
         return withDropP(await this.commentReplies.at(i), (di) => {
             return VideoComment.read(di);

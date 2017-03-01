@@ -12,6 +12,7 @@
   "devDependencies": {
     "@types/jasmine": "^2.5.41",
     "@types/jquery": "^2.0.40",
+    "@types/uuid": "^2.0.29",
     "electron": "^1.4.4",
     "jasmine": "^2.5.3",
     "jasmine-check": "^0.1.5",
@@ -38,6 +39,8 @@
     "safe-launcher-client": "../db/low-level",
     "source-map-loader": "^0.1.6",
     "web-request": "^1.0.7",
-    "webpack": "^1.14.0"
+    "webpack": "^1.14.0",
+    "uuid": "^3.0.1",
+    "web-request": "^1.0.7"
   }
 }

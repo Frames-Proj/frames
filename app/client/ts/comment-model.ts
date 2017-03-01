@@ -2,13 +2,15 @@
 
 import { DataIDHandle, SerializedDataID, AppendableDataHandle, Drop,
          StructuredDataHandle, withDropP, AppedableDataMetadata,
-         TYPE_TAG_VERSIONED
+         TYPE_TAG_VERSIONED, StructuredDataMetadata
        } from "safe-launcher-client";
 
 import * as crypto from "crypto";
 
 import { safeClient } from "./util";
 const sc = safeClient;
+
+import * as uuidV4 from "uuid/v4";
 
 export default class VideoComment implements Drop {
 
@@ -39,8 +41,10 @@ export default class VideoComment implements Drop {
     //
 
     private readonly replyMetadata: Promise<AppedableDataMetadata>;
+    private commentData: StructuredDataHandle;
+    private metadata: Promise<StructuredDataMetadata>;
 
-    constructor(owner: string, text: string, date: number,
+    private constructor(owner: string, text: string, date: number,
                 parentVersion: number, isRootComment: boolean,
                 parent: DataIDHandle, replies: AppendableDataHandle) {
         this.owner = owner;
@@ -52,10 +56,30 @@ export default class VideoComment implements Drop {
         this.replies = replies;
 
         this.replyMetadata = this.replies.getMetadata();
+        this.commentData = null;
+        this.metadata = null;
     }
     public async drop(): Promise<void> {
         await this.parent.drop();
         await this.replies.drop();
+    }
+    private setCommentData(cd: StructuredDataHandle): void {
+        this.commentData = cd;
+        this.metadata = cd.getMetadata();
+    }
+    public get xorName(): Promise<DataIDHandle> {
+        return this.commentData.toDataIdHandle();
+    }
+
+    public static async new(owner: string, text: string, date: number,
+                            parentVersion: number, isRootComment: boolean,
+                            parent: DataIDHandle): Promise<VideoComment> {
+        const replies: AppendableDataHandle = await sc.ad.create(uuidV4());
+        await replies.save();
+        const vc = new VideoComment(owner, text, date, parentVersion, isRootComment,
+                                    parent, replies);
+        vc.setCommentData(await vc.write());
+        return vc;
     }
 
     // TODO(ethan): test to make sure that this does not fail when dereferencing
@@ -64,27 +88,40 @@ export default class VideoComment implements Drop {
         const sdH: StructuredDataHandle =
             (await sc.structured.fromDataIdHandle(did)).handleId;
 
-        return withDropP(sdH, async (ciH) => {
-            const content: any = await ciH.readAsObject();
-            if (!isCommentInfoStringy(content))
-                throw new Error("Malformed comment info");
+        const content: any = await sdH.readAsObject();
+        if (!isCommentInfoStringy(content))
+            throw new Error("Malformed comment info");
 
-            const ci: CommentInfo = toCI(content);
+        const ci: CommentInfo = toCI(content);
 
-            const parent: DataIDHandle = await sc.dataID.deserialise(ci.parent);
+        const parent: DataIDHandle = await sc.dataID.deserialise(ci.parent);
 
-            const replies: AppendableDataHandle =
-                (await withDropP(await sc.dataID.deserialise(ci.replies), (r) => {
-                    return sc.ad.fromDataIdHandle(r);
-                })).handleId;
+        const replies: AppendableDataHandle =
+            (await withDropP(await sc.dataID.deserialise(ci.replies), (r) => {
+                return sc.ad.fromDataIdHandle(r);
+            })).handleId;
 
-            return new VideoComment(ci.owner, ci.text, ci.date, ci.parentVersion,
-                                    ci.isRootComment, parent, replies);
-        });
+        const vc = new VideoComment(ci.owner, ci.text, ci.date, ci.parentVersion,
+                                ci.isRootComment, parent, replies);
+        vc.setCommentData(sdH);
+        return vc;
+    }
+
+    public async addComment(text: string): Promise<VideoComment> {
+        const comment = await VideoComment.new(
+            "TODO OWNER",
+            text,
+            Math.floor(new Date().getTime() / 1000),
+            (await this.metadata).version,
+            false,
+            await this.commentData.toDataIdHandle());
+
+        await this.replies.append(await comment.xorName);
+        return comment;
     }
 
     // TODO(ethan): test to make sure that this method is idempotent
-    public async write(): Promise<void> {
+    private async write(): Promise<StructuredDataHandle> {
         const payload: CommentInfo = {
             owner: this.owner,
             text: this.text,
@@ -95,22 +132,21 @@ export default class VideoComment implements Drop {
             replies: await withDropP(await this.replies.toDataIdHandle(), (r) => {
                 return r.serialise();
             })
-        }
+        };
         const payloadStr: string = JSON.stringify(toCIStringy(payload));
 
         const hash: string = crypto.createHash("sha256")
             .update(payloadStr)
             .digest("hex");
 
-        await withDropP(await sc.structured.create(
-            hash, TYPE_TAG_VERSIONED, payloadStr), async (sd) => {
-                await sd.save();
-            });
+        const sd = await sc.structured.create(hash, TYPE_TAG_VERSIONED, payloadStr);
+        await sd.save();
+        return sd;
     }
 
     public async getNumReplies(): Promise<number> {
         return (await this.replyMetadata).dataLength;
-    };
+    }
 
     public async getReply(i: number): Promise<VideoComment> {
         if (i >= await this.getNumReplies() || i < 0)
@@ -118,8 +154,8 @@ export default class VideoComment implements Drop {
 
         return withDropP(await this.replies.at(i), (di) => {
             return VideoComment.read(di);
-        })
-    };
+        });
+    }
 
 }
 
@@ -135,7 +171,7 @@ interface CommentInfoBase {
     isRootComment: boolean;
     parentVersion: number;
 }
-function isCommentInfoBase(x: any): x is CommentInfoBase{
+function isCommentInfoBase(x: any): x is CommentInfoBase {
     return  ( typeof x.owner === "string"
               && typeof x.text === "string"
               && typeof x.date === "number"
