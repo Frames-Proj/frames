@@ -4,7 +4,8 @@
   "description": "",
   "main": "dist/js/app.js",
   "scripts": {
-    "start": "./node_modules/.bin/electron ."
+    "start": "./node_modules/.bin/electron .",
+    "webpack": "webpack"
   },
   "author": "",
   "license": "ISC",
@@ -24,7 +25,6 @@
     "@types/react": "^15.0.13",
     "@types/react-bootstrap": "0.0.45",
     "@types/react-dom": "^0.14.23",
-    "@types/react-router": "^2.0.49",
     "awesome-typescript-loader": "^3.0.8",
     "copy-webpack-plugin": "^4.0.1",
     "file-type": "^4.1.0",
