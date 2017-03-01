@@ -1,5 +1,6 @@
 var CopyWebpackPlugin = require("copy-webpack-plugin");
 var distDir = __dirname + "/dist";
+
 module.exports = {
     entry: "./client/index.tsx",
     output: {
@@ -18,16 +19,17 @@ module.exports = {
                 { from: "node_modules/react-dom/dist/react-dom.min.js", to: distDir },
             ])
     ],
-
     module: {
         loaders: [
-            { test: /\.tsx?$/, 
-              loader: "awesome-typescript-loader",
-              include: ["./client"] }
-        ],
-        rules: [
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            { test: /\.js$/, loader: "source-map-loader" }
+            { 
+                test: /\.js$/, 
+                loader: "source-map-loader" 
+            },
+            { 
+                test: /\.tsx?$/, 
+                loader: "awesome-typescript-loader?configFileName=./client/ts/tsconfig.json"
+            }
         ]
     },
     externals: {
