@@ -18,8 +18,5 @@
         "comment-model.ts",
         "spec/video-model-spec.ts",
         "comment-model.ts"
-   ],
-   "exclude": [
-        "node_modules"
    ]
 }
