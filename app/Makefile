@@ -1,6 +1,6 @@
 
 build:
-	./node_modules/typescript/bin/tsc --project ./client/ts/tsconfig.json
+	npm run webpack
 
 setup:
 	$(MAKE) -C ../db/low-level setup
