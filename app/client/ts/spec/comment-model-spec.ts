@@ -1,19 +1,19 @@
 
 import { TEST_DATA_DIR, failDone, makeid } from "./test-util";
 
-import VideoComment from "../src/ts/comment-model";
-import Video from "../src/ts/video-model";
+import VideoComment from "../comment-model";
+import Video from "../video-model";
 
-import Config from "../src/ts/global-config";
+import Config from "../global-config";
 const CONFIG: Config = Config.getInstance();
 
 import { TYPE_TAG_VERSIONED, DataIDHandle,
          SerializedDataID, withDropP, StructuredDataHandle
        } from "safe-launcher-client";
-import { safeClient } from "../src/ts/util";
+import { safeClient } from "../util";
 const sc = safeClient;
 
-import startupHook from "../src/ts/startup-hooks";
+import startupHook from "../startup-hooks";
 let started: boolean = false;
 
 describe("A video comment model", () => {

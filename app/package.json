@@ -5,7 +5,8 @@
   "main": "dist/js/app.js",
   "scripts": {
     "start": "./node_modules/.bin/electron .",
-    "webpack": "webpack"
+    "webpack": "webpack",
+    "watch": "webpack --watch"
   },
   "author": "",
   "license": "ISC",
