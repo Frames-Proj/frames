@@ -16,7 +16,8 @@
         "video.ts",
         "video-model.ts",
         "comment-model.ts",
+
         "spec/video-model-spec.ts",
-        "comment-model.ts"
+        "spec/comment-model-spec.ts"
    ]
 }

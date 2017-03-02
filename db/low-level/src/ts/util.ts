@@ -4,14 +4,20 @@
 // Some utility functions
 //
 
-import { Response } from 'web-request';
-// import { Request } from "web-request";
+import { Response } from "web-request";
+
+export function assert(test: boolean, message: string) {
+    if (!test) {
+        console.error("Assert failed: " + message);
+        process.exit(1);
+    }
+}
 
 export class SafeError extends Error {
     public message: string;
     public res: Response<any>;
     constructor(message: string, res: Response<any>) {
-        super(message);
+        super(message + " " + JSON.stringify(res));
         this.res = res;
     }
 }
@@ -29,8 +35,8 @@ export class UnexpectedResponseContent extends SafeError {
 }
 
 export class InvalidHandleError extends Error {
-    constructor(handle: number) {
-        super(`Handle=${handle} is invalid`);
+    constructor(handle: number, method: string) {
+        super(`Handle=${handle} is invalid. called from ${method}`);
     }
 }
 
@@ -39,7 +45,7 @@ export async function saneResponse<T>(response: Promise<Response<T>>): Promise<R
     return response.then( (res) => {
 
         if (res.statusCode === 401) { // 401 means that we were denied by the user
-            throw new SafeError('Auth denied by safe launcher.', res );
+            throw new SafeError("Auth denied by safe launcher.", res );
         } else if (res.statusCode === 404) {
             throw new NotFoundError(res);
 

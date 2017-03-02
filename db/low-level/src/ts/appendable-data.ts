@@ -1,7 +1,7 @@
 
 import { UnexpectedResponseContent, SafeError } from "./util";
 import { ApiClient, ApiClientConfig } from "./client";
-import { saneResponse } from "./util";
+import { saneResponse, InvalidHandleError } from "./util";
 import { DataIDHandle } from "./data-id";
 import * as WebRequest from "web-request";
 import { Handle } from "./raii";
@@ -59,7 +59,7 @@ export class AppendableDataClient extends ApiClient {
 
     readonly adEndpoint: string;
 
-    constructor(conf: ApiClientConfig){
+    constructor(conf: ApiClientConfig) {
         super(conf);
 
         this.adEndpoint = this.endpoint + "/appendable-data";
@@ -142,7 +142,7 @@ export class AppendableDataHandle extends Handle {
 
     readonly client: AppendableDataClient;
 
-    constructor(c: AppendableDataClient, handle: number){
+    constructor(c: AppendableDataClient, handle: number) {
         super(c, handle);
     }
 
@@ -152,6 +152,9 @@ export class AppendableDataHandle extends Handle {
      * @returns a data id referring to the appendable data
      */
     public async toDataIdHandle(): Promise<DataIDHandle> {
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "AppendableDataHandle:toDataIdHandle");
+
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.adEndpoint}/data-id/${this.handle}`, {
                 method: "GET",
@@ -174,6 +177,9 @@ export class AppendableDataHandle extends Handle {
      * @param httpMethod
      */
     private async saveImpl(httpMethod: "PUT" | "POST"): Promise<void> {
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "AppendableDataHandle:saveImpl");
+
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.adEndpoint}/${this.handle}`, {
                 method: httpMethod,
@@ -193,6 +199,9 @@ export class AppendableDataHandle extends Handle {
      *
      */
     public async save(): Promise<void> {
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "AppendableDataHandle:save");
+
         return this.saveImpl("PUT");
     }
 
@@ -201,6 +210,9 @@ export class AppendableDataHandle extends Handle {
      *
      */
     public async update(): Promise<void> {
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "AppendableDataHandle:update");
+
         return this.saveImpl("POST");
     }
 
@@ -216,6 +228,8 @@ export class AppendableDataHandle extends Handle {
      * @param dataId - the data id handle to be appended
      */
     public async append(dataId: DataIDHandle): Promise<void> {
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "AppendableDataHandle:append");
 
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.adEndpoint}/${this.handle}/${dataId.handle}`, {
@@ -239,6 +253,9 @@ export class AppendableDataHandle extends Handle {
      * @returns the `DataIDHandle` at the index
      */
     public async at(index: number): Promise<DataIDHandle> {
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "AppendableDataHandle:at");
+
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.adEndpoint}/${this.handle}/${index}`, {
                 method: "GET",
@@ -260,6 +277,9 @@ export class AppendableDataHandle extends Handle {
      * @returns the metadata associated with the appendable data
      */
     public async getMetadata(): Promise<AppedableDataMetadata> {
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "AppendableDataHandle:getMetadata");
+
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.adEndpoint}/metadata/${this.handle}`, {
                 method: "GET",
@@ -280,6 +300,9 @@ export class AppendableDataHandle extends Handle {
      *
      */
     protected async dropImpl(): Promise<void> {
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "AppendableDataHandle:dropImpl");
+
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.adEndpoint}/handle/${this.handle}`, {
                 method: "DELETE",
