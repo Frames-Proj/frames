@@ -9,18 +9,21 @@ const app = electron.app;
 import Config from "./global-config";
 const CONFIG : Config = Config.getInstance();
 
+import { SafeClient } from "safe-launcher-client";
+
 let win;
 
 function createWindow(): void {
-    win = new BrowserWindow({ width: 1200, height: 800 });
+
+    let display: any = electron.screen.getPrimaryDisplay().workAreaSize;
+    win = new BrowserWindow({ width: display.width, height: display.height });
 
     console.log(`${__dirname}`);
+    win.loadURL(`file://${__dirname}/../../index.html`);
 
-    // Load Index, I did this to accomadate reorganizing the js dir
-    win.loadURL('file://' + __dirname + '/../index.html');
-
-    // Open up dev tools
     win.webContents.openDevTools();
+
+    let safeClient : SafeClient = new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
 
     console.log(CONFIG.APP_HOME_DIR);
 

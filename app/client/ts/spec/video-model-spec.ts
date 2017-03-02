@@ -1,14 +1,14 @@
 
 import { TEST_DATA_DIR, failDone, makeid } from "./test-util";
 
-import { Video, getVideo } from "../src/ts/video-model";
+import { Video, getVideo } from "../video-model";
 
-import Config from "../src/ts/global-config";
+import Config from "../global-config";
 const CONFIG: Config = Config.getInstance();
 
 import { TYPE_TAG_VERSIONED, DataIDHandle,
          SerializedDataID, withDropP } from "safe-launcher-client";
-import { safeClient } from "../src/ts/util";
+import { safeClient } from "../util";
 
 describe("A frames Video model", () => {
 
