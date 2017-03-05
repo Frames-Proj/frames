@@ -8,7 +8,7 @@ with import <nixpkgs> {};
 
 let
     rustFuns = pkgs.callPackage ./support/rust-nightly.nix {
-        stableVersion = "1.15.1";
+        stableVersion = "1.14.0";
     };
     deps = [ (rustFuns.rust {}) nodejs-6_x ];
     packageName = "frames";
@@ -38,7 +38,7 @@ in {
 
         # TODO(ethan): do this the right way by adding a source downloader
         # to rust-nightly-nix
-        # export RUST_SRC_PATH="/home/ethan/Documents/rustlib/rustc-1.15.0/src"
+        # export RUST_SRC_PATH="/home/ethan/Documents/rustlib/rustc-1.14.0/src"
       '';
   };
 }

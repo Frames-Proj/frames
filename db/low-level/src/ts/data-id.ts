@@ -11,7 +11,7 @@
 
 import { ApiClient, ApiClientConfig } from "./client";
 import { saneResponse, SafeError, UnexpectedResponseContent
-         , InvalidHandleError } from "./util";
+         , InvalidHandleError, assert } from "./util";
 import * as WebRequest from "web-request";
 import { Response, Request } from "web-request";
 import * as stream from "stream";
@@ -76,7 +76,8 @@ export class DataIDHandle extends Handle {
     * @returns The serialised handleId
     */
     public async serialise(): Promise<SerializedDataID> {
-        if (!this.valid) throw new InvalidHandleError(this.handle);
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "DataIDHandle:serialise");
 
         const res: Response<Buffer> =
             await saneResponse(WebRequest.create<Buffer>(
@@ -96,7 +97,8 @@ export class DataIDHandle extends Handle {
      *
      */
     protected async dropImpl(): Promise<void> {
-        if (!this.valid) throw new InvalidHandleError(this.handle);
+        if (!this.valid)
+            throw new InvalidHandleError(this.handle, "DataIDHandle:dropImpl");
 
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.endpoint}/data-id/${this.handle}`, {
