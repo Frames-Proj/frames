@@ -19,20 +19,27 @@ import { ApiClientConfig } from "./src/ts/client";
 import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
          NfsDirectoryInfo, NfsFileData, SafeFile
        } from "./src/ts/nfs";
-import { DnsClient } from "./src/ts/dns"
+import { DnsClient } from "./src/ts/dns";
+
 import { AppendableDataClient, AppendableDataHandle,
-         AppedableDataMetadata } from "./src/ts/appendable-data";
+         AppedableDataMetadata, FromDataIDHandleResponse } from "./src/ts/appendable-data";
+
 import { StructuredDataClient, StructuredDataHandle, TYPE_TAG_UNVERSIONED,
-         TYPE_TAG_VERSIONED, StructuredDataMetadata } from "./src/ts/structured-data";
+         TYPE_TAG_VERSIONED, StructuredDataMetadata, StructuredDeserialiseResponse
+       } from "./src/ts/structured-data";
 import { DataIDClient, DataIDHandle, SerializedDataID } from "./src/ts/data-id";
-import { Drop, withDrop, withDropP, Handle } from "./src/ts/raii";
+import { Drop, withDrop, withDropP, Handle, setCollectLeakStats,
+         setCollectLeakStatsBlock, getLeakStatistics, LeakResults
+       } from "./src/ts/raii";
 
 export { NfsClient, NfsFileClient, NfsDirectoryClient,
          NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
          AuthResponse, Drop, withDrop, withDropP, SafeFile, DataIDHandle,
          AppendableDataHandle, AppedableDataMetadata, Handle, StructuredDataHandle,
          TYPE_TAG_VERSIONED, TYPE_TAG_UNVERSIONED, SerializedDataID,
-         StructuredDataMetadata
+         StructuredDataMetadata, setCollectLeakStats, setCollectLeakStatsBlock,
+         getLeakStatistics, LeakResults, FromDataIDHandleResponse, ApiClientConfig,
+         StructuredDeserialiseResponse
        };
 
 
@@ -58,7 +65,7 @@ export class SafeClient {
         const apiClientConfig: ApiClientConfig = {
             authRes: this.authRes,
             endpoint: this.endpoint
-        }
+        };
 
         this.nfs = new NfsClient(apiClientConfig);
         this.ad = new AppendableDataClient(apiClientConfig);

@@ -1,13 +1,25 @@
 
-import { makeid, client, TEST_DATA_DIR, exists, failDone } from "./test_util";
+import { makeid, client, TEST_DATA_DIR, exists, failDone,
+         checkForLeakErrors } from "./test_util";
 import { StructuredDataHandle, TYPE_TAG_VERSIONED,
-         DeserializeReponse, StructuredDataMetadata,
-         SerializedStructuredData } from "../src/ts/structured-data";
-import { DataIDHandle, SerializedDataID } from "../src/ts/data-id";
+         StructuredDataMetadata, DataIDHandle, SerializedDataID,
+         setCollectLeakStats, setCollectLeakStatsBlock,
+         StructuredDeserialiseResponse
+       } from "../index";
 
 describe("A structured data client", () => {
 
+    beforeAll(() => {
+        setCollectLeakStats();
+    });
+
+    afterAll(() => {
+        checkForLeakErrors();
+    });
+
     it("can create a structured data handle, and save the data, and drop the handle", async (done) => {
+        setCollectLeakStatsBlock("sd:test1: create save drop");
+
         const data = {"hello": "world"};
 
         const structuredData: StructuredDataHandle =
@@ -20,6 +32,8 @@ describe("A structured data client", () => {
     });
 
     it("can create a structured data with a buffer as the data", async (done) => {
+        setCollectLeakStatsBlock("sd:test2: create buffer");
+
         const data = {"hello": "world"};
 
         const structuredData: StructuredDataHandle =
@@ -32,6 +46,8 @@ describe("A structured data client", () => {
     });
 
     it("can create a structured data with an object as the data", async (done) => {
+        setCollectLeakStatsBlock("sd:test3: create object");
+
         const data = {"hello": "world"};
 
         const structuredData: StructuredDataHandle =
@@ -43,35 +59,9 @@ describe("A structured data client", () => {
         done();
     });
 
-    it("can convert a structured data handle to a data-id and back again, dropping both handles",
-       async (done) => {
-        const data = {"hello": "world"};
-
-        const structuredData: StructuredDataHandle =
-            await failDone(client.structured.create(
-                "Some Name" + makeid(), TYPE_TAG_VERSIONED, JSON.stringify(data)), done);
-        await failDone(structuredData.save(), done);
-
-        // serialise and deserialise the dataID
-        const dataID: DataIDHandle =
-               await failDone(structuredData.toDataIdHandle(), done);
-        const sDId: SerializedDataID = await failDone(dataID.serialise(), done);
-        const deDId: DataIDHandle = await failDone(client.dataID.deserialise(sDId), done);
-
-        const anotherStructuredData: DeserializeReponse =
-            await failDone(client.structured.fromDataIdHandle(dataID), done);
-        // const anotherStructuredData: FromDataIDHandleReponse =
-        //    await failDone(client.structured.fromDataIdHandle(deDId), done);
-
-        await failDone(dataID.drop(), done);
-        // await failDone(deDId.drop(), done);
-        await failDone(structuredData.drop(), done);
-        await failDone(anotherStructuredData.handleId.drop(), done);
-
-        done();
-    });
-
     it("can convert a structured data handle to a data-id and back again, dropping both handles", async (done) => {
+        setCollectLeakStatsBlock("sd:test4: data-id round trip");
+
         const data = {"hello": "world"};
 
         const structuredData: StructuredDataHandle =
@@ -96,6 +86,8 @@ describe("A structured data client", () => {
     });
 
     it("can get the metadata of a new structured data", async (done) => {
+        setCollectLeakStatsBlock("sd:test5: metadata");
+
         const data = {"hello": "world"};
 
         const structuredData: StructuredDataHandle =
@@ -111,6 +103,8 @@ describe("A structured data client", () => {
     });
 
     it("can create a structured data and read it back", async (done) => {
+        setCollectLeakStatsBlock("sd:test6: create read");
+
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, {"hello": "world"}), done);
@@ -126,6 +120,8 @@ describe("A structured data client", () => {
     });
 
     it("can create a structured data and read it back with a string as the input data", async (done) => {
+        setCollectLeakStatsBlock("sd:test7: create read string");
+
         const structuredData: StructuredDataHandle =
             await failDone(client.structured.create(
                 "Some Name" + makeid(), TYPE_TAG_VERSIONED, "hello world"), done);
