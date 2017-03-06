@@ -18,7 +18,8 @@
        "./src/ts/comment-model.ts",
 
        "./spec/video-model-spec.ts",
-       "./spec/comment-model-spec.ts"
+       "./spec/comment-model-spec.ts",
+       "./src/ts/signup.ts"
    ],
    "exclude": [
         "node_modules"
