@@ -10,14 +10,15 @@
         "baseUrl": "."
    },
    "files": [
-	  "./src/ts/app.ts",
-      "./src/ts/upload.ts",
-      "./src/ts/play.ts",
-	  "./src/ts/video.ts",
-      "./src/ts/video-model.ts",
-      "./src/ts/comment-model.ts",
-      "./spec/video-model-spec.ts",
+       "./src/ts/app.ts",
+       "./src/ts/upload.ts",
+       "./src/ts/play.ts",
+       "./src/ts/video.ts",
+       "./src/ts/video-model.ts",
        "./src/ts/comment-model.ts",
+
+       "./spec/video-model-spec.ts",
+       "./spec/comment-model-spec.ts",
        "./src/ts/signup.ts"
    ],
    "exclude": [

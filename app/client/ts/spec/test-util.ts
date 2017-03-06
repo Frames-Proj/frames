@@ -1,5 +1,5 @@
 
-export const TEST_DATA_DIR: string = `${__dirname}/../../../spec/test-data`;
+export const TEST_DATA_DIR: string = `${__dirname}/../../../client/ts/spec/test-data`;
 
 export function failDone<T>(promise: Promise<T>,
                             done: () => void): Promise<T> {

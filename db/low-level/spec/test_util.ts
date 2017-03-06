@@ -1,8 +1,7 @@
 
 const mkpath = require("mkpath");
-import { AuthorizationPayload, AuthResponse } from "../src/ts/auth";
-import { SafeClient } from "../index";
-import { ApiClientConfig } from "../src/ts/client";
+import { SafeClient, AuthorizationPayload, AuthResponse, LeakResults,
+         getLeakStatistics, ApiClientConfig } from "../index";
 import * as stream from "stream";
 
 const testAuthPayload: AuthorizationPayload = {
@@ -18,7 +17,7 @@ const testAuthPayload: AuthorizationPayload = {
     ]
 };
 
-const endpoint : string = "http://localhost:8100";
+const endpoint: string = "http://localhost:8100";
 
 // for generating a tmp file to use in caching
 export function makeid() {
@@ -59,4 +58,19 @@ export function failDone<T>(promise: Promise<T>,
         console.error(JSON.stringify(err));
         fail(err); done(); throw err;
     });
+}
+
+export function checkForLeakErrors(): void {
+    const leakStats: LeakResults = getLeakStatistics();
+
+    for (let [leakBlock, leaks] of leakStats) {
+        for (let [handleClass, classLeaks] of leaks) {
+            if (classLeaks.handlesLeaked > 0) {
+                console.error("In leak block: " + leakBlock);
+                console.error(`    ${classLeaks.handlesLeaked} handles leaked in handle`
+                                + ` class ${handleClass}`);
+                fail();
+            }
+        }
+    }
 }

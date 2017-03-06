@@ -1,13 +1,26 @@
 
-import { makeid, client, TEST_DATA_DIR, exists, failDone } from "./test_util";
+import { makeid, client, TEST_DATA_DIR, exists, failDone,
+         checkForLeakErrors } from "./test_util";
+
 import { AppendableDataHandle, FromDataIDHandleResponse,
-         AppedableDataMetadata } from "../src/ts/appendable-data";
-import { StructuredDataHandle, TYPE_TAG_VERSIONED } from "../src/ts/structured-data";
-import { DataIDHandle } from "../src/ts/data-id";
+         StructuredDataHandle, TYPE_TAG_VERSIONED,
+         DataIDHandle, AppedableDataMetadata, setCollectLeakStats,
+         setCollectLeakStatsBlock, getLeakStatistics, LeakResults
+       } from "../index";
 
 describe("An appendable data client", () => {
 
+    beforeAll(() => {
+        setCollectLeakStats();
+    });
+
+    afterAll(() => {
+        checkForLeakErrors();
+    });
+
     it("can create an appendable data, and drop it", async (done) => {
+        setCollectLeakStatsBlock("ad:test1: create and drop");
+
         const appdat: AppendableDataHandle =
             await failDone(client.ad.create("Some name" + makeid()), done);
         await failDone(appdat.save(), done);
@@ -16,6 +29,7 @@ describe("An appendable data client", () => {
     });
 
     it("can read the metadata of a fresh appendable data", async (done) => {
+        setCollectLeakStatsBlock("ad:test2: read metadata");
         const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some name" + makeid()), done);
         await failDone(appDataID.save(), done);
@@ -31,14 +45,20 @@ describe("An appendable data client", () => {
     });
 
     it("can convert an appendable-data-id to a data-id", async (done) => {
+        setCollectLeakStatsBlock("ad:test3: to data-id");
+
         const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some name" + makeid()), done);
         const dataID: DataIDHandle =
             await failDone(appDataID.toDataIdHandle(), done);
+        await failDone(appDataID.drop(), done);
+        await failDone(dataID.drop(), done);
         done();
     });
 
     it("can convert an appendable-data-id to a data-id and back again", async (done) => {
+        setCollectLeakStatsBlock("ad:test4: round trip data-id");
+
         const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some name" + makeid()), done);
 
@@ -49,10 +69,17 @@ describe("An appendable data client", () => {
 
         const res: FromDataIDHandleResponse =
             await failDone(client.ad.fromDataIdHandle(dataID), done);
+
+        await failDone(appDataID.drop(), done);
+        await failDone(dataID.drop(), done);
+        await failDone(res.handleId.drop(), done);
+
         done();
     });
 
     it("can append a structured data to an appendable data", async (done) => {
+        setCollectLeakStatsBlock("ad:test5: append structured data");
+
         const parentName: string = "Parent " + makeid();
         const childName: string = "Child " + makeid();
 

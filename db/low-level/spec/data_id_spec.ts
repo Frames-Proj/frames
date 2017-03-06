@@ -1,10 +1,23 @@
-import { makeid, client, TEST_DATA_DIR, exists, failDone } from "./test_util";
-import { AppendableDataHandle } from "../src/ts/appendable-data";
-import { DataIDHandle, SerializedDataID } from "../src/ts/data-id";
+
+import { AppendableDataHandle, setCollectLeakStats, DataIDHandle,
+         SerializedDataID, setCollectLeakStatsBlock } from "../index";
+
+import { makeid, client, TEST_DATA_DIR, exists, failDone,
+         checkForLeakErrors } from "./test_util";
 
 describe("A data id client", () => {
 
+    beforeAll(() => {
+        setCollectLeakStats();
+    });
+
+    afterAll(() => {
+        checkForLeakErrors();
+    });
+
     it("can serialise an appendable data dataID", async (done) => {
+        setCollectLeakStatsBlock("did:test1 serialize");
+
         const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some random name"), done);
         const dataID: DataIDHandle =
@@ -18,6 +31,8 @@ describe("A data id client", () => {
     });
 
     it("can serialise and deserialise an appendable data dataID", async (done) => {
+        setCollectLeakStatsBlock("did:test2 serialize deserialise");
+
         const appDataID: AppendableDataHandle =
             await failDone(client.ad.create("Some random name"), done);
         const dataID: DataIDHandle =
@@ -29,6 +44,8 @@ describe("A data id client", () => {
             await failDone(client.dataID.deserialise(serialised), done);
 
         await failDone(dataID.drop(), done);
+        await failDone(deserialised.drop(), done);
+        await failDone(appDataID.drop(), done);
 
         done();
     });
