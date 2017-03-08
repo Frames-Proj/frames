@@ -15,8 +15,12 @@ run:
 test:
 	./node_modules/.bin/jasmine JASMINE_CONFIG_PATH=./client/ts/spec/support/jasmine.json
 
+watch:
+	trap "kill %1" SIGINT
+	$(MAKE) watch_ts & $(MAKE) watch_react
+
 watch_ts:
-	./node_modules/.bin/tsc --project ./client/ts/tsconfig.json -w &
+	./node_modules/.bin/tsc --project ./client/ts/tsconfig.json -w
 
 watch_react:
 	npm run watch

@@ -1,5 +1,5 @@
 
-import { TEST_DATA_DIR, failDone, makeid } from "./test-util";
+import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors } from "./test-util";
 
 import VideoComment from "../comment-model";
 import Video from "../video-model";
@@ -8,7 +8,8 @@ import Config from "../global-config";
 const CONFIG: Config = Config.getInstance();
 
 import { TYPE_TAG_VERSIONED, DataIDHandle,
-         SerializedDataID, withDropP, StructuredDataHandle
+         SerializedDataID, withDropP, StructuredDataHandle,
+         setCollectLeakStats, setCollectLeakStatsBlock
        } from "safe-launcher-client";
 import { safeClient } from "../util";
 const sc = safeClient;
@@ -18,7 +19,19 @@ let started: boolean = false;
 
 describe("A video comment model", () => {
 
+    beforeAll(async (done) => {
+        await failDone(startupHook(), done);
+        setCollectLeakStats();
+        done();
+    });
+
+    afterAll(() => {
+        checkForLeakErrors();
+    });
+
     it("can be created as a root comment", async (done) => {
+        setCollectLeakStatsBlock("cms:test1 create root");
+
         const video: Video =
             await failDone(Video.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
@@ -33,6 +46,8 @@ describe("A video comment model", () => {
     });
 
     it("can be created as a comment reply", async (done) => {
+        setCollectLeakStatsBlock("cms:test2 create reply");
+
         const video: Video =
             await failDone(Video.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
@@ -51,6 +66,8 @@ describe("A video comment model", () => {
     });
 
     it("can be saved and recovered when it is a top level comment", async (done) => {
+        setCollectLeakStatsBlock("cms:test3 save recover top");
+
         const video: Video =
             await failDone(Video.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
@@ -59,7 +76,7 @@ describe("A video comment model", () => {
             await video.addComment("Some comment text.");
 
         const xorName: SerializedDataID =
-            await failDone(withDropP(await comment.xorName, n => n.serialise()), done);
+            await failDone(withDropP(await comment.xorName(), n => n.serialise()), done);
 
         const deserialComment: VideoComment =
             await failDone(withDropP(
@@ -79,6 +96,8 @@ describe("A video comment model", () => {
     });
 
     it("can be created as a comment reply", async (done) => {
+        setCollectLeakStatsBlock("cms:test4 reply");
+
         const video: Video =
             await failDone(Video.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
@@ -90,7 +109,7 @@ describe("A video comment model", () => {
             await rootComment.addComment("You lie!");
 
         const xorName: SerializedDataID =
-            await failDone(withDropP(await comment.xorName, n => n.serialise()), done);
+            await failDone(withDropP(await comment.xorName(), n => n.serialise()), done);
 
         const deserialComment: VideoComment =
             await failDone(withDropP(
