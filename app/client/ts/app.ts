@@ -21,7 +21,7 @@ async function createWindow(): Promise<void> {
     win = new BrowserWindow({ width: display.width, height: display.height });
 
     // make sure all the right directories and whatnot are there
-    await startupHook();
+    // await startupHook();
 
     console.log(`${__dirname}`);
     win.loadURL(`file://${__dirname}/../../index.html`);
@@ -31,6 +31,7 @@ async function createWindow(): Promise<void> {
     win.on('closed', () => {
         win = null;
     });
+
 }
 
 app.on('ready', createWindow);

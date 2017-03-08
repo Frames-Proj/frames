@@ -1,0 +1,53 @@
+li[role=presentation] a[role=tab] {
+    color: #555;
+    border-left: solid 5px #222;
+    border-radius: 0px;
+    padding-left: 20px;
+}
+
+li[role=presentation].active a[role=tab] {
+    background: none;
+    border-left: solid 5px #F53240;
+    color: white;
+}
+
+li[role=presentation] a[role=tab]:hover {
+    background: none;
+    color: white;
+}
+
+li[role=presentation] a[role=tab]:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.jumbotron {
+    margin-bottom: 0px;
+}
+
+.navbar.navbar-default {
+    background-color: white;
+    border: 0px;
+    border-radius: 0px;
+    border-bottom: solid 1px #EAEAEA;
+}
+
+.navbar.navbar-default .container {
+    padding: 0px;
+}
+
+.nav.navbar-nav li[role=presentation] a {
+    padding: 20px 0px 10px 0px;
+    margin-right: 40px;
+    background: none;
+    border-bottom: solid 2px #FFF;
+}
+
+.nav.navbar-nav li[role=presentation] a:hover {
+    background: none;
+}
+
+.nav.navbar-nav li.active[role=presentation] a {
+    background: none;
+    border-bottom: solid 2px #F53240;
+}
