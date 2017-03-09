@@ -51,11 +51,13 @@
 }
 
 .main-featured {
-    width: 50%;
-    float: left;
+
 }
 
 .side-featured {
-    width: 40%;
-    float: right;
+}
+
+.super-duper-cool-hr {
+    border-top: 1px solid #8c8b8b;
+    border-bottom: 1px solid #fff;
 }

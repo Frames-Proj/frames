@@ -4,8 +4,6 @@ const electron = require('electron');
 const BrowserWindow = electron.BrowserWindow;
 const app = electron.app;
 
-// const {app, BrowserWindow} = require('electron');
-
 import Config from "./global-config";
 const CONFIG: Config = Config.getInstance();
 
@@ -24,8 +22,11 @@ async function createWindow(): Promise<void> {
     await startupHook();
 
     console.log(`${__dirname}`);
-    win.loadURL(`file://${__dirname}/../../index.html`);
 
+    // Load Index, I did this to accomadate reorganizing the js dir
+    win.loadURL('file://{__dirname}/../../../index.html');
+
+    // Open up dev tools
     win.webContents.openDevTools();
 
     win.on('closed', () => {
