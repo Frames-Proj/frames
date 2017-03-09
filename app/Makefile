@@ -15,8 +15,14 @@ run:
 test:
 	./node_modules/.bin/jasmine JASMINE_CONFIG_PATH=./client/ts/spec/support/jasmine.json
 
+watch:
+	# When the next command receives the SIGINT signal, execute the kill command.
+	# This means that a single ^C will kill both watch processes
+	trap "kill %1" SIGINT
+	$(MAKE) watch_ts & $(MAKE) watch_react
+
 watch_ts:
-	./node_modules/.bin/tsc --project ./client/ts/tsconfig.json -w &
+	./node_modules/.bin/tsc --project ./client/ts/tsconfig.json -w
 
 watch_react:
 	npm run watch
