@@ -1,6 +1,7 @@
 client/**/*.js
 !client/js/bootstrap.js
 !client/js/bootstrap.min.js
+!client/js/jquery-3.1.1.min.js
 client/**/*.js.map
 node_modules
 .tscache
