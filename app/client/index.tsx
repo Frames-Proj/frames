@@ -8,6 +8,7 @@ import { Discover } from './components/Discover';
 import { Upload } from "./components/Upload";
 import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
+import { SignUp } from './components/SignUp';
 
 const sidebarRoutes = [
     {
