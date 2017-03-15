@@ -30,6 +30,7 @@ li[role=presentation] a[role=tab]:focus {
     border: 0px;
     border-radius: 0px;
     border-bottom: solid 1px #EAEAEA;
+    margin-bottom: 0px;
 }
 
 .navbar.navbar-default .container {
@@ -50,4 +51,8 @@ li[role=presentation] a[role=tab]:focus {
 .nav.navbar-nav li.active[role=presentation] a {
     background: none;
     border-bottom: solid 2px #F53240;
+}
+
+.navbar.navbar-default .container {
+    margin: 0px 52px;
 }

@@ -20,7 +20,6 @@ export class VideosNav extends React.Component<VideoNavProps, VideoNavState> {
     }
 
     onTabChange(event: any) {
-        console.log("here");
         this.setState({ active: event });
         this.props.onSelect(event);
     }
@@ -28,8 +27,6 @@ export class VideosNav extends React.Component<VideoNavProps, VideoNavState> {
     render() {
 
         var navItems = this.props.categories.map(function(category) {
-            console.log(this.state.active);
-            console.log(category);
             return (
                 <NavItem className={this.state.active === category ? 'active' : ''}
                     eventKey={category}

@@ -57,7 +57,10 @@ class App extends React.Component<{}, {}> {
                                 height: '100%',
                                 width: '100%'
                             }}>
-                                <Tab.Pane eventKey="discover">
+                                <Tab.Pane eventKey="discover" style={{
+                                    height: '100%',
+                                    width: '100%'
+                                }}>
                                     <Discover/>
                                 </Tab.Pane>
                                 <Tab.Pane eventKey="me">
