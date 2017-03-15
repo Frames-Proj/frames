@@ -199,7 +199,7 @@ export default class Video implements Drop {
             true,
             await this.videoData.toDataIdHandle());
 
-        await this.commentReplies.append(await comment.xorName);
+        await withDropP(await comment.xorName(), (n) => this.commentReplies.append(n));
         return comment;
     }
 

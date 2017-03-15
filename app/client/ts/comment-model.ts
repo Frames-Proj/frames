@@ -67,7 +67,7 @@ export default class VideoComment implements Drop {
         this.commentData = cd;
         this.metadata = cd.getMetadata();
     }
-    public get xorName(): Promise<DataIDHandle> {
+    public xorName(): Promise<DataIDHandle> {
         return this.commentData.toDataIdHandle();
     }
 
@@ -116,7 +116,7 @@ export default class VideoComment implements Drop {
             false,
             await this.commentData.toDataIdHandle());
 
-        await this.replies.append(await comment.xorName);
+        await withDropP(await comment.xorName(), n => this.replies.append(n));
         return comment;
     }
 
