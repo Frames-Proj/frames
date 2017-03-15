@@ -4,6 +4,7 @@ import { Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
 
 import { Home } from './components/Home';
 import { Discover } from './components/Discover';
+import { SignUp } from './components/SignUp';
 
 class App extends React.Component<{}, {}> {
 
@@ -45,6 +46,9 @@ class App extends React.Component<{}, {}> {
                                 <NavItem eventKey="me">
                                     Me
                                 </NavItem>
+                                <NavItem eventKey="signup">
+                                    Sign In
+                                </NavItem>
                             </Nav>
                         </Col>
                         <Col style={{
@@ -68,6 +72,9 @@ class App extends React.Component<{}, {}> {
                                 </Tab.Pane>
                                 <Tab.Pane eventKey="upload">
                                     Tab 2 content
+                                </Tab.Pane>
+                                <Tab.Pane eventKey="signup">
+                                    <SignUp/>
                                 </Tab.Pane>
                             </Tab.Content>
                         </Col>
