@@ -22,7 +22,8 @@
     "jasmine": "^2.5.3",
     "jasmine-check": "^0.1.5",
     "ts-node": "^2.1.0",
-    "typescript": "^2.2.1"
+    "typescript": "^2.2.1",
+    "webpack-target-electron-renderer": "^0.4.0"
   },
   "dependencies": {
     "@types/electron": "^1.4.33",
@@ -45,7 +46,6 @@
     "source-map-loader": "^0.1.6",
     "web-request": "^1.0.7",
     "webpack": "^1.14.0",
-    "uuid": "^3.0.1",
-    "web-request": "^1.0.7"
+    "uuid": "^3.0.1"
   }
 }
