@@ -23,7 +23,6 @@ async function createWindow(): Promise<void> {
 
     console.log(`${__dirname}`);
 
-    // Load Index, I did this to accomadate reorganizing the js dir
     win.loadURL(`file://${__dirname}/../../index.html`);
 
     // Open up dev tools
