@@ -37,7 +37,10 @@ export class VideosNav extends React.Component<VideoNavProps, VideoNavState> {
         }.bind(this));
 
         return (
-            <Navbar>
+            <Navbar style={{
+                width: '100%',
+                position: 'relative'
+            }}>
                 <Nav onSelect={this.onTabChange}>
                     {navItems}
                 </Nav>

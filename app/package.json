@@ -40,11 +40,12 @@
     "react": "^15.4.2",
     "react-bootstrap": "^0.30.7",
     "react-dom": "^15.4.2",
+    "react-router-dom": "^4.0.0",
     "read-chunk": "^2.0.0",
     "safe-launcher-client": "../db/low-level",
     "source-map-loader": "^0.1.6",
+    "uuid": "^3.0.1",
     "web-request": "^1.0.7",
-    "webpack": "^1.14.0",
-    "uuid": "^3.0.1"
+    "webpack": "^1.14.0"
   }
 }

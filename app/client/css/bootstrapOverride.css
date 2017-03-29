@@ -1,22 +1,28 @@
-li[role=presentation] a[role=tab] {
+.nav-route {
+    padding-left: 20px;
+    margin-bottom: 10px;
+}
+
+.nav-route a {
     color: #555;
     border-left: solid 5px #222;
     border-radius: 0px;
-    padding-left: 20px;
+    font-size: 14px;
+    text-decoration: none;
 }
 
-li[role=presentation].active a[role=tab] {
+.nav-route a.active {
     background: none;
     border-left: solid 5px #F53240;
     color: white;
 }
 
-li[role=presentation] a[role=tab]:hover {
+.nav-route a:hover {
     background: none;
     color: white;
 }
 
-li[role=presentation] a[role=tab]:focus {
+.nav-route a:focus {
     outline: none;
     box-shadow: none;
 }
@@ -54,5 +60,5 @@ li[role=presentation] a[role=tab]:focus {
 }
 
 .navbar.navbar-default .container {
-    margin: 0px 52px;
+    margin-left: 52px;
 }

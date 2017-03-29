@@ -11,9 +11,6 @@ import * as readChunk from "read-chunk";
 import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
 
-/* const electron = require("electron");
- * const remote = electron.remote;*/
-
 type ValidationState = "error" | "success" | "warning";
 
 interface UploadState {
@@ -235,7 +232,8 @@ export class Upload extends React.Component<{}, UploadState> {
                     width: '100%',
                     padding: '50px'
                 }}>
-                    <h1>Upload a Video</h1>
+                    <h1>Upload</h1>
+                    <p>Share your videos with the SafeNet.</p>
                 </Jumbotron>
 
                 <Modal show={this.state.errorModal} onHide={() => this.setState({ errorModal: false })}>

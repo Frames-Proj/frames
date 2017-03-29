@@ -1,4 +1,5 @@
 var CopyWebpackPlugin = require("copy-webpack-plugin");
+var webpack = require('webpack');
 var distDir = __dirname + "/dist";
 
 module.exports = {
@@ -17,7 +18,10 @@ module.exports = {
         new CopyWebpackPlugin([
                 { from: "node_modules/react/dist/react.min.js", to: distDir },
                 { from: "node_modules/react-dom/dist/react-dom.min.js", to: distDir },
-            ])
+            ]),
+        new webpack.DefinePlugin({
+                'process.env.NODE_ENV': JSON.stringify('development')
+            })
     ],
     module: {
         loaders: [
