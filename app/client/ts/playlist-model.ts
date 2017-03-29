@@ -128,7 +128,7 @@ interface PlaylistInfoBase {
     owner: string;
 }
 function isPlaylistInfoBase(x: any): x is PlaylistInfoBase {
-    return  ( typeof x.title === "string"
+    return  ( x != null && typeof x.title === "string"
               && typeof x.description === "string"
               && typeof x.owner === "string");
 }
@@ -136,7 +136,7 @@ interface PlaylistInfoStringy extends PlaylistInfoBase {
     videos: string; // base64 encoded
 }
 function isPlaylistInfoStringy(x: any): x is PlaylistInfoStringy {
-    return (typeof x.videos === "string") && isPlaylistInfoBase(x);
+    return (x != null && typeof x.videos === "string") && isPlaylistInfoBase(x);
 }
 function toPI(vi: PlaylistInfoStringy): PlaylistInfo {
     return {
@@ -147,7 +147,7 @@ function toPI(vi: PlaylistInfoStringy): PlaylistInfo {
     };
 }
 interface PlaylistInfo extends PlaylistInfoBase {
-    videos: SerializedDataID;
+    videos: SerializedDataID; // a pointer to the videos appendable data
 }
 function isVideoInfo(x: any): x is PlaylistInfo {
     return x.videos instanceof Buffer && isPlaylistInfoBase(x);
