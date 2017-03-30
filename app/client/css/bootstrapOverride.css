@@ -1,6 +1,6 @@
 .nav-route {
-    padding-left: 20px;
-    margin-bottom: 10px;
+    padding-left: 0px;
+    line-height: 32px;
 }
 
 .nav-route a {
@@ -9,6 +9,7 @@
     border-radius: 0px;
     font-size: 14px;
     text-decoration: none;
+    padding: 8px 0px 8px 20px;
 }
 
 .nav-route a.active {

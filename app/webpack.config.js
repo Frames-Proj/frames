@@ -40,5 +40,5 @@ module.exports = {
         "react": "React",
         "react-dom": "ReactDOM"
     },
-    target: "atom"
+    target: "electron"
 };

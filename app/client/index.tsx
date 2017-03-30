@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, Link, browserHistory, Switch, Redirect } from 'react-router-dom'
+import { BrowserRouter as Router, Route, NavLink, browserHistory, Switch, Redirect } from 'react-router-dom'
 import { Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
 
 import { Home } from './components/Home';
@@ -67,7 +67,9 @@ class App extends React.Component<{}, {}> {
                                 if (route.show)
                                     return (
                                         <ul className="nav-route">
-                                            <Link to={route.path} activeClassName='active'>{route.title}</Link>
+                                            <NavLink to={route.path} activeClassName='active' exact={route.exact}>
+                                                {route.title}
+                                            </NavLink>
                                         </ul>
                                     );
                                 else
