@@ -16,8 +16,10 @@
         "video.ts",
         "video-model.ts",
         "comment-model.ts",
+        "playlist-model.ts",
 
         "spec/video-model-spec.ts",
-        "spec/comment-model-spec.ts"
+        "spec/comment-model-spec.ts",
+        "spec/playlist-model-spec.ts"
    ]
 }
