@@ -1,5 +1,3 @@
-/// <reference path="../../../db/low-level/typings/index.d.ts"/>
-
 // theres already some code for this in app but I guess low-level has the good shyt
 import { AuthorizationPayload, AuthResponse } from '../../../db/low-level/src/ts/auth';
 import { SafeClient } from '../../../db/low-level/index';

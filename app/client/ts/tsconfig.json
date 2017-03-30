@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "../../dist/js",
+        "outDir": "./dist/",
         "inlineSources": true,
         "sourceMap": true,
         "module": "commonjs",
@@ -8,18 +8,8 @@
         "jsx": "react",
         "removeComments": true,
         "moduleResolution": "node"
-   },
-   "files": [
-        "app.ts",
-        "upload.ts",
-        "play.ts",
-        "video.ts",
-        "video-model.ts",
-        "comment-model.ts",
-        "playlist-model.ts",
-
-        "spec/video-model-spec.ts",
-        "spec/comment-model-spec.ts",
-        "spec/playlist-model-spec.ts"
-   ]
+    },
+    "include": [
+        "./**/*"
+    ]
 }
