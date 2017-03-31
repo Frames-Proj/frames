@@ -86,7 +86,7 @@ class App extends React.Component<{}, {}> {
                         height: '100%'
                     }}>
                         <Grid>
-                          <Row style={{ display: "inline-block" }}>
+                          <Row>
                             <FramesURLBar />
                           </Row>
                           <Row>
