@@ -26,6 +26,9 @@ export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBa
     }
 
     private getValid(): ValidationState {
+        // don't show validation feedback on an empty bar
+        if (this.state.url === "") return undefined;
+
         return URL_RE.test(this.state.url) ? "success" : "error";
     }
 
