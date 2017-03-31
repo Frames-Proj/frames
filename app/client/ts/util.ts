@@ -6,6 +6,8 @@ const CONFIG: Config = Config.getInstance();
 
 import { SafeClient } from "safe-launcher-client";
 
+export type ValidationState = "error" | "success" | "warning";
+
 export const safeClient: SafeClient =
     new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
 

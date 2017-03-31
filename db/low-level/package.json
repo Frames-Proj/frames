@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A low level client for the safe_launcher's REST API.",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "typings": "lib/index",
   "scripts": {},
   "author": "",
