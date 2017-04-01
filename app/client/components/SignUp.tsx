@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Jumbotron } from 'react-bootstrap';
+import { LongNameForm } from './LongName';
 
 interface SignUpForm {
     longName: string
@@ -16,7 +17,7 @@ export class SignUp extends React.Component<{}, SignUpForm> {
                     <h1>Sign Up</h1>
                     <p>Choose a longName to represent you</p>
                 </Jumbotron>
-
+                <LongNameForm longName="hello"/>
             </div>
         )
     }
