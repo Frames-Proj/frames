@@ -21,7 +21,10 @@ module.exports = {
             ]),
         new webpack.DefinePlugin({
                 'process.env.NODE_ENV': JSON.stringify('development')
-            })
+            }),
+        // the ajv library really does not play well with webpack.
+        // This forces it to play a little nicer.
+        new webpack.IgnorePlugin(/\.(jst|md|def|d\.ts)/, /ajv/)
     ],
     module: {
         loaders: [
@@ -33,6 +36,10 @@ module.exports = {
             { 
                 test: /\.tsx?$/, 
                 loader: "awesome-typescript-loader?configFileName=./client/ts/tsconfig.json"
+            },
+            { 
+                test: /\.json?$/, 
+                loader: "json-loader"
             }
         ]
     },

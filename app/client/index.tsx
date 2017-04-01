@@ -1,8 +1,10 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, NavLink, browserHistory, Switch, Redirect } from 'react-router-dom'
-import { Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
 
+import { BrowserRouter as Router, Route, NavLink, browserHistory, Switch, Redirect } from 'react-router-dom'
+import { Tab, Row, Col, Nav, NavItem, Grid } from 'react-bootstrap';
+
+import { FramesURLBar } from "./components/FramesURLBar";
 import { Home } from './components/Home';
 import { Discover } from './components/Discover';
 import { Upload } from "./components/Upload";
@@ -83,7 +85,14 @@ class App extends React.Component<{}, {}> {
                         margin: '0 auto',
                         height: '100%'
                     }}>
-                        {this.props.children}
+                        <Grid>
+                          <Row>
+                            <FramesURLBar />
+                          </Row>
+                          <Row>
+                            {this.props.children}
+                          </Row>
+                        </Grid>
                     </Col>
                 </Row>
             </div>
