@@ -1,6 +1,8 @@
 import * as React from "react";
+import { PropTypes } from "react";
 import { FormGroup, FormControl } from "react-bootstrap"
 import { DataIDHandle, SerializedDataID, SafeClient } from "safe-launcher-client";
+import { browserHistory } from "react-router";
 
 import { safeClient, ValidationState } from "../ts/util";
 const sc = safeClient;
@@ -21,6 +23,16 @@ export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBa
         this.state = { url: "" };
     }
 
+    static contextTypes = {
+        router: PropTypes.shape({
+            history: PropTypes.shape({
+                push: PropTypes.func.isRequired,
+            }).isRequired,
+            staticContext: PropTypes.object
+        }).isRequired
+    }
+
+
     private handleChange(e) {
         this.setState({ url: e.target.value });
     }
@@ -40,9 +52,23 @@ export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBa
             if (match.length !== 2) {
                 return Promise.reject(new Error("Failed to parse frames URL. Impossible."));
             }
-            const xorName: SerializedDataID = Buffer.from(match[1], "base64");
+            // const xorName: SerializedDataID = Buffer.from(match[1], "base64");
 
-            console.log(`TODO: redirect to watch page at ${match[1]}`);
+            console.log(window.location.href);
+            console.log(browserHistory);
+            console.log(this.context);
+            console.log(this.props);
+
+            /* const { history } = this.context.router
+             * const { push, to } = this.props
+
+             * if (push) {
+             * history.push(to)
+             * } else {
+             * history.replace(to)
+             * }*/
+            this.context.router.history.push(`/watch/${match[1]}`);
+            // console.log(`TODO: redirect to watch page at ${match[1]}`);
         }
     }
 

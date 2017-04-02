@@ -1,13 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { BrowserRouter as Router, Route, NavLink, browserHistory, Switch, Redirect } from 'react-router-dom'
+import { BrowserRouter as Router, Route, NavLink, Switch, Redirect } from 'react-router-dom'
 import { Tab, Row, Col, Nav, NavItem, Grid } from 'react-bootstrap';
 
 import { FramesURLBar } from "./components/FramesURLBar";
 import { Home } from './components/Home';
 import { Discover } from './components/Discover';
 import { Upload } from "./components/Upload";
+import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
 
 const routes = [
@@ -17,6 +18,13 @@ const routes = [
         exact: true,
         component: Discover,
         show: true
+    },
+    {
+        title: 'Watch',
+        path: '/watch/:xorName',
+        exact: true,
+        component: Watch,
+        show: false
     },
     {
         title: 'Upload',
