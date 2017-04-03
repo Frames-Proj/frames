@@ -6,6 +6,7 @@ import { App } from './components/App';
 import { Discover } from './components/Discover';
 import { Upload } from './components/Upload';
 import { Hist } from './components/Hist';
+import { Hello } from './components/Hello';
 
 const sidebarRoutes = [
     {
@@ -27,7 +28,14 @@ const sidebarRoutes = [
         path: '/history',
         exact: false,
         component: Hist,
-        show: true
+        show: true,
+    },
+    {
+        title: 'Watch',
+        path: '/watch',
+        exact: false,
+        component: Hello,
+        show: false,
     }
 ]
 
