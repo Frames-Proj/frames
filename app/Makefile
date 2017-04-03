@@ -1,7 +1,6 @@
 
 build:
 	npm run webpack
-	./node_modules/.bin/tsc --project ./client/ts/tsconfig.json
 
 
 setup:
