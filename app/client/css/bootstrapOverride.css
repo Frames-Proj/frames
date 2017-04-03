@@ -9,7 +9,7 @@
     border-radius: 0px;
     font-size: 14px;
     text-decoration: none;
-    padding: 8px 0px 8px 20px;
+    padding: 8px 80px 8px 20px;
 }
 
 .nav-route a.active {
@@ -62,4 +62,19 @@
 
 .navbar.navbar-default .container {
     margin-left: 52px;
+}
+
+#url-navbar:focus {
+    outline: none;
+}
+
+#navbtn-forward,
+#navbtn-back {
+    color: gray;
+    cursor: pointer;
+}
+
+#navbtn-forward:hover,
+#navbtn-back:hover {
+    color: white;
 }
