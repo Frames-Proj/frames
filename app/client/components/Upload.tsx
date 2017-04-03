@@ -7,11 +7,10 @@ import { Jumbotron, FormGroup, ControlLabel, FormControl,
 import { remote } from "electron";
 import * as fileType from "file-type";
 import * as readChunk from "read-chunk";
+import { ValidationState } from "../ts/util";
 
 import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
-
-type ValidationState = "error" | "success" | "warning";
 
 interface UploadState {
     videoTitle: string;
@@ -180,8 +179,7 @@ export class Upload extends React.Component<{}, UploadState> {
         return (
             <form
                 onSubmit={this.handleSubmit.bind(this)}
-                ref={f => this.form = f}
-            >
+                ref={f => this.form = f} >
                 <FormGroup controlId="uploadTitle"
                     validationState={this.getTitleValid()}>
                     <FormControl type="text" value={this.state.videoTitle}

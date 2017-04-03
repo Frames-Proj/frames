@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, NavLink, Switch, Redirect } from 'react-router-dom'
 
 import { App } from './components/App';
+import { Home } from './components/Home';
 import { Discover } from './components/Discover';
 import { Upload } from './components/Upload';
 import { Hist } from './components/Hist';
