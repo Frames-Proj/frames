@@ -52,23 +52,8 @@ export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBa
             if (match.length !== 2) {
                 return Promise.reject(new Error("Failed to parse frames URL. Impossible."));
             }
-            // const xorName: SerializedDataID = Buffer.from(match[1], "base64");
 
-            console.log(window.location.href);
-            console.log(browserHistory);
-            console.log(this.context);
-            console.log(this.props);
-
-            /* const { history } = this.context.router
-             * const { push, to } = this.props
-
-             * if (push) {
-             * history.push(to)
-             * } else {
-             * history.replace(to)
-             * }*/
             this.context.router.history.push(`/watch/${match[1]}`);
-            // console.log(`TODO: redirect to watch page at ${match[1]}`);
         }
     }
 

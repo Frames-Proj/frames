@@ -45,7 +45,7 @@ describe("A frames Video model", () => {
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const dataId: SerializedDataID =
-            await failDone(withDropP(await video.xorName, (dId: DataIDHandle) => {
+            await failDone(withDropP(await video.xorName(), (dId: DataIDHandle) => {
                 return dId.serialise();
             }), done);
 

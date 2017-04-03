@@ -4,10 +4,13 @@ import { Jumbotron, FormGroup, ControlLabel, FormControl,
          Modal
        } from "react-bootstrap";
 
+import { PropTypes } from "react";
 import { remote } from "electron";
 import * as fileType from "file-type";
 import * as readChunk from "read-chunk";
-import { ValidationState } from "../ts/util";
+import Video from "../ts/video-model";
+import { ValidationState, safeClient as sc } from "../ts/util";
+import { withDropP, SerializedDataID } from "safe-launcher-client";
 
 import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
@@ -23,6 +26,16 @@ interface UploadState {
 }
 
 export class Upload extends React.Component<{}, UploadState> {
+
+    // allow us to redirect
+    static contextTypes = {
+        router: PropTypes.shape({
+            history: PropTypes.shape({
+                push: PropTypes.func.isRequired,
+            }).isRequired,
+            staticContext: PropTypes.object
+        }).isRequired
+    }
 
     private form;
 
@@ -98,11 +111,17 @@ export class Upload extends React.Component<{}, UploadState> {
         }
     }
 
-    private handleSubmit() {
+    private async handleSubmit() {
         // TODO: construct the Video object, and write it to the network.
         // This should probably also place the video in the user registry.
-        console.log("TODO actually upload the video!");
-        this.form.submit();
+        const video: Video =
+            await Video.new(this.state.videoTitle, this.state.videoDescription, this.state.videoFile);
+        withDropP(await video.xorName(), async (n) => {
+            const xorName: SerializedDataID = await n.serialise();
+            // TODO: stuff the link in the user profile
+            console.log(`uploaded video to: frames://${xorName.toString("base64")}`);
+        });
+        this.context.router.history.push("/discover");
     }
 
     private handleTitle(e) {
@@ -228,7 +247,8 @@ export class Upload extends React.Component<{}, UploadState> {
             }}>
                 <Jumbotron style={{
                     width: '100%',
-                    padding: '50px'
+                    padding: '10px',
+                    height: '150px'
                 }}>
                     <h1>Upload</h1>
                     <p>Share your videos with the SafeNet.</p>
