@@ -101,7 +101,7 @@ export class App extends React.Component<AppProps, {}> {
                                     marginRight: '20px'
                                 }}></i>
                                 <i id="navbtn-forward" 
-                                   onClick={this.context.router.history.goBack} 
+                                   onClick={this.context.router.history.goForward} 
                                    className="fa fa-angle-right" 
                                    aria-hidden="true"></i>
                             </div>
