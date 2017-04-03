@@ -21,6 +21,7 @@
     "electron": "^1.4.4",
     "jasmine": "^2.5.3",
     "jasmine-check": "^0.1.5",
+    "json-loader": "^0.5.4",
     "ts-node": "^2.1.0",
     "typescript": "^2.2.1"
   },
