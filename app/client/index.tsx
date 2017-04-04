@@ -9,6 +9,37 @@ import { Upload } from "./components/Upload";
 import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
 
+const sidebarRoutes = [
+    {
+        title: 'Discover',
+        path: '/',
+        exact: true,
+        component: Discover,
+        show: true
+    },
+    {
+        title: 'Watch',
+        path: '/watch/:xorName',
+        exact: true,
+        component: Watch,
+        show: false
+    },
+    {
+        title: 'Upload',
+        path: '/upload',
+        exact: false,
+        component: Upload,
+        show: true
+    },
+    {
+        title: 'History',
+        path: '/history',
+        exact: false,
+        component: Hist,
+        show: true,
+    }
+]
+
 class Root extends React.Component<{}, {}> {
     constructor() {
         super();
