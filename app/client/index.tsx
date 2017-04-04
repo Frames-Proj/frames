@@ -1,17 +1,15 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-
 import { BrowserRouter as Router, Route, NavLink, Switch, Redirect } from 'react-router-dom'
-import { Tab, Row, Col, Nav, NavItem, Grid } from 'react-bootstrap';
 
-import { FramesURLBar } from "./components/FramesURLBar";
+import { App } from './components/App';
 import { Home } from './components/Home';
 import { Discover } from './components/Discover';
 import { Upload } from "./components/Upload";
 import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
 
-const routes = [
+const sidebarRoutes = [
     {
         title: 'Discover',
         path: '/',
@@ -38,76 +36,9 @@ const routes = [
         path: '/history',
         exact: false,
         component: Hist,
-        show: true
+        show: true,
     }
 ]
-
-class App extends React.Component<{}, {}> {
-
-    render() {
-        console.log(location.pathname);
-        return (
-            <div style={{
-                width: '100%',
-                height: '100%',
-                overflow: 'hidden'
-            }}>
-                <Row style={{
-                    display: 'flex',
-                    margin: '0px',
-                    height: '100%'
-                }}>
-                    <Col style={{
-                        height: '100%',
-                        background: '#222',
-                        paddingTop: '40px'
-                    }}>
-                        <Nav bsStyle="pills" stacked>
-                            <div style={{
-                                color: '#F53240',
-                                fontSize: '20px',
-                                cursor: 'default',
-                                marginBottom: '20px',
-                                padding: '0px 50px 0px 25px'
-                            }}>
-                                <i className="fa fa-film" aria-hidden="true" style={{ marginRight: '10px'}}></i> 
-                                <span style={{ letterSpacing: '1px' }}>Frames</span>
-                            </div>
-                            {routes.map((route, index) => {
-                                if (route.show)
-                                    return (
-                                        <ul className="nav-route">
-                                            <NavLink to={route.path} activeClassName='active' exact={route.exact}>
-                                                {route.title}
-                                            </NavLink>
-                                        </ul>
-                                    );
-                                else
-                                    return;
-                            })}
-                        </Nav>
-                    </Col>
-                    <Col style={{
-                        display: 'flex',
-                        flex: '1',
-                        margin: '0 auto',
-                        height: '100%'
-                    }}>
-                        <Grid style={{ display: "flex", flexDirection: "column" }}>
-                          <Row>
-                            <FramesURLBar />
-                          </Row>
-                          <Row style={{ flex: "1" }}>
-                            {this.props.children}
-                          </Row>
-                        </Grid>
-                    </Col>
-                </Row>
-            </div>
-        )
-    }
-
-};
 
 class Root extends React.Component<{}, {}> {
     constructor() {
@@ -121,9 +52,9 @@ class Root extends React.Component<{}, {}> {
                 height: '100%'
             }}>
                 <Router>
-                    <App>
+                    <App routes={sidebarRoutes}>
                         <Switch>
-                            {routes.map((route, index) => (
+                            {sidebarRoutes.map((route, index) => (
                                 <Route key={index} path={route.path} exact={route.exact} component={route.component} />
                             ))}
                             <Redirect from="*" to="/"/>
