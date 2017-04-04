@@ -93,11 +93,11 @@ class App extends React.Component<{}, {}> {
                         margin: '0 auto',
                         height: '100%'
                     }}>
-                        <Grid>
+                        <Grid style={{ display: "flex", flexDirection: "column" }}>
                           <Row>
                             <FramesURLBar />
                           </Row>
-                          <Row>
+                          <Row style={{ flex: "1" }}>
                             {this.props.children}
                           </Row>
                         </Grid>

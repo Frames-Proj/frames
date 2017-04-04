@@ -15,5 +15,6 @@ export function ChasingArrowsLoadingImage() {
         49.53-12h16.97A46.04 46.04 0 0 1 31.1 96.16L18.74 108.5v-36z"/>\
         <animateTransform attributeName="transform" type="rotate" from="0 64 64"\
         to="360 64 64" dur="1200ms" repeatCount="indefinite"></animateTransform></g></svg>';
-    return <span dangerouslySetInnerHTML={{__html: chasingArrows}}/>
+    return <span style={{maxWidth: "50%"}}
+               dangerouslySetInnerHTML={{__html: chasingArrows}}/>
 }

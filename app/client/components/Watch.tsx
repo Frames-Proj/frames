@@ -82,8 +82,11 @@ export class Watch extends React.Component<WatchProps, WatchState> {
             });
         return (
             <div style={{
-                height: '100%',
-                width: '100%'
+                height: "100%",
+                width: "100%",
+                alignItems: "center",
+                display: "flex",
+                justifyContent: "center"
             }}>
                 {body}
             </div>
