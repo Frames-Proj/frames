@@ -5,40 +5,9 @@ import { BrowserRouter as Router, Route, NavLink, Switch, Redirect } from 'react
 import { App } from './components/App';
 import { Home } from './components/Home';
 import { Discover } from './components/Discover';
-import { Upload } from './components/Upload';
+import { Upload } from "./components/Upload";
+import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
-import { Hello } from './components/Hello';
-
-const sidebarRoutes = [
-    {
-        title: 'Discover',
-        path: '/',
-        exact: true,
-        component: Discover,
-        show: true
-    },
-    {
-        title: 'Upload',
-        path: '/upload',
-        exact: false,
-        component: Upload,
-        show: true
-    },
-    {
-        title: 'History',
-        path: '/history',
-        exact: false,
-        component: Hist,
-        show: true,
-    },
-    {
-        title: 'Watch',
-        path: '/watch',
-        exact: false,
-        component: Hello,
-        show: false,
-    }
-]
 
 class Root extends React.Component<{}, {}> {
     constructor() {

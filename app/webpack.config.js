@@ -29,16 +29,16 @@ module.exports = {
     module: {
         loaders: [
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            { 
-                test: /\.js$/, 
-                loader: "source-map-loader" 
+            {
+                test: /\.js$/,
+                loader: "source-map-loader"
             },
-            { 
-                test: /\.tsx?$/, 
+            {
+                test: /\.tsx?$/,
                 loader: "awesome-typescript-loader?configFileName=./client/ts/tsconfig.json"
             },
-            { 
-                test: /\.json?$/, 
+            {
+                test: /\.json?$/,
                 loader: "json-loader"
             }
         ]

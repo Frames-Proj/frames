@@ -111,7 +111,7 @@ export default class Playlist implements Drop {
 
     public async append(video: Video): Promise<void> {
         this.m_videos.push(video);
-        await withDropP(await video.xorName, di => this.networkList.append(di));
+        await withDropP(await video.xorName(), di => this.networkList.append(di));
     }
 
     public xorName(): Promise<DataIDHandle> {

@@ -23,6 +23,6 @@ export async function fileExists(path: string): Promise<boolean> {
                 reject(err);
             }
 
-        })
+        });
     });
 }
