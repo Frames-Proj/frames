@@ -8,6 +8,7 @@ import { SerializedDataID, withDropP } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";
 
 import { safeClient } from "../ts/util";
+import { Maybe } from "../ts/maybe";
 const sc = safeClient;
 
 import Isvg from "react-inlinesvg";
@@ -27,14 +28,13 @@ interface WatchProps {
 
 interface WatchState {
     badXorName: boolean;
-    videoFile: string; // @nullable. once @Graham's maybe stuff is merged we should use that
+    videoFile: Maybe<string>;
     video: Promise<Video>;
 }
 
 
 import * as fs from "fs";
 function VideoPlayer({ videoFile }) {
-    console.log(videoFile);
     return (
         <video width={400} controls src={`file://${videoFile}`} type={"video/mp4"} >
         </video>
@@ -54,11 +54,11 @@ export class Watch extends React.Component<WatchProps, WatchState> {
         this.state = {
             video: mkVideo().catch(this.handleVideoError.bind(this)),
             badXorName: false,
-            videoFile: null
+            videoFile: Maybe.nothing<string>()
         };
 
         // wait for the download to finish
-        this.state.video.then(v => v.file.then( f => this.setState({ videoFile: f })));
+        this.state.video.then(v => v.file.then( f => this.setState({ videoFile: Maybe.just(f) })));
     }
 
     private handleVideoError(err) {
@@ -76,10 +76,10 @@ export class Watch extends React.Component<WatchProps, WatchState> {
                     <h1>Bad Frames URL!</h1>
                     <p>It looks like the video you want is not on the SafeNET</p>
                 </Jumbotron>
-            : this.state.videoFile === null ?
-                <ChasingArrowsLoadingImage />
-            :
-                <VideoPlayer videoFile={this.state.videoFile} />;
+            : this.state.videoFile.caseOf({
+                nothing: () => <ChasingArrowsLoadingImage />
+              , just: vf => <VideoPlayer videoFile={vf} />
+            });
         return (
             <div style={{
                 height: '100%',

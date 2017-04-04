@@ -119,9 +119,10 @@ export class Upload extends React.Component<{}, UploadState> {
         withDropP(await video.xorName(), async (n) => {
             const xorName: SerializedDataID = await n.serialise();
             // TODO: stuff the link in the user profile
-            console.log(`uploaded video to: frames://${xorName.toString("base64")}`);
+            const hash: string = xorName.toString("base64");
+            console.log(`uploaded video to: frames://${hash}`);
+            this.context.router.history.push(`/watch/${hash}`);
         });
-        this.context.router.history.push("/discover");
     }
 
     private handleTitle(e) {
