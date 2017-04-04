@@ -11,10 +11,6 @@ import { safeClient } from "../ts/util";
 import { Maybe } from "../ts/maybe";
 const sc = safeClient;
 
-import Isvg from "react-inlinesvg";
-
-// <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-
 interface WatchProps {
     history: any;
     match: {
