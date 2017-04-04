@@ -67,9 +67,7 @@ export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBa
                             placeholder="Enter a Frames URL"
                             onChange={this.handleChange.bind(this)}
                             style={{
-                                display: 'flex',
-                                margin: '0 auto',
-                                width: "50%"
+                                width: "100%"
                             }} />
                 </FormGroup>
             </form>
