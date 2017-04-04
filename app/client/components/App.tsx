@@ -2,8 +2,8 @@ import * as React from 'react';
 import { Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom'
 
-
 import { Home } from './Home';
+import { FramesURLBar } from "./FramesURLBar";
 
 export interface AppProps {
     routes: {
@@ -106,41 +106,11 @@ export class App extends React.Component<AppProps, {}> {
                                    aria-hidden="true"></i>
                             </div>
                             <div style={{
-                                display: 'flex',
                                 flex: '1',
                                 margin: '0px 50px',
-                                fontSize: '14px',
-                                color: 'gray'
+                                justifyContent: 'center'
                             }}>
-                                <div style={{
-                                    border: 'solid 1px gray',
-                                    borderRight: 'none',
-                                    borderRadius: '2px 0px 0px 2px',
-                                    padding: '2px 0px 2px 5px'
-                                }}>
-                                    frames://
-                                </div>
-                                <input id='url-navbar' style={{
-                                    flex: '1',
-                                    border: 'solid 1px gray',
-                                    borderLeft: 'none',
-                                    borderRight: 'none',
-                                    padding: '2px 0px',
-                                    background: 'none'
-                                }}>
-                                </input>
-                                <div style={{
-                                    border: 'solid 1px gray',
-                                    borderLeft: 'none',
-                                    borderRadius: '0px 2px 2px 0px',
-                                    padding: '2px 5px 2px 0px'
-                                }}>
-                                    <i className="fa fa-arrow-circle-o-right" aria-hidden="true"></i>
-                                </div>
-                            </div>
-                            <div style={{
-                                flex: '1'
-                            }}>
+                                <FramesURLBar/>
                             </div>
                             <div style={{
                                 float: 'right',
