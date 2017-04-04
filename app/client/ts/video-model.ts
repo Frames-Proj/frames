@@ -64,7 +64,7 @@ export default class Video implements Drop {
         this.videoData = vd;
         this.metadata = vd.getMetadata();
     }
-    public get xorName(): Promise<DataIDHandle> {
+    public xorName(): Promise<DataIDHandle> {
         return this.videoData.toDataIdHandle();
     }
 
@@ -177,10 +177,11 @@ export default class Video implements Drop {
             (await sc.ad.fromDataIdHandle(
                 await sc.dataID.deserialise(vi.commentReplies))).handleId;
 
-        const videoFile = new Promise((resolve, reject) => {
-            fs.writeFile(`${CONFIG.APP_VIDEO_DIR}/${vi.title}`, video.body, (err) => {
+        const videoFile: Promise<string> = new Promise((resolve, reject) => {
+            const fileLoc: string = `${CONFIG.APP_VIDEO_DIR}/${vi.title}`;
+            fs.writeFile(fileLoc, video.body, (err) => {
                 if (err) reject(err);
-                else resolve();
+                else resolve(fileLoc);
             });
         });
 
