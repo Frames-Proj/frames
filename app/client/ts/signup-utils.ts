@@ -2,7 +2,7 @@ import { safeClient } from "./util";
 
 //load the current longNames into the list
 async function loadNames(): Promise<void> {
-    const dropdown : HTMLSelectElement = <HTMLSelectElement> document.getElementById("longNames");
+    const dropdown : HTMLSelectElement = <HTMLSelectElement> this.refs.nameDropdown;
 
     const length : number = dropdown.length;
 
@@ -15,24 +15,24 @@ async function loadNames(): Promise<void> {
     });
 }
 
-async function addLongName(): Promise<void> {
-    const inputField : HTMLInputElement = <HTMLInputElement> document.getElementById("longName");
+export async function addLongName(): Promise<void> {
+    const inputField : HTMLInputElement = <HTMLInputElement> this.refs.longName;
     const name: string = inputField.value;
     if (name) {
         await safeClient.dns.register(name).then(() => {
-            const errorMsg : HTMLElement = <HTMLElement> document.getElementById("error_msg");
+            const errorMsg : HTMLElement = <HTMLElement> this.refs.error_msg;
             errorMsg.innerHTML = "";
         }, (err) => {
-            const errorMsg : HTMLElement = <HTMLElement> document.getElementById("error_msg");
-            errorMsg.innerHTML = err;
+            const errorMsg : HTMLElement = <HTMLElement> this.refs.error_msg;
+            errorMsg.innerHTML = "There was an error processing your request. Please choose a different LongName.";
         });
-        await loadNames();
+        await loadNames.bind(this)();
         inputField.value = '';
     }
 };
 
-//connect this function to the button on the page
-const addButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById("addLongName");
-addButton.addEventListener('click', addLongName, false);
-
-loadNames();
+export function prepareSignIn() {
+    //connect this function to the button on the page
+    //this.refs.nameDropdown.addEventListener('click', addLongName.bind(this), false);
+    loadNames.bind(this)();
+}

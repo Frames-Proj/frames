@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { fileExists } from '../../client/ts/util';
+import { prepareSignIn, addLongName } from '../../client/ts/signup-utils';
 
 interface LongNameRegister {
     longName: string
@@ -7,15 +7,19 @@ interface LongNameRegister {
 
 export class LongNameForm extends React.Component<LongNameRegister, {}> {
 
+    componentDidMount() {
+        prepareSignIn.bind(this)();
+    }
+
     render() {
         return (
             <div style={{padding: "50px"}}>
                 <h2>Long Name Form</h2>
-                <select id="longNames"></select>
+                <select ref="nameDropdown" ></select>
                 <p> Or you can create a longname </p>
-                <input type="text" id="longName"/>
-                <p id="error_msg"></p>
-                <button id="addLongName">Add This LongName</button>
+                <input type="text" ref="longName"/>
+                <p ref="error_msg"></p>
+                <button onClick={addLongName.bind(this)}>Add this Long Name</button>
             </div>
         )
     }

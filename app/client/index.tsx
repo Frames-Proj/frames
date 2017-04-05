@@ -37,7 +37,14 @@ const sidebarRoutes = [
         path: '/history',
         exact: false,
         component: Hist,
-        show: true,
+        show: true
+    },
+    {
+        title: 'SignIn',
+        path: '/signIn',
+        exact: false,
+        component: SignUp,
+        show: true
     }
 ]
 
