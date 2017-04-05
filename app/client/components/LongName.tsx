@@ -14,7 +14,8 @@ export class LongNameForm extends React.Component<LongNameRegister, {}> {
     render() {
         return (
             <div style={{padding: "50px"}}>
-                <h2>Long Name Form</h2>
+                <h2>Select or Create a LongName</h2>
+                <p>Select a LongName here</p>
                 <select ref="nameDropdown" ></select>
                 <p> Or you can create a longname </p>
                 <input type="text" ref="longName"/>
