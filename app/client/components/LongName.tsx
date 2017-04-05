@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { prepareSignIn, addLongName } from '../../client/ts/signup-utils';
+import { prepareSignIn, addLongName } from '../../client/ts/signIn-utils';
 
 interface LongNameRegister {
     longName: string

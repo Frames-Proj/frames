@@ -8,7 +8,7 @@ import { Discover } from './components/Discover';
 import { Upload } from "./components/Upload";
 import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
-import { SignUp } from './components/SignUp';
+import { SignIn } from './components/SignIn';
 
 const sidebarRoutes = [
     {
@@ -43,7 +43,7 @@ const sidebarRoutes = [
         title: 'SignIn',
         path: '/signIn',
         exact: false,
-        component: SignUp,
+        component: SignIn,
         show: true
     }
 ]

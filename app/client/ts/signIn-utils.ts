@@ -21,7 +21,7 @@ export async function addLongName(): Promise<void> {
     if (name) {
         await safeClient.dns.register(name).then(() => {
             const errorMsg : HTMLElement = <HTMLElement> this.refs.error_msg;
-            errorMsg.innerHTML = "";
+            errorMsg.innerHTML = `LongName ${name} successfully registered!`;
         }, (err) => {
             const errorMsg : HTMLElement = <HTMLElement> this.refs.error_msg;
             errorMsg.innerHTML = "There was an error processing your request. Please choose a different LongName.";

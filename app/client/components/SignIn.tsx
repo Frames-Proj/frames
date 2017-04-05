@@ -2,11 +2,11 @@ import * as React from 'react';
 import { Jumbotron } from 'react-bootstrap';
 import { LongNameForm } from './LongName';
 
-interface SignUpForm {
+interface SignInForm {
     longName: string
 }
 
-export class SignUp extends React.Component<{}, SignUpForm> {
+export class SignIn extends React.Component<{}, SignInForm> {
     render() {
         return (
             <div>
@@ -14,7 +14,7 @@ export class SignUp extends React.Component<{}, SignUpForm> {
                     width: '100%',
                     padding: '50px'
                 }}>
-                    <h1>Sign Up</h1>
+                    <h1>SignIn</h1>
                     <p>Choose a longName to represent you</p>
                 </Jumbotron>
                 <LongNameForm longName="hello"/>
