@@ -1,11 +1,7 @@
 import * as React from 'react';
 import { prepareSignIn, addLongName } from '../../client/ts/signIn-utils';
 
-interface LongNameRegister {
-    longName: string
-}
-
-export class LongNameForm extends React.Component<LongNameRegister, {}> {
+export class LongNameForm extends React.Component<{}, {}> {
 
     componentDidMount() {
         prepareSignIn.bind(this)();
