@@ -2,7 +2,7 @@
   "name": "frames",
   "version": "0.1.0",
   "description": "Frames is an application for the SafeNet that aims to provide a decentralized video service.",
-  "main": "dist/js/app.js",
+  "main": "dist/app.js",
   "scripts": {
     "start": "./node_modules/.bin/electron .",
     "webpack": "webpack",
