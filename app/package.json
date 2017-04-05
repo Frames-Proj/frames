@@ -6,7 +6,9 @@
   "scripts": {
     "start": "./node_modules/.bin/electron .",
     "webpack": "webpack",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "test:run": "jasmine JASMINE_CONFIG_PATH=./client/ts/spec/support/jasmine.json",
+    "test:build": "tsc -p ./client/ts/spec/tsconfig.json"
   },
   "repository": {
     "type": "git",
