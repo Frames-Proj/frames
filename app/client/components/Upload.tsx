@@ -15,6 +15,10 @@ import { withDropP, SerializedDataID } from "safe-launcher-client";
 import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
 
+interface UploadProps {
+    replyVideo: Promise<Video>;
+}
+
 interface UploadState {
     videoTitle: string;
     videoDescription: string;
@@ -25,7 +29,7 @@ interface UploadState {
     help: Map<string, string[]>;
 }
 
-export class Upload extends React.Component<{}, UploadState> {
+export class Upload extends React.Component<UploadProps, UploadState> {
 
     // allow us to redirect
     static contextTypes = {
@@ -39,8 +43,8 @@ export class Upload extends React.Component<{}, UploadState> {
 
     private form;
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
         this.state = {
             videoTitle: "",
@@ -122,6 +126,7 @@ export class Upload extends React.Component<{}, UploadState> {
     }
 
     private handleSubmitClick() {
+        console.log("Upload:handleSubmitClick");
         function vsOk(vs) {
             return vs === "warning" || vs === "success";
         }
@@ -136,10 +141,15 @@ export class Upload extends React.Component<{}, UploadState> {
     }
 
     private async handleSubmit() {
-        // TODO: construct the Video object, and write it to the network.
-        // This should probably also place the video in the user registry.
-        const video: Video =
-            await Video.new(this.state.videoTitle, this.state.videoDescription, this.state.videoFile);
+        let video: Video;
+        if (this.props.replyVideo === undefined) {
+            video = await Video.new(this.state.videoTitle, this.state.videoDescription,
+                                    this.state.videoFile);
+        } else {
+            video = await (await this.props.replyVideo).addVideoReply(
+                this.state.videoTitle, this.state.videoDescription, this.state.videoFile);
+        }
+
         withDropP(await video.xorName(), async (n) => {
             const xorName: SerializedDataID = await n.serialise();
             // TODO: stuff the link in the user profile

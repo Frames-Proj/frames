@@ -2,6 +2,8 @@
 build:
 	npm run webpack
 
+build_test:
+	npm run test:build
 
 setup:
 	$(MAKE) -C ../db/low-level setup
@@ -12,13 +14,15 @@ run:
 	npm start 2>/dev/null
 
 test:
-	./node_modules/.bin/jasmine JASMINE_CONFIG_PATH=./client/ts/spec/support/jasmine.json
+	npm run test:run
 
 watch:
-	# When the next command receives the SIGINT signal, execute the kill command.
-	# This means that a single ^C will kill both watch processes
 	npm run watch
+
+watch_test:
+	npm run test:watch
 
 clean:
 	rm -f app.js.map
 	rm -f app.js
+	rm -rf dist
