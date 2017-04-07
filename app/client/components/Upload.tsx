@@ -80,16 +80,16 @@ export class Upload extends React.Component<{}, UploadState> {
 
         // Check for empties
         if (this.state.videoTitle == "" || this.state.videoDescription == "" || this.state.videoFile == "") {
-            return true;
+            return false;
         }
 
         if (this.state.validFlags.get("videoFile") == "error" ||
             this.state.validFlags.get("videoDescription") == "error" ||
             this.state.validFlags.get("videoTitle") == "error") {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     private setErr(formElement: string, vs: "warning" | "error", msg: string) {
@@ -259,7 +259,7 @@ export class Upload extends React.Component<{}, UploadState> {
                         <Button onClick={this.handleSubmitClick.bind(this)}
                                 bsStyle="primary"
                                 bsSize="large"
-                                disabled={this.canSubmit()}>
+                                disabled={!this.canSubmit()}>
                             Submit
                         </Button>
                     </ButtonToolbar>
