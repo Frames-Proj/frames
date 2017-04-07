@@ -35,6 +35,7 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
         };
         // wait for the download to finish
         this.resolveVideo(props);
+        this.render.bind(this);
     }
 
     private resolveVideo(props: VideoPlayerProps): void {
@@ -57,9 +58,7 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
                 {/* TODO: get the correct mime type from the video model */}
                 <video width={600} controls src={`file://${rv.videoFile}`} type={"video/mp4"} />
                 <p>{rv.video.description}</p>
-                <button onClick={() => this.setState({ reply: true }) }>
-                    reply
-                </button>
+                <button onClick={() => this.setState({ reply: true })}>reply</button>
                 {rv.video.parentVideoXorName.caseOf({
                     nothing: () => <p>This is a root video</p>,
                     just: n => <p>{`parent= frames://${n}`}</p>
@@ -67,13 +66,12 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
             </div>);
         }
 
-
         if (this.state.reply) {
             return <Upload replyVideo={this.props.video} />
         } else {
             return this.state.resolvedVideo.caseOf({
                 nothing: () => <ChasingArrowsLoadingImage />,
-                just: mkActualPlayer
+                just: mkActualPlayer.bind(this)
             });
         }
     }
@@ -99,7 +97,6 @@ export class Watch extends React.Component<WatchProps, WatchState> {
 
     constructor(props: WatchProps) {
         super(props);
-        console.log("In watch constructor");
 
         this.state = {
             video: this.mkVideo(props).catch(this.handleVideoError.bind(this)),
@@ -113,9 +110,6 @@ export class Watch extends React.Component<WatchProps, WatchState> {
     }
 
     componentWillReceiveProps(nextProps: WatchProps) {
-        console.log("In componetWillReceiveProps");
-        console.log(`old=${this.props.match.params.xorName}`);
-        console.log(`new=${nextProps.match.params.xorName}`);
         this.state.video.then( v => v.drop() );
         this.setState({ video: this.mkVideo(nextProps).catch(this.handleVideoError) });
     }
@@ -129,7 +123,6 @@ export class Watch extends React.Component<WatchProps, WatchState> {
         await this.state.video.then(v => v.drop());
     }
     render() {
-        console.log("In watch render");
         const body =
             this.state.badXorName ?
                 <Jumbotron style={{ width: '100%', padding: '50px' }}>
