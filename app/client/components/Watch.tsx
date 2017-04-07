@@ -35,7 +35,6 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
         };
         // wait for the download to finish
         this.resolveVideo(props);
-        this.setReply.bind(this);
         this.render.bind(this);
     }
 
@@ -46,10 +45,6 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
                 video: v
             })}))
         );
-    }
-
-    private setReply() {
-        this.setState({ reply: true });
     }
 
     componentWillReceiveProps(nextProps: VideoPlayerProps): void {
