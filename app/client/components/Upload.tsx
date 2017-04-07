@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Jumbotron, FormGroup, ControlLabel, FormControl,
          HelpBlock, Button, Panel, ListGroup, ListGroupItem,
-         Modal
+         Modal, ButtonToolbar
        } from "react-bootstrap";
 
 import { PropTypes } from "react";
@@ -75,6 +75,23 @@ export class Upload extends React.Component<{}, UploadState> {
         return this.state.validFlags.get("videoFile");
     }
 
+    private canSubmit(): boolean {
+        // Returns false when all the fields are not empty and not error, else true
+
+        // Check for empties
+        if (this.state.videoTitle == "" || this.state.videoDescription == "" || this.state.videoFile == "") {
+            return false;
+        }
+
+        if (this.state.validFlags.get("videoFile") == "error" ||
+            this.state.validFlags.get("videoDescription") == "error" ||
+            this.state.validFlags.get("videoTitle") == "error") {
+            return false;
+        }
+
+        return true;
+    }
+
     private setErr(formElement: string, vs: "warning" | "error", msg: string) {
         this.state.validFlags.set(formElement, vs);
         this.appendHelp(formElement, msg);
@@ -83,6 +100,7 @@ export class Upload extends React.Component<{}, UploadState> {
         this.state.validFlags.set(formElement, "success");
         let help = this.state.help;
         help.set(formElement, []);
+        this.removeHelp(formElement);
         this.setState({ help: help });
     }
     private appendHelp(formElement: string, msg: string): void {
@@ -95,6 +113,12 @@ export class Upload extends React.Component<{}, UploadState> {
             helpList.push(msg);
         help.set(formElement, helpList);
         this.setState({ help: help });
+    }
+
+    private removeHelp(formElement: string): void {
+        let help = this.state.help;
+        help.delete(formElement);       // Delete all elements in the map
+        this.setState({help: help});
     }
 
     private handleSubmitClick() {
@@ -158,7 +182,8 @@ export class Upload extends React.Component<{}, UploadState> {
                 });
 
             if (CONFIG.SUPPORTED_VIDEO_MIME_TYPES.indexOf(mimeType) === -1) {
-                this.setErr("videoFile", "error", `Unsupported file format: ${mimeType}`);
+                this.setErr("videoFile", "error", `Unsupported file format: ${mimeType}. 
+                            Currently we only support ${CONFIG.SUPPORTED_VIDEO_MIME_TYPES} files`);
                 return;
             }
 
@@ -199,7 +224,9 @@ export class Upload extends React.Component<{}, UploadState> {
         return (
             <form
                 onSubmit={this.handleSubmit.bind(this)}
-                ref={f => this.form = f} >
+                ref={f => this.form = f}
+                style={{padding: '20px 50px 0px'}}
+            >
                 <FormGroup controlId="uploadTitle"
                     validationState={this.getTitleValid()}>
                     <FormControl type="text" value={this.state.videoTitle}
@@ -213,6 +240,7 @@ export class Upload extends React.Component<{}, UploadState> {
                     validationState={this.getDescriptionValid()}>
                     <FormControl value={this.state.videoDescription}
                         componentClass="textarea"
+                        rows={5}
                         placeholder="Video Description"
                         onChange={this.handleDescription}
                     />
@@ -220,18 +248,27 @@ export class Upload extends React.Component<{}, UploadState> {
                 </FormGroup>
 
                 <FormGroup controlId="uploadFile"
-                    validationState={this.getFileValid()}>
-                    <Button onClick={this.handleSelectFile}>
-                        Select File
-                    </Button>
+                    validationState={this.getFileValid()}
+                >
+                    <ButtonToolbar justified>
+                        <Button onClick={this.handleSelectFile}
+                        bsSize="large">
+                            Select File
+                        </Button>
+
+                        <Button onClick={this.handleSubmitClick.bind(this)}
+                                bsStyle="primary"
+                                bsSize="large"
+                                disabled={!this.canSubmit()}>
+                            Submit
+                        </Button>
+                    </ButtonToolbar>
+
                 <FormControl.Feedback />
                 </FormGroup>
 
-                <Button onClick={this.handleSubmitClick.bind(this)}>
-                    Submit
-                </Button>
 
-                <HelpBlock id="validationHelp">
+                <HelpBlock id="validationHelp" style={{"margin-top": "20px"}}>
                     {this.makeHelpText()}
                 </HelpBlock>
 
@@ -248,8 +285,7 @@ export class Upload extends React.Component<{}, UploadState> {
             }}>
                 <Jumbotron style={{
                     width: '100%',
-                    padding: '10px',
-                    height: '150px'
+                    padding: '50px'
                 }}>
                     <h1>Upload</h1>
                     <p>Share your videos with the SafeNet.</p>
