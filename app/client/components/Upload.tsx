@@ -126,7 +126,6 @@ export class Upload extends React.Component<UploadProps, UploadState> {
     }
 
     private handleSubmitClick() {
-        console.log("Upload:handleSubmitClick");
         function vsOk(vs) {
             return vs === "warning" || vs === "success";
         }
