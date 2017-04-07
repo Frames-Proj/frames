@@ -12,6 +12,7 @@ import * as fileType from "file-type";
 import * as readChunk from "read-chunk";
 import * as stream from "stream";
 import VideoComment from "./comment-model";
+import { Maybe } from "./maybe";
 
 import Config from "./global-config";
 const CONFIG: Config = Config.getInstance();
@@ -26,9 +27,11 @@ export default class Video implements Drop {
 
     public readonly title: string;
     public readonly description: string;
-    public readonly file: Promise<string>; // TODO: verify that there isn't a filepath type
+    public readonly file: Promise<string>;
     public readonly owner: string;
 
+    // a pointer to the parent video, if there is one
+    public readonly parentVideoXorName: Maybe<string>;
     public readonly commentReplies: AppendableDataHandle;
     public readonly videoReplies: AppendableDataHandle;
 
@@ -40,8 +43,8 @@ export default class Video implements Drop {
 
 
     private constructor(title: string, description: string, owner: string,
-                file: Promise<string>, commentReplies: AppendableDataHandle,
-                videoReplies: AppendableDataHandle) {
+                        file: Promise<string>, commentReplies: AppendableDataHandle,
+                        videoReplies: AppendableDataHandle, parentVideoXorName?: string) {
         this.title = title;
         this.description = description;
         this.owner = owner;
@@ -50,8 +53,11 @@ export default class Video implements Drop {
         this.commentReplies = commentReplies;
         this.videoReplies = videoReplies;
 
-        this.commentMetadata = null;
-        this.videoRepliesMetadata = null;
+        this.parentVideoXorName =
+            parentVideoXorName ? Maybe.just(parentVideoXorName) : Maybe.nothing<string>();
+
+        this.commentMetadata = commentReplies.getMetadata();
+        this.videoRepliesMetadata = videoReplies.getMetadata();
 
         this.videoData = null;
     }
@@ -79,6 +85,11 @@ export default class Video implements Drop {
      *  until `write` is called
      */
     public static async new(title: string, description: string, localVideoFile: string): Promise<Video> {
+        return Video.makeVideo(title, description, localVideoFile);
+    }
+
+    private static async makeVideo(title: string, description: string,
+                                   localVideoFile: string, parentVideoXorName?: string): Promise<Video> {
         // Ownership of these guys is going to be passed to the created video
         const commentReplies: AppendableDataHandle =
             await sc.ad.create(title + " commentReplies");
@@ -107,18 +118,14 @@ export default class Video implements Drop {
         });
 
         const v = new Video(title, description, "TODO OWNER",
-                         Promise.resolve(localVideoFile),
-                         commentReplies, videoReplies);
+                            Promise.resolve(localVideoFile),
+                            commentReplies, videoReplies, parentVideoXorName);
         v.setVideoData(await v.write());
         return v;
     }
 
     // @returns a promise for a dataID pointing to the written video meta-node
     private async write(): Promise<StructuredDataHandle> {
-        this.commentMetadata = this.commentReplies.getMetadata().catch(err => {
-            console.error(`Video:write commentMetadata.getMetadata err=${err}`);
-        });
-        this.videoRepliesMetadata = this.videoReplies.getMetadata();
 
         const safeVideoFile: string = `${CONFIG.SAFENET_VIDEO_DIR}/${this.title}`;
         const localPath: string = await this.file;
@@ -137,7 +144,7 @@ export default class Video implements Drop {
         await sc.nfs.file.create("app", safeVideoFile, fStream,
                                             fileSize, mimeType);
 
-        const payload: VideoInfo = {
+        let payload: VideoInfo = {
             title: this.title,
             description: this.description,
             owner: this.owner,
@@ -145,12 +152,21 @@ export default class Video implements Drop {
             videoReplies: await (await this.videoReplies.toDataIdHandle()).serialise(),
             commentReplies: await (await this.commentReplies.toDataIdHandle()).serialise(),
         };
+        this.parentVideoXorName.caseOf({
+            nothing: () => null,
+            just: p => payload.parentVideoXorName = p
+        });
 
         const viH: StructuredDataHandle =
             await sc.structured.create(this.title, TYPE_TAG_VERSIONED,
                                        toVIStringy(payload));
         await viH.save();
         return viH;
+    }
+
+    public static async readFromStringXorName(xorName: string): Promise<Video> {
+        return withDropP(await sc.dataID.deserialise(
+            Buffer.from(xorName, "base64")), n => Video.read(n));
     }
 
     public static async read(dataId: DataIDHandle): Promise<Video> {
@@ -162,8 +178,7 @@ export default class Video implements Drop {
             throw new Error("Malformed VideoInfo response.");
 
         const vi: VideoInfo = toVI(vis);
-        const video: SafeFile =
-            await sc.nfs.file.get("app", vi.videoFile);
+        const video: SafeFile = await sc.nfs.file.get("app", vi.videoFile);
 
         const mimeType = fileType(video.body).mime;
         if (CONFIG.SUPPORTED_VIDEO_MIME_TYPES.indexOf(mimeType) === -1) {
@@ -186,7 +201,7 @@ export default class Video implements Drop {
         });
 
         const v = new Video(vi.title, vi.description, vi.owner,
-                            videoFile, commentReplies, videoReplies);
+                            videoFile, commentReplies, videoReplies, vi.parentVideoXorName);
         v.setVideoData(sdH);
         return v;
     }
@@ -202,6 +217,18 @@ export default class Video implements Drop {
 
         await withDropP(await comment.xorName(), (n) => this.commentReplies.append(n));
         return comment;
+    }
+
+    public async addVideoReply(title: string, description: string, videoFile: string): Promise<Video> {
+        const thisXorName: string =
+            await withDropP(await this.xorName(), async n => (await n.serialise()).toString("base64"));
+
+        const videoPromise = Video.makeVideo(title, description, videoFile, thisXorName);
+        videoPromise.then(async video =>
+                          withDropP(await video.xorName(), n => this.videoReplies.append(n)));
+
+        return videoPromise;
+
     }
 
     public async getNumComments(): Promise<number> {
@@ -221,7 +248,7 @@ export default class Video implements Drop {
     }
     public async getReplyVideo(i: number): Promise<Video> {
         if (i >= await this.getNumReplyVideos() || i < 0)
-            throw new Error(`Video::getNumReplyVideos(${i}) index not in range!`)
+            throw new Error(`Video::getNumReplyVideos(${i}) index not in range!`);
 
         return withDropP(await this.videoReplies.at(i), async (vDId) => {
             return Video.read(vDId);
@@ -245,13 +272,14 @@ function isVideoInfoBase(x: any): x is VideoInfoBase {
 interface VideoInfoStringy extends VideoInfoBase {
     videoReplies: string; // base64 encoded
     commentReplies: string; // base64 encoded
+    parentVideoXorName?: string; // base64 encoded
 }
 function isVideoInfoStringy(x: any): x is VideoInfoStringy {
     return (typeof x.videoReplies === "string" &&
             typeof x.commentReplies === "string") && isVideoInfoBase(x);
 }
 function toVI(vi: VideoInfoStringy): VideoInfo {
-    return {
+    let ret: VideoInfo = {
         title: vi.title,
         description: vi.description,
         videoFile: vi.videoFile,
@@ -259,13 +287,17 @@ function toVI(vi: VideoInfoStringy): VideoInfo {
         videoReplies: Buffer.from(vi.videoReplies, "base64"),
         commentReplies: Buffer.from(vi.commentReplies, "base64")
     };
+    if (vi.parentVideoXorName) ret.parentVideoXorName = vi.parentVideoXorName;
+
+    return ret;
 }
 interface VideoInfo extends VideoInfoBase {
     videoReplies: SerializedDataID;
     commentReplies: SerializedDataID;
+    parentVideoXorName?: string;
 }
 function toVIStringy(vi: VideoInfo): VideoInfoStringy {
-    return {
+    let ret: VideoInfoStringy = {
         title: vi.title,
         description: vi.description,
         videoFile: vi.videoFile,
@@ -273,9 +305,11 @@ function toVIStringy(vi: VideoInfo): VideoInfoStringy {
         videoReplies: vi.videoReplies.toString("base64"),
         commentReplies: vi.commentReplies.toString("base64")
     };
+    if (vi.parentVideoXorName) ret.parentVideoXorName = vi.parentVideoXorName;
+    return ret;
 }
 function isVideoInfo(x: any): x is VideoInfo {
     return (x.videoReplies instanceof Buffer
             && x.commentReplies instanceof Buffer)
             && isVideoInfoBase(x);
-    }
+}

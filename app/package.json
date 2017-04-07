@@ -8,7 +8,8 @@
     "webpack": "webpack",
     "watch": "webpack --watch",
     "test:run": "jasmine JASMINE_CONFIG_PATH=./client/ts/spec/support/jasmine.json",
-    "test:build": "tsc -p ./client/ts/spec/tsconfig.json"
+    "test:build": "tsc -p ./client/ts/spec/tsconfig.json",
+    "test:watch": "tsc -p ./client/ts/spec/tsconfig.json -w"
   },
   "repository": {
     "type": "git",

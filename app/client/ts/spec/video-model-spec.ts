@@ -63,6 +63,75 @@ describe("A frames Video model", () => {
         done();
     });
 
+    it("can be a reply to another video.", async (done) => {
+        setCollectLeakStatsBlock("vms:test3 create reply");
+
+        const parent: Video =
+            await failDone(Video.new("title " + makeid(), "Parent description.",
+                                    `${TEST_DATA_DIR}/test-vid.mp4`), done);
+        parent.parentVideoXorName.caseOf({
+            nothing: () => null,
+            just: _ => fail()
+        });
+
+        const child: Video =
+            await failDone(parent.addVideoReply("child title " + makeid(),
+                            "The child description.", `${TEST_DATA_DIR}/test-vid.mp4`), done);
+
+        const parentXorName: string =
+            await failDone(withDropP(await parent.xorName(),
+                                     async n => (await n.serialise()).toString("base64")), done);
+
+        expect(child.parentVideoXorName.valueOr(parentXorName + "FAIL")).toBe(parentXorName);
+
+        await parent.drop();
+        await child.drop();
+
+        done();
+    });
+
+    it("can find its parent after being serialized.", async (done) => {
+        setCollectLeakStatsBlock("vms:test3 round-trip parent");
+
+        const parent: Video =
+            await failDone(Video.new("title " + makeid(), "Parent description.",
+                                    `${TEST_DATA_DIR}/test-vid.mp4`), done);
+        const child: Video =
+            await failDone(parent.addVideoReply("child title " + makeid(),
+                            "The child description.", `${TEST_DATA_DIR}/test-vid.mp4`), done);
+
+        const dataId: SerializedDataID =
+            await failDone(withDropP(await child.xorName(), (dId: DataIDHandle) => {
+                return dId.serialise();
+            }), done);
+
+        const recoveredChild: Video =
+            await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
+                return Video.read(dIdH);
+            }), done);
+        expect(recoveredChild.title).toBe(child.title);
+        expect(recoveredChild.description).toBe(child.description);
+
+        const recoveredParent: Video =
+            await failDone(Video.readFromStringXorName(
+                recoveredChild.parentVideoXorName.valueOr("BOGUS")), done);
+        expect(recoveredParent.title).toBe(parent.title);
+        expect(recoveredParent.description).toBe(parent.description);
+
+        const parentsChild: Video = await failDone(recoveredParent.getReplyVideo(0), done);
+        expect(parentsChild.title).toBe(child.title);
+        expect(parentsChild.description).toBe(child.description);
+
+
+        await failDone(parent.drop(), done);
+        await failDone(child.drop(), done);
+        await failDone(recoveredChild.drop(), done);
+        await failDone(recoveredParent.drop(), done);
+        await failDone(parentsChild.drop(), done);
+
+        done();
+    });
+
 });
 
 
