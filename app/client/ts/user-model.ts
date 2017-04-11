@@ -1,5 +1,5 @@
 import { safeClient } from "./util";
-import { SafeFile, DnsHomeDirectory } from "safe-launcher-client";
+import { SafeFile, DnsHomeDirectory, NfsFileData } from "safe-launcher-client";
 import Config from "./global-config";
 import { Maybe } from "./maybe";
 import * as stream from 'stream';
@@ -36,7 +36,7 @@ function toUserProfileData(obj: any): Maybe<UserProfileData> {
  * posted video list
  */
 export class UserProfile {
-    private constructor(private _data: UserProfileData) {}
+    private constructor(private _longName: string, private _data: UserProfileData) {}
 
     /**
      * @arg longName - long name that the user is operating under
@@ -44,19 +44,28 @@ export class UserProfile {
      */
     public static async read(longName: string): Promise<UserProfile> {
         const homeDir: DnsHomeDirectory = await safeClient.dns.getHomeDirectory(longName, CONFIG.SERVICE_NAME);
-        if (homeDir.files.indexOf(userProfileFilename) === -1) {
-            throw new Error('No user profile data file found');
+        const fileNames: string[] = homeDir.files.map((f: NfsFileData) => f.name);
+
+        if (fileNames.indexOf(userProfileFilename) === -1) {
+            return new UserProfile(longName, {
+                uploadedVideos: [],
+                playlists: []
+            });
         }
 
         const profileDataFile: SafeFile = await safeClient.dns.getFile(longName, CONFIG.SERVICE_NAME, userProfileFilename);
 
         const userProfileData: Maybe<UserProfileData> = toUserProfileData(JSON.parse(profileDataFile.body.toString()));
         return userProfileData.caseOf({
-            just: data => new UserProfile(data),
+            just: data => new UserProfile(longName, data),
             nothing: () => {
                 throw new Error('Error reading profile data file');
             }
         });
+    }
+
+    get longName(): string {
+        return this._longName;
     }
 
     get data(): UserProfileData {
@@ -84,10 +93,10 @@ export class UserProfile {
     /**
      * @arg longName - longName that the user is operating under
      */
-    public async write(longName: string): Promise<void> {
-        const homeDir: DnsHomeDirectory = await safeClient.dns.getHomeDirectory(longName, CONFIG.SERVICE_NAME);
+    public async write(): Promise<void> {
+        const homeDir: DnsHomeDirectory = await safeClient.dns.getHomeDirectory(this._longName, CONFIG.SERVICE_NAME);
 
-        const dataString: string = JSON.stringify(this.data);
+        const dataString: string = JSON.stringify(this._data);
         const buffer: Buffer = Buffer.from(dataString);
         const dataStream: stream.Transform = new stream.PassThrough();
         await new Promise((resolve, reject) => {
