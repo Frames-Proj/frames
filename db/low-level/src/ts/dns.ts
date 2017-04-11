@@ -5,7 +5,7 @@
 //
 
 import { AuthResponse } from "./auth";
-import { RootPath, SafeFile } from "./nfs";
+import { NfsFileData, RootPath, SafeFile } from "./nfs";
 import { ApiClient, ApiClientConfig } from "./client";
 import { saneResponse, SafeError } from "./util";
 import * as stream from "stream";
@@ -24,7 +24,7 @@ export interface DnsHomeDirectory {
         modifiedOn: Date;
     };
     subDirectories: string[];
-    files: string[];
+    files: NfsFileData[];
 }
 
 export type DnsServiceList = string[];
