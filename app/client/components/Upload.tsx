@@ -154,7 +154,7 @@ export class Upload extends React.Component<UploadProps, UploadState> {
             // TODO: stuff the link in the user profile
             const hash: string = xorName.toString("base64");
             console.log(`uploaded video to: frames://${hash}`);
-            this.context.router.history.push(`/watch/${hash}`);
+            // this.context.router.history.push(`/watch/${hash}`);
         });
     }
 

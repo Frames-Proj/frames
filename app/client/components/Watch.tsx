@@ -104,9 +104,8 @@ export class Watch extends React.Component<WatchProps, WatchState> {
         };
     }
 
-    private async mkVideo(props): Promise<Video> {
-        const ptr: SerializedDataID = Buffer.from(props.match.params.xorName, "base64");
-        return withDropP(await sc.dataID.deserialise(ptr), xorName => Video.read(xorName));
+    private mkVideo(props): Promise<Video> {
+        return Video.readFromStringXorName(props.match.params.xorName);
     }
 
     componentWillReceiveProps(nextProps: WatchProps) {
@@ -115,6 +114,7 @@ export class Watch extends React.Component<WatchProps, WatchState> {
     }
 
     private handleVideoError(err) {
+        console.error(`handleVideoError err=${err}`);
         this.setState({ badXorName: true });
     }
 

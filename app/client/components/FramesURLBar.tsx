@@ -14,7 +14,7 @@ interface FramesURLBarState {
     url: string;
 }
 
-const URL_RE: RegExp = /frames:\/\/([a-zA-Z0-9]+)/;
+const URL_RE: RegExp = /frames:\/\/([a-zA-Z0-9\/\+]+)/;
 
 export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBarState> {
     private urlInput;

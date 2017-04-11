@@ -9,6 +9,7 @@ import { Upload } from "./components/Upload";
 import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
 import { SignIn } from './components/SignIn';
+import startupHook from "./ts/startup-hooks";
 
 const sidebarRoutes = [
     {
@@ -73,5 +74,8 @@ class Root extends React.Component<{}, {}> {
         );
     }
 }
+
+// make sure all the directories we rely on to be there really exist.
+startupHook();
 
 ReactDOM.render(<Root/>, document.getElementById('react-content'));
