@@ -11,14 +11,23 @@ export function failDone<T>(promise: Promise<T>,
     });
 }
 
-export function makeid() {
+function buildString(possibleChars: string, finalLength: number) {
     let text = "";
+    for (let i = 0; i < finalLength; i++) {
+        text += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
+    }
+    return text;
+}
+
+export function makeid() {
     let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for (let i = 0; i < 15; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return buildString(possible, 15);
+}
 
-    return text;
+export function makeAlphaid() {
+    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    return buildString(possible, 15);
 }
 
 export function checkForLeakErrors(): void {
