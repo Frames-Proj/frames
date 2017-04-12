@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { prepareSignIn, addLongName } from '../../client/ts/signIn-utils';
+import { prepareSignIn, addLongName, updateLongName } from '../../client/ts/signIn-utils';
 
 export class LongNameForm extends React.Component<{}, {}> {
 
@@ -12,7 +12,7 @@ export class LongNameForm extends React.Component<{}, {}> {
             <div style={{padding: "50px"}}>
                 <h2>Select or Create a LongName</h2>
                 <p>Select a LongName here</p>
-                <select ref="nameDropdown" ></select>
+                <select ref="nameDropdown" onChange={updateLongName.bind(this)}></select>
                 <p> Or you can create a longname </p>
                 <input type="text" ref="longName"/>
                 <p ref="error_msg"></p>
