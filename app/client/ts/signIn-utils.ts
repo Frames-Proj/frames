@@ -1,4 +1,5 @@
 import { safeClient } from "./util";
+import Config from "./global-config"
 
 //load the current longNames into the list
 async function loadNames(): Promise<void> {
@@ -13,6 +14,9 @@ async function loadNames(): Promise<void> {
     await safeClient.dns.getLongNames().then((data) => {
         data.forEach((name) => { dropdown.add(new Option(name, name)); });
     });
+
+    dropdown.add(new Option("Guest", "Guest"));
+    dropdown.value = Config.getInstance().getLongName();
 }
 
 export async function addLongName(): Promise<void> {
@@ -32,7 +36,11 @@ export async function addLongName(): Promise<void> {
 };
 
 export function prepareSignIn() {
-    //connect this function to the button on the page
-    //this.refs.nameDropdown.addEventListener('click', addLongName.bind(this), false);
     loadNames.bind(this)();
+}
+
+export function updateLongName() {
+    const config = Config.getInstance();
+    const longName = this.refs.nameDropdown.value;
+    config.setLongName(longName);
 }

@@ -33,6 +33,14 @@ export default class Config {
     public readonly SAFENET_VIDEO_DIR: string = "videos";
     public readonly APP_NAME: string = "Frames";
 
+    private CURRENT_LONG_NAME: string = "Guest";
+    public getLongName(): string {
+        return this.CURRENT_LONG_NAME;
+    }
+    public setLongName(longName : string): void {
+        this.CURRENT_LONG_NAME = longName;
+    }
+
     public readonly SUPPORTED_VIDEO_MIME_TYPES = ["video/mp4"];
 
     public readonly APP_ID: string = "todo.get.actual.domain";
