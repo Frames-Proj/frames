@@ -44,3 +44,7 @@ export function checkForLeakErrors(): void {
         }
     }
 }
+
+export function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+}
