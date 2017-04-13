@@ -21,7 +21,7 @@ const sidebarRoutes = [
     },
     {
         title: 'Watch',
-        path: '/watch/:xorName',
+        path: '/watch/*',
         exact: true,
         component: Watch,
         show: false

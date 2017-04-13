@@ -7,6 +7,7 @@ import { Upload } from "./Upload";
 import Video from "../ts/video-model"
 import { SerializedDataID, withDropP } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";
+import { PropTypes } from "react";
 
 import { safeClient } from "../ts/util";
 import { Maybe } from "../ts/maybe";
@@ -15,6 +16,7 @@ const sc = safeClient;
 
 interface VideoPlayerProps {
     video: Promise<Video>;
+    redirect: (route: string) => void;
 }
 
 interface ResolvedVideo {
@@ -27,6 +29,7 @@ interface VideoPlayerState {
     resolvedVideo: Maybe<ResolvedVideo>;
 }
 class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
+
     constructor(props: VideoPlayerProps) {
         super(props);
         this.state = {
@@ -67,7 +70,10 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
         }
 
         if (this.state.reply) {
-            return <Upload replyVideo={this.props.video} />
+            return <Upload replyVideo={this.props.video} redirect={(route) => {
+                this.props.redirect(route);
+                this.setState({ reply: false });
+            }}/>
         } else {
             return this.state.resolvedVideo.caseOf({
                 nothing: () => <ChasingArrowsLoadingImage />,
@@ -84,8 +90,8 @@ interface WatchProps {
         url: string;
         params: {
             xorName: string;
-        }
-    }
+        };
+    };
 }
 
 interface WatchState {
@@ -94,6 +100,15 @@ interface WatchState {
 }
 
 export class Watch extends React.Component<WatchProps, WatchState> {
+    // ask for the react context
+    static contextTypes = {
+        router: PropTypes.shape({
+            history: PropTypes.shape({
+                push: PropTypes.func.isRequired,
+            }).isRequired,
+            staticContext: PropTypes.object
+        }).isRequired
+    }
 
     constructor(props: WatchProps) {
         super(props);
@@ -105,7 +120,12 @@ export class Watch extends React.Component<WatchProps, WatchState> {
     }
 
     private mkVideo(props): Promise<Video> {
-        return Video.readFromStringXorName(props.match.params.xorName);
+        const match: string[] = /\/watch\/([a-zA-Z0-9\/\+]+=*)/.exec(props.location.pathname);
+        if (match.length !== 2) {
+            return Promise.reject(new Error("Watch: bad path"));
+        }
+
+        return Video.readFromStringXorName(match[1]);
     }
 
     componentWillReceiveProps(nextProps: WatchProps) {
@@ -122,6 +142,11 @@ export class Watch extends React.Component<WatchProps, WatchState> {
     private async componentWillUnmount() {
         await this.state.video.then(v => v.drop());
     }
+
+    private routePushFun(route: string): void {
+        this.context.router.history.push(route);
+    }
+
     render() {
         const body =
             this.state.badXorName ?
@@ -129,7 +154,7 @@ export class Watch extends React.Component<WatchProps, WatchState> {
                     <h1>Bad Frames URL!</h1>
                     <p>It looks like the video you want is not on the SafeNET</p>
                 </Jumbotron>
-            : <VideoPlayer video={this.state.video} />
+            : <VideoPlayer video={this.state.video} redirect={this.routePushFun.bind(this)} />
         return (
             <div style={{
                 height: "100%",
