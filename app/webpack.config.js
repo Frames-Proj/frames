@@ -20,6 +20,7 @@ module.exports = {
                 { from: "node_modules/react-dom/dist/react-dom.min.js", to: distDir },
                 { from: "app.js", to: distDir },
                 { from: "index.html", to: distDir },
+                { from: "client/css/bootstrap.min.css", to: distDir },
                 { from: "client/css/bootstrapOverride.css", to: distDir },
             ]),
         new webpack.DefinePlugin({
