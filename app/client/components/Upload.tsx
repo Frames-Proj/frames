@@ -156,7 +156,7 @@ export class Upload extends React.Component<UploadProps, UploadState> {
             const hash: string = xorName.toString("base64");
             console.log(`uploaded video to: frames://${hash}`);
 
-            if (this.props.redirect === undefined) {
+            if (this.props.redirect == null) {
                 this.context.router.history.push(`/watch/${hash}`);
             } else {
                 this.props.redirect(`/watch/${hash}`);

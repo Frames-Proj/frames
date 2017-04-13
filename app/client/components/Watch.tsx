@@ -120,9 +120,8 @@ export class Watch extends React.Component<WatchProps, WatchState> {
     }
 
     private mkVideo(props): Promise<Video> {
-        const match: string[] = /\/watch\/([a-zA-Z0-9\/\+]+)/.exec(props.location.pathname);
+        const match: string[] = /\/watch\/([a-zA-Z0-9\/\+]+=*)/.exec(props.location.pathname);
         if (match.length !== 2) {
-            this.setState({ badXorName: true });
             return Promise.reject(new Error("Watch: bad path"));
         }
 
