@@ -11,6 +11,8 @@ export type ValidationState = "error" | "success" | "warning";
 export const safeClient: SafeClient =
     new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
 
+export const WATCH_URL_RE: RegExp = /\/watch\/([a-zA-Z0-9\/\+]+)/;
+
 export async function fileExists(path: string): Promise<boolean> {
     return new Promise<boolean>( (resolve, reject) => {
         fs.stat(path, (err, stat) => {
