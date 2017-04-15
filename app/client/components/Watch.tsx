@@ -1,8 +1,6 @@
 import * as React from "react";
 import { Jumbotron, Navbar, Nav, NavItem } from "react-bootstrap";
 
-import { VideosNav } from "./Navbar";
-import { VideosList } from "./VideosList";
 import { Upload } from "./Upload";
 import Video from "../ts/video-model"
 import { SerializedDataID, withDropP } from "safe-launcher-client";

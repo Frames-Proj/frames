@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Jumbotron, Navbar, Nav, NavItem } from 'react-bootstrap';
 
-import { VideosNav } from './Navbar';
 import { VideosList } from './VideosList';
 
 interface DiscoverState {
@@ -40,13 +39,10 @@ export class Discover extends React.Component<{}, DiscoverState> {
                     padding: '50px'
                 }}>
                     <h1>Discover</h1>
-                    <p>Here's the latest and the greatest on Frames.</p>
+                    <p>Here are some videos on various topics to get the conversation
+                        started. If a topic interests you, check out the replies people
+                        have posted, or post a reply of your own.</p>
                 </Jumbotron>
-                <VideosNav
-                    categories={this.state.categories}
-                    default={this.state.activeCategory}
-                    onSelect={this.onVideosNavChange}
-                />
                 <div style={{
                     height: 'calc(100% - 294px)',
                     width: '100%'
