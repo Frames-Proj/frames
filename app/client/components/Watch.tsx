@@ -9,7 +9,7 @@ import { SerializedDataID, withDropP } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";
 import { PropTypes } from "react";
 
-import { safeClient } from "../ts/util";
+import { safeClient, WATCH_URL_RE } from "../ts/util";
 import { Maybe } from "../ts/maybe";
 const sc = safeClient;
 
@@ -120,7 +120,7 @@ export class Watch extends React.Component<WatchProps, WatchState> {
     }
 
     private mkVideo(props): Promise<Video> {
-        const match: string[] = /\/watch\/([a-zA-Z0-9\/\+]+=*)/.exec(props.location.pathname);
+        const match: string[] = WATCH_URL_RE.exec(props.location.pathname);
         if (match.length !== 2) {
             return Promise.reject(new Error("Watch: bad path"));
         }

@@ -4,7 +4,7 @@ import { FormGroup, FormControl } from "react-bootstrap"
 import { DataIDHandle, SerializedDataID, SafeClient } from "safe-launcher-client";
 import { browserHistory } from "react-router";
 
-import { safeClient, ValidationState } from "../ts/util";
+import { safeClient, ValidationState, WATCH_URL_RE } from "../ts/util";
 const sc = safeClient;
 
 export interface FramesURLBarProps {
@@ -20,6 +20,35 @@ export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBa
     private urlInput;
     constructor(props) {
         super(props);
+
+        // react-router v4 does not provide a place to attach a listener
+        // to check if the route has changed. Believe me, I'm mad too.
+        window.addEventListener("hashchange", (e) => {
+            const urlParts: string[] = e.newURL.split("#");
+            if (urlParts.length != 2) {
+                console.error("FramesURLBar::constructor::onhashchange url has no hash-part");
+                return; // wat
+            }
+            const hashPart: string = urlParts[1];
+
+            // for now we only represent videos as a frames URL, but once
+            // user profiles land, we probably also want those to be checked
+            // for here.
+            const watchMatch: string[] = WATCH_URL_RE.exec(hashPart);
+            if (watchMatch != null && watchMatch.length === 2) {
+                const url: string = `frames://${watchMatch[1]}`;
+                if (url !== this.state.url) { // `setState` always re-renders. We don't need that.
+                    this.setState({ url: `frames://${watchMatch[1]}` });
+                }
+                return;
+            }
+
+            // the current route is not representable as a frames URL
+            if (this.state.url !== "") {
+                this.setState({ url: "" });
+            }
+        }, false);
+
         this.state = { url: "" };
     }
 
