@@ -40,11 +40,14 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
     }
 
     private resolveVideo(props: VideoPlayerProps): void {
-        props.video.then(v =>
-            v.file.then( f => this.setState({ resolvedVideo: Maybe.just({
-                videoFile: f,
-                video: v
-            })}))
+        props.video.then((v: Video) =>
+            v.file
+             .valueOr(Promise.reject<string>(
+                 "Watch.tsx:VideoPlayer:resolveVideo shallow video. Impossible."))
+             .then(f => this.setState({ resolvedVideo: Maybe.just({
+                 videoFile: f,
+                 video: v
+             })}))
         );
     }
 

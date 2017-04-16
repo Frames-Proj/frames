@@ -27,8 +27,11 @@ export default class Video implements Drop {
 
     public readonly title: string;
     public readonly description: string;
-    public readonly file: Promise<string>;
     public readonly owner: string;
+
+    // file is a Maybe<Promise<_>> because we don't always download the video file
+    // (i.e. when we just want to create a VideoIcon).
+    public readonly file: Maybe<Promise<string>>;
 
     // a pointer to the parent video, if there is one
     public readonly parentVideoXorName: Maybe<string>;
@@ -43,7 +46,7 @@ export default class Video implements Drop {
 
 
     private constructor(title: string, description: string, owner: string,
-                        file: Promise<string>, commentReplies: AppendableDataHandle,
+                        file: Maybe<Promise<string>>, commentReplies: AppendableDataHandle,
                         videoReplies: AppendableDataHandle, parentVideoXorName?: string) {
         this.title = title;
         this.description = description;
@@ -118,7 +121,7 @@ export default class Video implements Drop {
         });
 
         const v = new Video(title, description, "TODO OWNER",
-                            Promise.resolve(localVideoFile),
+                            Maybe.just(Promise.resolve(localVideoFile)),
                             commentReplies, videoReplies, parentVideoXorName);
         v.setVideoData(await v.write());
         return v;
@@ -128,7 +131,12 @@ export default class Video implements Drop {
     private async write(): Promise<StructuredDataHandle> {
 
         const safeVideoFile: string = `${CONFIG.SAFENET_VIDEO_DIR}/${this.title}`;
-        const localPath: string = await this.file;
+        const localPath: string =
+            await this.file.caseOf({
+                just: f => f,
+                nothing: () => { throw new Error(
+                    "Tried to write File which was read shallowly. This should be impossible.") }
+            });
 
         let fileSize: number = fs.statSync(localPath).size;
         let fStream: stream.Readable = fs.createReadStream(localPath);
@@ -164,12 +172,12 @@ export default class Video implements Drop {
         return viH;
     }
 
-    public static async readFromStringXorName(xorName: string): Promise<Video> {
+    public static async readFromStringXorName(xorName: string, fetchFile = true): Promise<Video> {
         return withDropP(await sc.dataID.deserialise(
-            Buffer.from(xorName, "base64")), n => Video.read(n));
+            Buffer.from(xorName, "base64")), n => Video.read(n, fetchFile));
     }
 
-    public static async read(dataId: DataIDHandle): Promise<Video> {
+    public static async read(dataId: DataIDHandle, fetchFile = true): Promise<Video> {
         const sdH: StructuredDataHandle =
             (await sc.structured.fromDataIdHandle(dataId)).handleId;
 
@@ -178,12 +186,6 @@ export default class Video implements Drop {
             throw new Error("Malformed VideoInfo response.");
 
         const vi: VideoInfo = toVI(vis);
-        const video: SafeFile = await sc.nfs.file.get("app", vi.videoFile);
-
-        const mimeType = fileType(video.body).mime;
-        if (CONFIG.SUPPORTED_VIDEO_MIME_TYPES.indexOf(mimeType) === -1) {
-            throw new UnsupportedVideoFormatError(mimeType);
-        }
 
         const videoReplies: AppendableDataHandle =
             (await sc.ad.fromDataIdHandle(
@@ -192,13 +194,32 @@ export default class Video implements Drop {
             (await sc.ad.fromDataIdHandle(
                 await sc.dataID.deserialise(vi.commentReplies))).handleId;
 
-        const videoFile: Promise<string> = new Promise((resolve, reject) => {
-            const fileLoc: string = `${CONFIG.APP_VIDEO_DIR}/${vi.title}`;
-            fs.writeFile(fileLoc, video.body, (err) => {
-                if (err) reject(err);
-                else resolve(fileLoc);
-            });
-        });
+
+        let videoFile: Maybe<Promise<string>>;
+        if (fetchFile) {
+            // TODO(ethan): this call should be going through the DNS API
+            // once support for that lands.
+            const video: SafeFile = await sc.nfs.file.get("app", vi.videoFile);
+
+            const mimeType = fileType(video.body).mime;
+            if (CONFIG.SUPPORTED_VIDEO_MIME_TYPES.indexOf(mimeType) === -1) {
+                throw new UnsupportedVideoFormatError(mimeType);
+            }
+
+            videoFile = Maybe.just(new Promise((resolve, reject) => {
+                const fileLoc: string = `${CONFIG.APP_VIDEO_DIR}/${vi.title}`;
+                fs.writeFile(fileLoc, video.body, (err) => {
+                    if (err) reject(err);
+                    else resolve(fileLoc);
+                });
+            }));
+        } else {
+            // This way is more reasonable
+            //    videoFile = Promise.reject(new Error("You asked me not to download the video file!"));
+            // but the below way prevents a PromiseRejectionWarning (which will be a hard error in
+            // node 7.x).
+            videoFile = Maybe.nothing<Promise<string>>();
+        }
 
         const v = new Video(vi.title, vi.description, vi.owner,
                             videoFile, commentReplies, videoReplies, vi.parentVideoXorName);
