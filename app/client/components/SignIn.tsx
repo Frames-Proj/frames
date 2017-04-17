@@ -2,7 +2,11 @@ import * as React from 'react';
 import { Jumbotron } from 'react-bootstrap';
 import { prepareSignIn, addLongName, updateLongName } from '../../client/ts/signIn-utils';
 
-export class SignIn extends React.Component<{}, {}> {
+interface SignInProp {
+    updateLongName: () => any
+}
+
+export class SignIn extends React.Component<SignInProp, {}> {
 
     componentDidMount() {
         prepareSignIn.bind(this)();
@@ -11,15 +15,8 @@ export class SignIn extends React.Component<{}, {}> {
     render() {
         return (
             <div>
-                <Jumbotron style={{
-                    width: '100%',
-                    padding: '50px'
-                }}>
-                    <h1>SignIn</h1>
-                    <p>Choose a longName to represent you</p>
-                </Jumbotron>
-                <div style={{padding: "50px"}}>
-                    <h2>Select or Create a LongName</h2>
+                <div>
+                    <h4>Select or Create a LongName</h4>
                     <p>Select a LongName here</p>
                     <select ref="nameDropdown" onChange={updateLongName.bind(this)}></select>
                     <p> Or you can create a longname </p>
