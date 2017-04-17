@@ -7,6 +7,7 @@ export class SignIn extends React.Component<{}, {}> {
     componentDidMount() {
         prepareSignIn.bind(this)();
     }
+
     render() {
         return (
             <div>

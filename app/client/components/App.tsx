@@ -5,6 +5,8 @@ import { NavLink } from 'react-router-dom'
 import { Home } from './Home';
 import { FramesURLBar } from "./FramesURLBar";
 
+import Config from "../ts/global-config";
+
 export interface AppProps {
     routes: {
         title: string,
@@ -15,10 +17,15 @@ export interface AppProps {
     }[]
 }
 
-export class App extends React.Component<AppProps, {}> {
+export interface AppState {
+    longName: string
+}
+
+export class App extends React.Component<AppProps, AppState> {
 
     constructor() {
         super();
+        this.state = { longName: Config.getInstance().getLongName() };
     }
 
     static contextTypes = {
@@ -28,6 +35,16 @@ export class App extends React.Component<AppProps, {}> {
             }).isRequired,
             staticContext: React.PropTypes.object
         }).isRequired
+    }
+
+    updateLongName() {
+        this.setState({ longName: Config.getInstance().getLongName() });
+    }
+
+    componentDidUpdate() {
+        if (this.state.longName !== Config.getInstance().getLongName()) {
+            this.setState({ longName: Config.getInstance().getLongName() });
+        }
     }
 
     render() {
@@ -120,7 +137,7 @@ export class App extends React.Component<AppProps, {}> {
                             }}>
                                 <i className="fa fa-user-circle-o" aria-hidden="true" style={{
                                     marginRight: '5px'
-                                }}></i> Nicholas
+                                }}></i> {this.state.longName}
                             </div>
                         </div>
                         <div style={{
