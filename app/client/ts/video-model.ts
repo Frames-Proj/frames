@@ -44,6 +44,46 @@ export default class Video implements Drop {
     private videoData: StructuredDataHandle; // the data on the network
     private metadata: Promise<StructuredDataMetadata>;
 
+    public async getNumComments(): Promise<number> {
+        return (await this.commentMetadata).dataLength;
+    }
+    public async getComment(i: number): Promise<VideoComment> {
+        if (i >= await this.getNumComments() || i < 0)
+            throw new Error(`Video::getComment(${i}) index not in range!`);
+
+        return withDropP(await this.commentReplies.at(i), (di) => {
+            return VideoComment.read(di);
+        });
+    }
+    public async getCommentXorName(i: number): Promise<string> {
+        if (i >= await this.getNumComments() || i < 0)
+            throw new Error(`Video::getCommentXorName(${i}) index not in range!`);
+
+        return withDropP(await this.commentReplies.at(i), async (di) => {
+            return (await di.serialise()).toString("base64");
+        });
+    }
+
+    public async getNumReplyVideos(): Promise<number> {
+        return (await this.videoRepliesMetadata).dataLength;
+    }
+    public async getReplyVideo(i: number): Promise<Video> {
+        if (i >= await this.getNumReplyVideos() || i < 0)
+            throw new Error(`Video::getNumReplyVideos(${i}) index not in range!`);
+
+        return withDropP(await this.videoReplies.at(i), async (vDId) => {
+            return Video.read(vDId);
+        });
+    }
+    public async getReplyVideoXorName(i: number): Promise<string> {
+        if (i >= await this.getNumReplyVideos() || i < 0)
+            throw new Error(`Video::getReplyVideoXorName(${i}) index not in range!`);
+
+        return withDropP(await this.videoReplies.at(i), async (di) => {
+            return (await di.serialise()).toString("base64");
+        });
+    }
+
 
     private constructor(title: string, description: string, owner: string,
                         file: Maybe<Promise<string>>, commentReplies: AppendableDataHandle,
@@ -252,29 +292,6 @@ export default class Video implements Drop {
 
     }
 
-    public async getNumComments(): Promise<number> {
-        return (await this.commentMetadata).dataLength;
-    }
-    public async getComment(i: number): Promise<VideoComment> {
-        if (i >= await this.getNumComments() || i < 0)
-            throw new Error(`Video::getComment(${i}) index not in range!`);
-
-        return withDropP(await this.commentReplies.at(i), (di) => {
-            return VideoComment.read(di);
-        });
-    }
-
-    public async getNumReplyVideos(): Promise<number> {
-        return (await this.videoRepliesMetadata).dataLength;
-    }
-    public async getReplyVideo(i: number): Promise<Video> {
-        if (i >= await this.getNumReplyVideos() || i < 0)
-            throw new Error(`Video::getNumReplyVideos(${i}) index not in range!`);
-
-        return withDropP(await this.videoReplies.at(i), async (vDId) => {
-            return Video.read(vDId);
-        });
-    }
 
 };
 

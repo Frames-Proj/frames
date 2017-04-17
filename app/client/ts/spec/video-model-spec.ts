@@ -163,6 +163,36 @@ describe("A frames Video model", () => {
         done();
     });
 
+    it("can get it's child's XorName as a string.", async (done) => {
+        setCollectLeakStatsBlock("vms:test5 round-trip parent");
+
+        const parent: Video =
+            await failDone(Video.new("title " + makeid(), "Parent description.",
+                                    `${TEST_DATA_DIR}/test-vid.mp4`), done);
+        const child: Video =
+            await failDone(parent.addVideoReply("child title " + makeid(),
+                            "The child description.", `${TEST_DATA_DIR}/test-vid.mp4`), done);
+
+        const recoveredParent: Video =
+            await failDone(withDropP(await parent.xorName(), async pname => {
+                return await Video.read(pname, false);
+            }), done);
+
+        const childXorName = await failDone(recoveredParent.getReplyVideoXorName(0), done);
+        const recoveredChild: Video =
+            await failDone(Video.readFromStringXorName(childXorName), done);
+
+        expect(recoveredChild.title).toBe(child.title);
+        expect(recoveredChild.description).toBe(child.description);
+
+        await failDone(parent.drop(), done);
+        await failDone(child.drop(), done);
+        await failDone(recoveredChild.drop(), done);
+        await failDone(recoveredParent.drop(), done);
+
+        done();
+    });
+
 });
 
 
