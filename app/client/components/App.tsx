@@ -142,7 +142,9 @@ export class App extends React.Component<AppProps, AppState> {
                                 color: 'gray'
                             }}>
                                 <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={popoverClickRootClose}>
-                                    <div>
+                                    <div style={{
+                                        cursor: 'pointer'
+                                    }}>
                                         <i className="fa fa-user-circle-o" aria-hidden="true" style={{
                                             marginRight: '5px'
                                         }}></i> {this.state.longName}
