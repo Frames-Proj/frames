@@ -1,7 +1,7 @@
 
 import { LeakResults, getLeakStatistics } from "safe-launcher-client";
 
-export const TEST_DATA_DIR: string = `${__dirname}/../../../../../test-data`;
+export const TEST_DATA_DIR: string = `${__dirname}/../../test-data`;
 
 export function failDone<T>(promise: Promise<T>,
                             done: () => void): Promise<T> {

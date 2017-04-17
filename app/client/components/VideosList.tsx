@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Video } from './Video';
+import VideoThumbnail from "./VideoThumbnail";
 
 export class VideosList extends React.Component<{}, {}> {
 
@@ -7,16 +7,21 @@ export class VideosList extends React.Component<{}, {}> {
 
         var numVideos = 20;
 
-        var videos = [];
-        for (var i = 0; i < numVideos; ++i) {
-            videos.push(
-                <Video title={'Test Video ' + i}
-                       user='Me'
-                       length={45}
-                       thumbnail='test.jpg'
-                       key={i} />
-            );
-        }
+        // The idea is that we hardcode a bunch of root videos for various categories that
+        // people can reply to if they want their videos to be easier to find.
+        // A potential list of root video topics is below:
+        //  "Politics", "Sports", "Frames Meta", "Memes", "Random", "Technology",
+        //  "Music & Music Reviews", "Movies & Movie Reviews", "TV & TV Reviews",
+        //  "Art", "Books & Book Reviews", "Science", "Travel"
+
+        var videos: JSX.Element[] = [
+            // sports
+            <VideoThumbnail
+                xorName={"AdafsAAAAAAAAAAAAAAg7pUk7oRUjt4UnccreklFfuYF3ZQzc2RcRLHmAwpieIAAAAAAAAAB9Q"} />,
+            // art
+            <VideoThumbnail
+                xorName={"AAAAAAAAAAAAAAAgINq3PEnkFVN7CH0waEGtg+LP+h7Kup9poR6hueNrCQAAAAAAAAAB9Q"} />
+        ];
 
         return (
             <div className='videoslist' style={{

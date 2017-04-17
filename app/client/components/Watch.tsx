@@ -1,8 +1,6 @@
 import * as React from "react";
 import { Jumbotron, Navbar, Nav, NavItem } from "react-bootstrap";
 
-import { VideosNav } from "./Navbar";
-import { VideosList } from "./VideosList";
 import { Upload } from "./Upload";
 import Video from "../ts/video-model"
 import { SerializedDataID, withDropP } from "safe-launcher-client";
@@ -41,12 +39,16 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
         this.render.bind(this);
     }
 
-    private resolveVideo(props: VideoPlayerProps): void {
-        props.video.then(v =>
-            v.file.then( f => this.setState({ resolvedVideo: Maybe.just({
-                videoFile: f,
-                video: v
-            })}))
+    private resolveVideo(props: VideoPlayerProps): Promise<void> {
+        return props.video.then((v: Video) =>
+            v.file.caseOf({
+              nothing: () => Promise.reject<void>(
+                  "Watch.tsx:VideoPlayer:resolveVideo shallow video. Impossible."),
+              just: file => file.then(f => this.setState({ resolvedVideo: Maybe.just({
+                 videoFile: f,
+                 video: v
+              })}))
+            })
         );
     }
 

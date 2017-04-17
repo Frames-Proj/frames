@@ -132,6 +132,37 @@ describe("A frames Video model", () => {
         done();
     });
 
+    it("can be read without downloading the whole video.", async (done) => {
+        setCollectLeakStatsBlock("vms:test4 no video file");
+
+        const video: Video =
+            await failDone(Video.new("title " + makeid(), "A description.",
+                                    `${TEST_DATA_DIR}/test-vid.mp4`), done);
+
+        const dataId: SerializedDataID =
+            await failDone(withDropP(await video.xorName(), (dId: DataIDHandle) => {
+                return dId.serialise();
+            }), done);
+
+        const recoveredVideo: Video =
+            await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
+                return Video.read(dIdH, false);
+            }), done);
+
+        expect(recoveredVideo.title).toBe(video.title);
+        expect(recoveredVideo.description).toBe(video.description);
+
+        recoveredVideo.file.caseOf({
+            just: _ => { fail(); done(); },
+            nothing: () => null
+        });
+
+        await failDone(video.drop(), done);
+        await failDone(recoveredVideo.drop(), done);
+
+        done();
+    });
+
 });
 
 
