@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Jumbotron } from 'react-bootstrap';
-import { LongNameForm } from './LongName';
 import { prepareSignIn, addLongName, updateLongName } from '../../client/ts/signIn-utils';
 
 export class SignIn extends React.Component<{}, {}> {
