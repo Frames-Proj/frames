@@ -163,7 +163,7 @@ describe("A frames Video model", () => {
         done();
     });
 
-    fit("can get it's child's XorName as a string.", async (done) => {
+    it("can get it's child's XorName as a string.", async (done) => {
         setCollectLeakStatsBlock("vms:test5 round-trip parent");
 
         const parent: Video =
