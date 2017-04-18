@@ -8,6 +8,12 @@ import { SafeClient } from "safe-launcher-client";
 
 export type ValidationState = "error" | "success" | "warning";
 
+export class NoUserNameError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
 export const safeClient: SafeClient =
     new SafeClient(CONFIG.makeAuthPayload(), CONFIG.SAFE_LAUNCHER_ENDPOINT);
 

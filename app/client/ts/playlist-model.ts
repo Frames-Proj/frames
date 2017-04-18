@@ -6,8 +6,11 @@ import { SafeFile, withDropP, DataIDHandle,
          FromDataIDHandleResponse
        } from "safe-launcher-client";
 
-import { safeClient } from "./util";
+import { safeClient, NoUserNameError } from "./util";
+
 const sc = safeClient;
+import Config from "./global-config";
+const CONFIG = Config.getInstance();
 
 import Video from "./video-model";
 
@@ -91,7 +94,12 @@ export default class Playlist implements Drop {
     public static async new(title: string, description: string): Promise<Playlist> {
         const videoList: AppendableDataHandle = await sc.ad.create(title + " videos");
         await videoList.save();
-        let p = new Playlist([], videoList, title, description, "TODO OWNER");
+        const owner: string =
+            CONFIG.getLongName().caseOf({
+                just: n => n,
+                nothing: () => {throw new NoUserNameError("You need to select a username.");}
+            })
+        let p = new Playlist([], videoList, title, description, owner);
         p.setNetworkInfo(await p.write());
         return p;
     }

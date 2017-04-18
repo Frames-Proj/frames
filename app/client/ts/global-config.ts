@@ -6,6 +6,7 @@
 //
 import { InstantiationError } from "./error";
 import { AuthorizationPayload } from "safe-launcher-client";
+import { Maybe } from "./maybe";
 
 
 export default class Config {
@@ -33,12 +34,20 @@ export default class Config {
     public readonly SAFENET_VIDEO_DIR: string = "videos";
     public readonly APP_NAME: string = "Frames";
 
-    private CURRENT_LONG_NAME: string = "Guest";
-    public getLongName(): string {
+    // long name stuff. We thought we would avoid global state...
+    private CURRENT_LONG_NAME: Maybe<string> = Maybe.nothing<string>();
+    private longNameListeners: ((ln: Maybe<string>) => any)[] = [];
+    public getLongName(): Maybe<string> {
         return this.CURRENT_LONG_NAME;
     }
-    public setLongName(longName : string): void {
+    public setLongName(longName: Maybe<string>): void {
         this.CURRENT_LONG_NAME = longName;
+        for (let i = 0; i < this.longNameListeners.length; ++i) {
+            this.longNameListeners[i](longName);
+        }
+    }
+    public addLongNameChangeListener(f: (ln: Maybe<string>) => any): void {
+        this.longNameListeners.push(f);
     }
 
     public readonly SUPPORTED_VIDEO_MIME_TYPES = ["video/mp4"];
