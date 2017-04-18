@@ -2,20 +2,23 @@ import { safeClient } from "./util";
 import { SafeFile, DnsHomeDirectory, NfsFileData } from "safe-launcher-client";
 import Config from "./global-config";
 import { Maybe } from "./maybe";
-import * as stream from 'stream';
+import * as stream from "stream";
 
 const CONFIG: Config = Config.getInstance();
 const userProfileFilename = "userProfileData";
 
 export interface UserProfileData {
-    playlists: string[],
-    uploadedVideos: string[]
+    playlists: string[];
+    uploadedVideos: string[];
 }
 
 function toUserProfileData(obj: any): Maybe<UserProfileData> {
     const fail = Maybe.nothing<UserProfileData>();
-    const isStringArray: (arr: any) => boolean = (arr) =>
-        !(arr && arr instanceof Array && arr.every(playlist => typeof playlist === 'string'));
+
+    function isStringArray(arr: any): boolean {
+        return arr && arr instanceof Array && arr.every(pl => typeof pl === "string");
+    }
+
 
     if (!obj) {
         return fail;
@@ -56,10 +59,11 @@ export class UserProfile {
         const profileDataFile: SafeFile = await safeClient.dns.getFile(longName, CONFIG.SERVICE_NAME, userProfileFilename);
 
         const userProfileData: Maybe<UserProfileData> = toUserProfileData(JSON.parse(profileDataFile.body.toString()));
+
         return userProfileData.caseOf({
             just: data => new UserProfile(longName, data),
             nothing: () => {
-                throw new Error('Error reading profile data file');
+                throw new Error("Error reading profile data file");
             }
         });
     }
@@ -103,10 +107,10 @@ export class UserProfile {
             dataStream.write(buffer, err => resolve());
         });
 
-        await safeClient.nfs.file.create('app',
+        await safeClient.nfs.file.create("app",
                                          `${homeDir.info.name}/${userProfileFilename}`,
                                          dataStream,
                                          buffer.byteLength,
-                                         'text/plain');
+                                         "text/plain");
     }
 };
