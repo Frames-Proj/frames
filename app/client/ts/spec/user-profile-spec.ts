@@ -17,10 +17,8 @@ describe("The user profile data store", () => {
         await failDone(safeClient.dns.registerAndAddService(
             VALID_LONG_NAME, CONFIG.SERVICE_NAME, "app", HOME_DIR), done);
 
-        await sleep(2000);
-
         done();
-    }, 5000);
+    });
 
     it("can detect when no profile exists", async (done) => {
         try {

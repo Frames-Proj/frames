@@ -71,7 +71,7 @@ describe("A playlist model", () => {
         done();
     });
 
-    fit("can be serialized with videos in the list", async (done) => {
+    it("can be serialized with videos in the list", async (done) => {
         setCollectLeakStatsBlock("pms:test4 append round trip");
 
         const video: Video =
