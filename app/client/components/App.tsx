@@ -1,9 +1,12 @@
 import * as React from 'react';
-import { Tab, Row, Col, Nav, NavItem } from 'react-bootstrap';
+import { Tab, Row, Col, Nav, NavItem, OverlayTrigger, Popover} from 'react-bootstrap';
 import { NavLink } from 'react-router-dom'
 
 import { Home } from './Home';
 import { FramesURLBar } from "./FramesURLBar";
+import { SignIn } from './SignIn';
+
+import Config from "../ts/global-config";
 
 export interface AppProps {
     routes: {
@@ -15,10 +18,15 @@ export interface AppProps {
     }[]
 }
 
-export class App extends React.Component<AppProps, {}> {
+export interface AppState {
+    longName: string
+}
+
+export class App extends React.Component<AppProps, AppState> {
 
     constructor() {
         super();
+        this.state = { longName: Config.getInstance().getLongName() };
     }
 
     static contextTypes = {
@@ -30,7 +38,22 @@ export class App extends React.Component<AppProps, {}> {
         }).isRequired
     }
 
+    updateLongName() {
+        this.setState({ longName: Config.getInstance().getLongName() });
+    }
+
+    componentDidUpdate() {
+        if (this.state.longName !== Config.getInstance().getLongName()) {
+            this.setState({ longName: Config.getInstance().getLongName() });
+        }
+    }
+
     render() {
+        const popoverClickRootClose = (
+            <Popover id="popover-trigger-click-root-close" title="Sign In">
+                <SignIn updateLongName={this.updateLongName.bind(this)}/>
+            </Popover>
+        );
         return (
             <div style={{
                 width: '100%',
@@ -118,9 +141,15 @@ export class App extends React.Component<AppProps, {}> {
                                 padding: '5px 0px',
                                 color: 'gray'
                             }}>
-                                <i className="fa fa-user-circle-o" aria-hidden="true" style={{
-                                    marginRight: '5px'
-                                }}></i> Nicholas
+                                <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={popoverClickRootClose}>
+                                    <div style={{
+                                        cursor: 'pointer'
+                                    }}>
+                                        <i className="fa fa-user-circle-o" aria-hidden="true" style={{
+                                            marginRight: '5px'
+                                        }}></i> {this.state.longName}
+                                    </div>
+                                </OverlayTrigger>
                             </div>
                         </div>
                         <div style={{

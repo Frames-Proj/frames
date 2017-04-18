@@ -43,4 +43,5 @@ export function updateLongName() {
     const config = Config.getInstance();
     const longName = this.refs.nameDropdown.value;
     config.setLongName(longName);
+    this.props.updateLongName();
 }
