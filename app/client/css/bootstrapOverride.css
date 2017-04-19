@@ -78,3 +78,40 @@
 #navbtn-back:hover {
     color: white;
 }
+
+#add-reply,
+#add-comment {
+    cursor: pointer;
+    background-color: white;
+    font-size: 12px;
+    padding: 5px 10px;
+    border: solid 1px gray;
+    border-radius: 5px;
+}
+
+#add-reply i,
+#add-comment i {
+    padding-right: 5px;
+}
+
+#add-reply:hover,
+#add-comment:hover {
+    border-color: green;
+    color: green;
+}
+
+#replies .video-thumbnail {
+    margin-bottom: 15px;
+}
+
+#replies .video-thumbnail:last-child {
+    margin-bottom: 0px;
+}
+
+#comments-frame .comment {
+    margin-top: 15px;
+}
+
+#comments-frame .comment:last-child {
+    margin-bottom: 15px;
+}

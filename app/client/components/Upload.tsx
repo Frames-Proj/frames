@@ -17,7 +17,7 @@ import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
 
 interface UploadProps {
-    replyVideo: Promise<Video>;
+    replyVideo: Video;
     redirect: (route: string) => void;
 }
 
