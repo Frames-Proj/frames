@@ -62,6 +62,8 @@ const sidebarRoutes: SidebarRoute[] = [
 ];
 
 class Root extends React.Component<{}, {signedIn: boolean}> {
+    private static didAttachListener: boolean = false;
+
     constructor() {
         super();
         this.state = {
@@ -71,12 +73,15 @@ class Root extends React.Component<{}, {signedIn: boolean}> {
             })
         };
 
-        CONFIG.addLongNameChangeListener((longNameOpt: Maybe<string>) => {
-            longNameOpt.caseOf({
-                just: (_: string) => this.setState({ signedIn: true }),
-                nothing: () => this.setState({ signedIn: false })
+        if (!Root.didAttachListener) {
+            CONFIG.addLongNameChangeListener((longNameOpt: Maybe<string>) => {
+                longNameOpt.caseOf({
+                    just: (_: string) => this.setState({ signedIn: true }),
+                    nothing: () => this.setState({ signedIn: false })
+                });
             });
-        });
+            Root.didAttachListener = true;
+        }
     }
 
     render() {
