@@ -83,7 +83,7 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
     private getDate(d: Date): JSX.Element {
 
         const now: Date = new Date();
-        const diff: number = now as number - d as number;
+        const diff: number = now.getTime() - d.getTime();
         var commentTime: string = "";
         var ago: number;
 
