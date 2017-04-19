@@ -8,6 +8,7 @@ import { Discover } from './components/Discover';
 import { Upload } from "./components/Upload";
 import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
+import { UserOverview } from './components/Me';
 import startupHook from "./ts/startup-hooks";
 
 const sidebarRoutes = [
@@ -38,8 +39,15 @@ const sidebarRoutes = [
         exact: false,
         component: Hist,
         show: true
+    },
+    {
+        title: 'Me',
+        path: '/me',
+        exact: false,
+        component: UserOverview,
+        show: true
     }
-]
+];
 
 class Root extends React.Component<{}, {}> {
     constructor() {
