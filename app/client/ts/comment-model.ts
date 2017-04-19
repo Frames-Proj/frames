@@ -22,7 +22,7 @@ export default class VideoComment implements Drop {
 
     // A 53 bit integer (thanks javascript!) representing the number of
     // seconds since unix epoch at the last edit.
-    public readonly date: number;
+    public readonly date: Date;
 
     // The structured data version of the parent at the time of
     // the last edit. Including this info will make it easier for
@@ -118,7 +118,7 @@ export default class VideoComment implements Drop {
         const comment = await VideoComment.new(
             owner,
             text,
-            Math.floor(new Date().getTime() / 1000),
+            new Date().getTime(),
             (await this.metadata).version,
             false,
             await this.commentData.toDataIdHandle());

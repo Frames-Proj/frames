@@ -276,7 +276,7 @@ export default class Video implements Drop {
         const comment = await VideoComment.new(
             owner,
             text,
-            Math.floor(new Date().getTime() / 1000),
+            new Date().getTime(),
             (await this.metadata).version,
             true,
             await this.videoData.toDataIdHandle());
