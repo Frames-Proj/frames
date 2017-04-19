@@ -41,7 +41,7 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
         this.setComments(nextProps.video);
     }
 
-    private getAllComments(v: Video, curr: number, total: number, comments: JSX.Element[]): void {
+    private getAllComments(v: Video, curr: number, total: number, comments: VideoComment[]): void {
         if (total == 0) {
             this.setState({ comments: Maybe.just(
                 [<div>
@@ -49,10 +49,17 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
                 </div>])
             });
         } else if (curr == total) {
-            this.setState({ comments: Maybe.just(comments) });
-        } else {
-            v.getComment(curr).then(vc => {
-                comments.push(
+            comments.sort((a, b) => {
+                if (a.date < b.date)
+                    return -1;
+                else if (a.date == b.date)
+                    return 0;
+                else
+                    return 1;
+            });
+
+            var commentsJSX: JSX.Element[] = comments.map((vc) =>{
+                return (
                     <div className="comment" style={{
                         border: 'solid 1px #EAEAEA',
                         padding: '15px',
@@ -74,7 +81,13 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
                             { vc.text }
                         </div>
                     </div>
-                );
+                )
+            });
+
+            this.setState({ comments: Maybe.just(commentsJSX) });
+        } else {
+            v.getComment(curr).then(vc => {
+                comments.push(vc);
                 this.getAllComments(v, curr + 1, total, comments);
             });
         }
