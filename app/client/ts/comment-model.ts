@@ -47,7 +47,7 @@ export default class VideoComment implements Drop {
     private commentData: StructuredDataHandle;
     private metadata: Promise<StructuredDataMetadata>;
 
-    private constructor(owner: string, text: string, date: number,
+    private constructor(owner: string, text: string, date: Date,
                 parentVersion: number, isRootComment: boolean,
                 parent: DataIDHandle, replies: AppendableDataHandle) {
         this.owner = owner;
@@ -74,7 +74,7 @@ export default class VideoComment implements Drop {
         return this.commentData.toDataIdHandle();
     }
 
-    public static async new(owner: string, text: string, date: number,
+    public static async new(owner: string, text: string, date: Date,
                             parentVersion: number, isRootComment: boolean,
                             parent: DataIDHandle): Promise<VideoComment> {
         const replies: AppendableDataHandle = await sc.ad.create(uuidV4());
@@ -118,7 +118,7 @@ export default class VideoComment implements Drop {
         const comment = await VideoComment.new(
             owner,
             text,
-            new Date().getTime(),
+            new Date(),
             (await this.metadata).version,
             false,
             await this.commentData.toDataIdHandle());
@@ -174,14 +174,14 @@ export default class VideoComment implements Drop {
 interface CommentInfoBase {
     owner: string;
     text: string;
-    date: number;
+    date: Date;
     isRootComment: boolean;
     parentVersion: number;
 }
 function isCommentInfoBase(x: any): x is CommentInfoBase {
     return  ( typeof x.owner === "string"
               && typeof x.text === "string"
-              && typeof x.date === "number"
+              && typeof x.date === "string"
               && typeof x.isRootComment === "boolean"
               && typeof x.parentVersion === "number");
 }
@@ -198,7 +198,7 @@ function toCI(x: CommentInfoStringy): CommentInfo {
     return {
         owner: x.owner,
         text: x.text,
-        date: x.date,
+        date: new Date(x.date),
         isRootComment: x.isRootComment,
         parentVersion: x.parentVersion,
         parent: Buffer.from(x.parent, "base64"),

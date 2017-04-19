@@ -67,7 +67,7 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
                             <div style={{
                                 marginLeft: 'auto'
                             }}>
-                                { new Date(vc.date).getMonth() + 1 }/{ new Date(vc.date).getDate() }/{ new Date(vc.date).getFullYear() }
+                                { this.getDate(vc.date)}
                             </div>
                         </div>
                         <div>
@@ -80,11 +80,54 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
         }
     }
 
+    private getDate(d: Date): JSX.Element {
+
+        const now: Date = new Date();
+        const diff: number = now as number - d as number;
+        var commentTime: string = "";
+        var ago: number;
+
+        const s_in_minute: number = 60000;
+        const s_in_hour: number = s_in_minute * 60;
+        const s_in_day: number = s_in_hour * 24;
+        const s_in_week: number = s_in_day * 7;
+        const s_in_month: number = s_in_week * 31;
+        const s_in_year: number = s_in_month * 12;
+
+        if (diff < s_in_minute) {
+            ago = Math.floor((diff) / 1000);
+            commentTime = ago + " second" + (ago == 1 ? "" : "s") + " ago"
+        } else if (diff < s_in_hour) {
+            ago = Math.floor((diff) / s_in_minute);
+            commentTime = ago + " minute" + (ago == 1 ? "" : "s") + " ago"
+        } else if (diff < s_in_day) {
+            ago = Math.floor((diff) / s_in_hour);
+            commentTime = ago + " hour" + (ago == 1 ? "" : "s") + " ago"
+        } else if (diff < s_in_week) {
+            ago = Math.floor((diff) / s_in_day);
+            commentTime = ago + " day" + (ago == 1 ? "" : "s") + " ago"
+        } else if (diff < s_in_month) {
+            ago = Math.floor((diff) / s_in_week);
+            commentTime = ago + " week" + (ago == 1 ? "" : "s") + " ago"
+        } else if (diff < s_in_year) {
+            ago = Math.floor((diff) / s_in_month);
+            commentTime = ago + " month" + (ago == 1 ? "" : "s") + " ago"
+        } else {
+            ago = Math.floor((diff) / s_in_year);
+            commentTime = ago + " year" + (ago == 1 ? "" : "s") + " ago"
+        }
+
+        return (<div>{ commentTime }</div>)
+    }
+
     private postComment(): void {
         const comment: string = (document.getElementById("comment-field") as HTMLInputElement).value;
-        console.log("posting: ", comment);
         (document.getElementById("comment-field") as HTMLInputElement).value = "";
-        this.props.video.addComment(comment).then(() => console.log("success!"));
+        this.props.video.addComment(comment).then(() => {
+            this.setState({ comments: Maybe.nothing<JSX.Element[]>() });
+            this.setComments(this.props.video);
+        });
+       
     }
 
     public render() {
@@ -117,7 +160,8 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
                         height: '50px',
                         width: '100%',
                         resize: 'vertical',
-                        border: 'solid 1px #EAEAEA'
+                        border: 'solid 1px #EAEAEA',
+                        padding: '15px'
                     }}/>
                     <div style={{
                         width: '100%',
