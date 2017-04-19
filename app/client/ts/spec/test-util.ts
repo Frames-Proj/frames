@@ -1,7 +1,7 @@
 
 import { LeakResults, getLeakStatistics } from "safe-launcher-client";
 
-export const TEST_DATA_DIR: string = `${__dirname}/../../test-data`;
+export const TEST_DATA_DIR: string = `${__dirname}/../../client/ts/spec/test-data`;
 
 export function failDone<T>(promise: Promise<T>,
                             done: () => void): Promise<T> {
@@ -11,14 +11,23 @@ export function failDone<T>(promise: Promise<T>,
     });
 }
 
-export function makeid() {
+function buildString(possibleChars: string, finalLength: number) {
     let text = "";
+    for (let i = 0; i < finalLength; i++) {
+        text += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
+    }
+    return text;
+}
+
+export function makeid() {
     let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for (let i = 0; i < 15; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return buildString(possible, 15);
+}
 
-    return text;
+export function makeAlphaid() {
+    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    return buildString(possible, 15);
 }
 
 export function checkForLeakErrors(): void {
@@ -34,4 +43,8 @@ export function checkForLeakErrors(): void {
             }
         }
     }
+}
+
+export function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
 }

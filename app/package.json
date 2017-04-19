@@ -29,7 +29,7 @@
     "@types/uuid": "^2.0.29",
     "awesome-typescript-loader": "^3.0.8",
     "copy-webpack-plugin": "^4.0.1",
-    "electron": "^1.4.4",
+    "electron": "^1.6.2",
     "jasmine": "^2.5.3",
     "jasmine-check": "^0.1.5",
     "json-loader": "^0.5.4",

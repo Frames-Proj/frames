@@ -19,7 +19,7 @@ import { ApiClientConfig } from "./src/ts/client";
 import { NfsClient, NfsDirectoryClient, NfsFileClient, NfsDirectoryData,
          NfsDirectoryInfo, NfsFileData, SafeFile
        } from "./src/ts/nfs";
-import { DnsClient } from "./src/ts/dns";
+import { DnsHomeDirectory, DnsClient } from "./src/ts/dns";
 
 import { AppendableDataClient, AppendableDataHandle,
          AppedableDataMetadata, FromDataIDHandleResponse } from "./src/ts/appendable-data";
@@ -39,7 +39,7 @@ export { NfsClient, NfsFileClient, NfsDirectoryClient,
          TYPE_TAG_VERSIONED, TYPE_TAG_UNVERSIONED, SerializedDataID,
          StructuredDataMetadata, setCollectLeakStats, setCollectLeakStatsBlock,
          getLeakStatistics, LeakResults, FromDataIDHandleResponse, ApiClientConfig,
-         StructuredDeserialiseResponse
+         StructuredDeserialiseResponse, DnsClient, DnsHomeDirectory
        };
 
 
