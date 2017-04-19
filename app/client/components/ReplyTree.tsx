@@ -84,7 +84,7 @@ export default class ReplyTree extends React.Component<ReplyTreeProps, ReplyTree
                 padding: '30px'
             }}>
                 {this.state.parent.caseOf({
-                    nothing: () => {},
+                    nothing: () => null,
                     just: parent => (
                         <div>
                             <div style={{
