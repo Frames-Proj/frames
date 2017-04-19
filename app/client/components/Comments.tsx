@@ -8,12 +8,18 @@ import { PropTypes } from "react";
 
 import { Maybe } from "../ts/maybe";
 
+import Config from "../ts/global-config";
+const CONFIG: Config = Config.getInstance();
+
 interface CommentsProps {
     video: Video;
 }
 
 interface CommentsState {
+    signedIn: boolean;
     comments: Maybe<JSX.Element[]>;
+    commentValue: string;
+    submissionStatus: Maybe<string>;
 }
 
 export default class ReplyTree extends React.Component<CommentsProps, CommentsState> {
@@ -21,11 +27,16 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
     constructor(props: CommentsProps) {
         super(props);
         this.state = {
-            comments: Maybe.nothing<JSX.Element[]>()
+            signedIn: this.signedIn(),
+            comments: Maybe.nothing<JSX.Element[]>(),
+            commentValue: '',
+            submissionStatus: Maybe.nothing<string>()
         }
         this.render.bind(this);
         this.postComment = this.postComment.bind(this);
+        this.handleCommentChange = this.handleCommentChange.bind(this);
         this.setComments(this.props.video);
+        CONFIG.addLongNameChangeListener(() => this.setState({signedIn: this.signedIn()}));
     }
 
     private setComments(v: Video): Promise<void> {
@@ -133,17 +144,70 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
         return (<div>{ commentTime }</div>)
     }
 
+    private handleCommentChange(event): void {
+        this.setState({ commentValue: event.target.value });
+    }
+
+    // check a username and set the component validation state accordingly
+    // fires on every username change as well as on component creation.
+    private signedIn() {
+        console.log(CONFIG.getLongName().isJust());
+        return CONFIG.getLongName().isJust();
+    }
+
     private postComment(): void {
-        const comment: string = (document.getElementById("comment-field") as HTMLInputElement).value;
-        (document.getElementById("comment-field") as HTMLInputElement).value = "";
-        this.props.video.addComment(comment).then(() => {
-            this.setState({ comments: Maybe.nothing<JSX.Element[]>() });
+
+        // no blank comments
+        if (this.state.commentValue == '')
+            return;
+
+        this.props.video.addComment(this.state.commentValue).then(() => {
+            this.setState({ 
+                comments: Maybe.nothing<JSX.Element[]>() ,
+                commentValue: ''
+            });
             this.setComments(this.props.video);
         });
-       
+
     }
 
     public render() {
+
+        var commentForm: JSX.Element; 
+
+        if (this.state.signedIn) {
+            commentForm = (
+                <div>
+                    <textarea onChange={this.handleCommentChange} value={this.state.commentValue} id="comment-field" style={{
+                        height: '50px',
+                        width: '100%',
+                        resize: 'vertical',
+                        border: 'solid 1px #EAEAEA',
+                        padding: '15px'
+                    }}/>
+                    <div style={{
+                        width: '100%',
+                        display: 'flex'
+                    }}>
+                        <button onClick={this.postComment} id="add-comment" style={{
+                            marginTop: '10px',
+                            marginLeft: 'auto'
+                        }} ><i className="fa fa-plus-circle" aria-hidden="true" ></i> Add Your Comment</button>
+                    </div>
+                </div>
+            );
+        } else {
+            commentForm = (
+                <div style={{
+                    flex: 1,
+                    marginTop: '10px',
+                    padding: '2px',
+                    color: 'red'
+                }}>
+                    To add your own comment, please sign in.
+                </div>
+            );
+        }
 
         return (
             <div style={{
@@ -169,22 +233,7 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
                     })}
                 </div>
                 <div>
-                    <textarea id="comment-field" style={{
-                        height: '50px',
-                        width: '100%',
-                        resize: 'vertical',
-                        border: 'solid 1px #EAEAEA',
-                        padding: '15px'
-                    }}/>
-                    <div style={{
-                        width: '100%',
-                        display: 'flex'
-                    }}>
-                        <button onClick={this.postComment} id="add-comment" style={{
-                            marginTop: '10px',
-                            marginLeft: 'auto'
-                        }} ><i className="fa fa-plus-circle" aria-hidden="true" ></i> Add Your Comment</button>
-                    </div>
+                    { commentForm }
                 </div>
             </div>
         );
