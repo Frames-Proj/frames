@@ -7,10 +7,13 @@ import { DataIDHandle, SerializedDataID, AppendableDataHandle, Drop,
 
 import * as crypto from "crypto";
 
-import { safeClient } from "./util";
+import { safeClient, NoUserNameError } from "./util";
 const sc = safeClient;
 
 import * as uuidV4 from "uuid/v4";
+
+import Config from "./global-config";
+const CONFIG = Config.getInstance();
 
 export default class VideoComment implements Drop {
 
@@ -82,8 +85,6 @@ export default class VideoComment implements Drop {
         return vc;
     }
 
-    // TODO(ethan): test to make sure that this does not fail when dereferencing
-    // the root comment.
     public static async read(did: DataIDHandle): Promise<VideoComment> {
         const sdH: StructuredDataHandle =
             (await sc.structured.fromDataIdHandle(did)).handleId;
@@ -108,8 +109,14 @@ export default class VideoComment implements Drop {
     }
 
     public async addComment(text: string): Promise<VideoComment> {
+        const owner: string =
+            CONFIG.getLongName().caseOf({
+                just: n => n,
+                nothing: () => {throw new NoUserNameError("You need to select a username.");}
+            });
+
         const comment = await VideoComment.new(
-            "TODO OWNER",
+            owner,
             text,
             Math.floor(new Date().getTime() / 1000),
             (await this.metadata).version,

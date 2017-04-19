@@ -1,5 +1,6 @@
 import { safeClient } from "./util";
 import Config from "./global-config"
+import { Maybe } from "./maybe";
 
 //load the current longNames into the list
 async function loadNames(): Promise<void> {
@@ -16,7 +17,7 @@ async function loadNames(): Promise<void> {
     });
 
     dropdown.add(new Option("Guest", "Guest"));
-    dropdown.value = Config.getInstance().getLongName();
+    dropdown.value = Config.getInstance().getLongName().valueOr("Guest");
 }
 
 export async function addLongName(): Promise<void> {
@@ -41,7 +42,7 @@ export function prepareSignIn() {
 
 export function updateLongName() {
     const config = Config.getInstance();
-    const longName = this.refs.nameDropdown.value;
-    config.setLongName(longName);
+    const longName: string = this.refs.nameDropdown.value;
+    config.setLongName(longName === "Guest" ? Maybe.nothing<string>() : Maybe.just(longName));
     this.props.updateLongName();
 }
