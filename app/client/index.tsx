@@ -61,6 +61,11 @@ const sidebarRoutes: SidebarRoute[] = [
     }
 ];
 
+const signInRequiredTitles: string[] = [
+    'Me',
+    'Upload'
+];
+
 class Root extends React.Component<{}, {signedIn: boolean}> {
     private static didAttachListener: boolean = false;
 
@@ -85,7 +90,7 @@ class Root extends React.Component<{}, {signedIn: boolean}> {
     }
 
     render() {
-        const showSidebarRoutes = sidebarRoutes.filter((s: SidebarRoute) => this.state.signedIn || s.title !== 'Me');
+        const showSidebarRoutes = sidebarRoutes.filter((s: SidebarRoute) => this.state.signedIn || signInRequiredTitles.indexOf(s.title) === -1);
         return (
             <div style={{
                 width: '100%',
