@@ -1,11 +1,14 @@
 import * as React from "react";
 import { Jumbotron, Navbar, Nav, NavItem } from "react-bootstrap";
 
-import { Upload } from "./Upload";
 import Video from "../ts/video-model"
 import { SerializedDataID, withDropP } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";
+import VideoThumbnail from "./VideoThumbnail"
 import { PropTypes } from "react";
+import ReplyTree from "./ReplyTree";
+import VideoInfo from "./VideoInfo";
+import Comments from "./Comments";
 
 import { safeClient, WATCH_URL_RE } from "../ts/util";
 import { Maybe } from "../ts/maybe";
@@ -23,7 +26,6 @@ interface ResolvedVideo {
 }
 
 interface VideoPlayerState {
-    reply: boolean;
     resolvedVideo: Maybe<ResolvedVideo>;
 }
 class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
@@ -31,7 +33,6 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
     constructor(props: VideoPlayerProps) {
         super(props);
         this.state = {
-            reply: false,
             resolvedVideo: Maybe.nothing<ResolvedVideo>()
         };
         // wait for the download to finish
@@ -44,10 +45,12 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
             v.file.caseOf({
               nothing: () => Promise.reject<void>(
                   "Watch.tsx:VideoPlayer:resolveVideo shallow video. Impossible."),
-              just: file => file.then(f => this.setState({ resolvedVideo: Maybe.just({
-                 videoFile: f,
-                 video: v
-              })}))
+              just: file => file.then(f => {
+                  this.setState({ resolvedVideo: Maybe.just({
+                     videoFile: f,
+                     video: v
+                  })});
+              })
             })
         );
     }
@@ -57,31 +60,57 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
     }
 
     public render() {
+
         function mkActualPlayer(rv: ResolvedVideo): JSX.Element {
-            return (<div>
-                <h1>{rv.video.title}</h1>
-                {/* TODO: get the correct mime type from the video model */}
-                <video width={600} controls src={`file://${rv.videoFile}`} type={"video/mp4"} />
-                <p>{rv.video.description}</p>
-                <button onClick={() => this.setState({ reply: true })}>reply</button>
-                {rv.video.parentVideoXorName.caseOf({
-                    nothing: () => <p>This is a root video</p>,
-                    just: n => <p>{`parent= frames://${n}`}</p>
-                })}
-            </div>);
+            return (
+                <div style={{
+                    height: '100%',
+                    width: '100%',
+                    overflow: 'scroll'
+                }}>
+                    {/* TODO: get the correct mime type from the video model */}
+                    <div style={{
+                        height: '600px',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        backgroundColor: 'black'
+                    }}>
+                        <video controls src={`file://${rv.videoFile}`} type={"video/mp4"} style={{
+                            height: '600px',
+                            width: '100%',
+                            objectFit: 'contain',
+                            backgroundColor: 'none',
+                            margin: '0px auto'
+                        }} />
+                    </div>
+                    <div style={{
+                        display: 'flex',
+                        marginBottom: '30px'
+                    }}>
+                        <div style={{
+                            flex: '3',
+                            padding: '30px'
+                        }}>
+                            <VideoInfo video={rv.video}/>
+                            <Comments video={rv.video}/>
+                        </div>
+                        <div style={{
+                            flex: '1'
+                        }}>
+                            <ReplyTree video={rv.video} redirect={this.props.redirect}/>
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
-        if (this.state.reply) {
-            return <Upload replyVideo={this.props.video} redirect={(route) => {
-                this.props.redirect(route);
-                this.setState({ reply: false });
-            }}/>
-        } else {
-            return this.state.resolvedVideo.caseOf({
-                nothing: () => <ChasingArrowsLoadingImage />,
-                just: mkActualPlayer.bind(this)
-            });
-        }
+        return this.state.resolvedVideo.caseOf({
+            nothing: () => <ChasingArrowsLoadingImage />,
+            just: mkActualPlayer.bind(this)
+        });
+        
     }
 }
 
@@ -150,6 +179,7 @@ export class Watch extends React.Component<WatchProps, WatchState> {
     }
 
     render() {
+
         const body =
             this.state.badXorName ?
                 <Jumbotron style={{ width: '100%', padding: '50px' }}>
@@ -168,6 +198,7 @@ export class Watch extends React.Component<WatchProps, WatchState> {
                 {body}
             </div>
         );
+
     }
 
 };
