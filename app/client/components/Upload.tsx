@@ -71,7 +71,7 @@ export class Upload extends React.Component<UploadProps, UploadState> {
         this.appendHelp = this.appendHelp.bind(this);
 
         this.checkUsername(CONFIG.getLongName());
-        CONFIG.addLongNameChangeListener(this.checkUsername);
+        CONFIG.addLongNameChangeListener(this.checkUsername.bind(this));
     }
 
     // check a username and set the component validation state accordingly
