@@ -10,8 +10,20 @@ import { Watch } from "./components/Watch";
 import { Hist } from './components/Hist';
 import { UserOverview } from './components/Me';
 import startupHook from "./ts/startup-hooks";
+import Config from "./ts/global-config";
+import { Maybe } from "./ts/maybe";
 
-const sidebarRoutes = [
+const CONFIG: Config = Config.getInstance();
+
+interface SidebarRoute {
+    title: string;
+    path: string;
+    exact: boolean;
+    component: any,
+    show: boolean
+}
+
+const sidebarRoutes: SidebarRoute[] = [
     {
         title: 'Discover',
         path: '/',
@@ -49,21 +61,35 @@ const sidebarRoutes = [
     }
 ];
 
-class Root extends React.Component<{}, {}> {
+class Root extends React.Component<{}, {signedIn: boolean}> {
     constructor() {
         super();
+        this.state = {
+            signedIn: CONFIG.getLongName().caseOf({
+                just: _ => true,
+                nothing: () => false
+            })
+        };
+
+        CONFIG.addLongNameChangeListener((longNameOpt: Maybe<string>) => {
+            longNameOpt.caseOf({
+                just: (_: string) => this.setState({ signedIn: true }),
+                nothing: () => this.setState({ signedIn: false })
+            });
+        });
     }
 
     render() {
+        const showSidebarRoutes = sidebarRoutes.filter((s: SidebarRoute) => this.state.signedIn || s.title !== 'Me');
         return (
             <div style={{
                 width: '100%',
                 height: '100%'
             }}>
                 <Router>
-                    <App routes={sidebarRoutes}>
+                    <App routes={showSidebarRoutes}>
                         <Switch>
-                            {sidebarRoutes.map((route, index) => (
+                            {showSidebarRoutes.map((route, index) => (
                                 <Route key={index} path={route.path} exact={route.exact} component={route.component} />
                             ))}
                             <Redirect from="*" to="/"/>
