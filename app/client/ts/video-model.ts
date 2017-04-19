@@ -5,7 +5,7 @@ import { SafeFile, withDropP, DataIDHandle,
          Drop, AppedableDataMetadata, StructuredDataMetadata
        } from "safe-launcher-client";
 
-import { safeClient } from "./util";
+import { safeClient, NoUserNameError } from "./util";
 const sc = safeClient;
 import * as fs from "fs";
 import * as fileType from "file-type";
@@ -140,27 +140,27 @@ export default class Video implements Drop {
         const videoReplies: AppendableDataHandle =
             await sc.ad.create(title + " videoReplies");
 
-        await commentReplies.save().catch(err => {
-            // if the appendable data already exists, ignore the error.
-            // We don't need to update it.
-            if ((err.res != null && err.res.statusCode === 400)
-                && (err.res != null && err.res.body != null
-                    && err.res.body.errorCode === -23) ) {
-                return;
-            }
-            throw err;
+        function trySave(ad: AppendableDataHandle): Promise<void> {
+            return ad.save().catch(err => {
+                // if the appendable data already exists, ignore the error.
+                // We don't need to update it.
+                if ((err.res != null && err.res.statusCode === 400)
+                    && (err.res != null && err.res.body != null
+                        && err.res.body.errorCode === -23) ) {
+                    return;
+                }
+                throw err;
+            });
+        }
+        trySave(commentReplies);
+        trySave(videoReplies);
+
+        const owner: string = CONFIG.getLongName().caseOf({
+            just: n => n,
+            nothing: () => { throw new NoUserNameError("You must choose a username."); }
         });
 
-        await videoReplies.save().catch(err => {
-            if ((err.res != null && err.res.statusCode === 400)
-                && (err.res != null && err.res.body != null
-                    && err.res.body.errorCode === -23) ) {
-                return;
-            }
-            throw err;
-        });
-
-        const v = new Video(title, description, "TODO OWNER",
+        const v = new Video(title, description, owner,
                             Maybe.just(Promise.resolve(localVideoFile)),
                             commentReplies, videoReplies, parentVideoXorName);
         v.setVideoData(await v.write());
@@ -268,8 +268,13 @@ export default class Video implements Drop {
     }
 
     public async addComment(text: string): Promise<VideoComment> {
+        const owner: string = CONFIG.getLongName().caseOf({
+            just: n => n,
+            nothing: () => { throw new NoUserNameError("You must select a username."); }
+        });
+
         const comment = await VideoComment.new(
-            "TODO OWNER",
+            owner,
             text,
             Math.floor(new Date().getTime() / 1000),
             (await this.metadata).version,

@@ -11,6 +11,7 @@ import * as readChunk from "read-chunk";
 import Video from "../ts/video-model";
 import { ValidationState, safeClient as sc } from "../ts/util";
 import { withDropP, SerializedDataID } from "safe-launcher-client";
+import { Maybe } from "../ts/maybe";
 
 import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
@@ -68,6 +69,20 @@ export class Upload extends React.Component<UploadProps, UploadState> {
         this.setOk = this.setOk.bind(this);
         this.setErr = this.setErr.bind(this);
         this.appendHelp = this.appendHelp.bind(this);
+
+        this.checkUsername(CONFIG.getLongName());
+        CONFIG.addLongNameChangeListener(this.checkUsername);
+    }
+
+    // check a username and set the component validation state accordingly
+    // fires on every username change as well as on component creation.
+    private checkUsername(ln: Maybe<string>) {
+        if (ln.isJust()) {
+            this.setOk("username");
+        } else {
+            this.setErr("username", "error",
+                "You need to choose a username in the upper right hand corner in order to upload a video.");
+        }
     }
 
     private getTitleValid(): ValidationState {
@@ -91,6 +106,10 @@ export class Upload extends React.Component<UploadProps, UploadState> {
         if (this.state.validFlags.get("videoFile") == "error" ||
             this.state.validFlags.get("videoDescription") == "error" ||
             this.state.validFlags.get("videoTitle") == "error") {
+            return false;
+        }
+
+        if (CONFIG.getLongName().isNothing()) {
             return false;
         }
 
@@ -136,18 +155,24 @@ export class Upload extends React.Component<UploadProps, UploadState> {
         if (!ok) {
             this.setState({ errorModal: true });
         } else {
-            this.handleSubmit();
+            this.doSubmit();
         }
     }
 
-    private async handleSubmit() {
+    private async doSubmit() {
         let video: Video;
+        function catchErr(err): Promise<Video> {
+            console.error("Upload.tsx:Upload:doSubmit error. This should be impossible.");
+            console.error(err);
+            throw err;
+        }
         if (this.props.replyVideo === undefined) {
             video = await Video.new(this.state.videoTitle, this.state.videoDescription,
-                                    this.state.videoFile);
+                                    this.state.videoFile).catch(catchErr);
         } else {
-            video = await (this.props.replyVideo.addVideoReply(
-                this.state.videoTitle, this.state.videoDescription, this.state.videoFile));
+            video = await (await this.props.replyVideo)
+                .addVideoReply(this.state.videoTitle, this.state.videoDescription, this.state.videoFile)
+                .catch(catchErr);
         }
 
         withDropP(await video.xorName(), async (n) => {
@@ -237,7 +262,6 @@ export class Upload extends React.Component<UploadProps, UploadState> {
     private uploadForm() {
         return (
             <form
-                onSubmit={this.handleSubmit.bind(this)}
                 ref={f => this.form = f}
                 style={{padding: '20px 50px 0px'}}
             >

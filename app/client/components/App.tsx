@@ -5,6 +5,7 @@ import { NavLink } from 'react-router-dom'
 import { Home } from './Home';
 import { FramesURLBar } from "./FramesURLBar";
 import { SignIn } from './SignIn';
+import { Maybe } from "../ts/maybe";
 
 import Config from "../ts/global-config";
 
@@ -19,7 +20,7 @@ export interface AppProps {
 }
 
 export interface AppState {
-    longName: string
+    longName: Maybe<string>
 }
 
 export class App extends React.Component<AppProps, AppState> {
@@ -43,7 +44,7 @@ export class App extends React.Component<AppProps, AppState> {
     }
 
     componentDidUpdate() {
-        if (this.state.longName !== Config.getInstance().getLongName()) {
+        if (!this.state.longName.equals(Config.getInstance().getLongName(), (x, y) => x === y)) {
             this.setState({ longName: Config.getInstance().getLongName() });
         }
     }
@@ -147,7 +148,11 @@ export class App extends React.Component<AppProps, AppState> {
                                     }}>
                                         <i className="fa fa-user-circle-o" aria-hidden="true" style={{
                                             marginRight: '5px'
-                                        }}></i> {this.state.longName}
+                                        }}></i>
+                                        {this.state.longName.caseOf({
+                                            just: n => n,
+                                            nothing: () => "Guest"
+                                        })}
                                     </div>
                                 </OverlayTrigger>
                             </div>
