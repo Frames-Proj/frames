@@ -16,7 +16,7 @@ import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
 
 interface UploadProps {
-    replyVideo: Promise<Video>;
+    replyVideo: Video;
     redirect: (route: string) => void;
 }
 
@@ -146,8 +146,8 @@ export class Upload extends React.Component<UploadProps, UploadState> {
             video = await Video.new(this.state.videoTitle, this.state.videoDescription,
                                     this.state.videoFile);
         } else {
-            video = await (await this.props.replyVideo).addVideoReply(
-                this.state.videoTitle, this.state.videoDescription, this.state.videoFile);
+            video = await (this.props.replyVideo.addVideoReply(
+                this.state.videoTitle, this.state.videoDescription, this.state.videoFile));
         }
 
         withDropP(await video.xorName(), async (n) => {
