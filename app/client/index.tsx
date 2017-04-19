@@ -72,10 +72,7 @@ class Root extends React.Component<{}, {signedIn: boolean}> {
     constructor() {
         super();
         this.state = {
-            signedIn: CONFIG.getLongName().caseOf({
-                just: _ => true,
-                nothing: () => false
-            })
+            signedIn: CONFIG.getLongName().isJust()
         };
 
         if (!Root.didAttachListener) {
