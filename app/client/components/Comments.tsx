@@ -148,10 +148,7 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
         this.setState({ commentValue: event.target.value });
     }
 
-    // check a username and set the component validation state accordingly
-    // fires on every username change as well as on component creation.
     private signedIn() {
-        console.log(CONFIG.getLongName().isJust());
         return CONFIG.getLongName().isJust();
     }
 
