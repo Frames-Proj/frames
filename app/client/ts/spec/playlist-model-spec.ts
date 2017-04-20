@@ -3,6 +3,7 @@ import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors } from "./test-util
 
 import Playlist from "../playlist-model";
 import Video from "../video-model";
+import { Maybe } from "../maybe";
 
 import Config from "../global-config";
 const CONFIG: Config = Config.getInstance();
@@ -21,6 +22,7 @@ describe("A playlist model", () => {
     beforeAll(async (done) => {
         await failDone(startupHook(), done);
         setCollectLeakStats();
+        CONFIG.setLongName(Maybe.just("uwotm8"));
         done();
     });
 

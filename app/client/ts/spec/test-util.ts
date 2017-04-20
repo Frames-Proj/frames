@@ -1,5 +1,7 @@
 
 import { LeakResults, getLeakStatistics } from "safe-launcher-client";
+import { makeRandAlphaStr, makeRandStr } from "../util";
+import * as fs from "fs";
 
 export const TEST_DATA_DIR: string = `${__dirname}/../../client/ts/spec/test-data`;
 
@@ -11,24 +13,8 @@ export function failDone<T>(promise: Promise<T>,
     });
 }
 
-function buildString(possibleChars: string, finalLength: number) {
-    let text = "";
-    for (let i = 0; i < finalLength; i++) {
-        text += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
-    }
-    return text;
-}
-
-export function makeid() {
-    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    return buildString(possible, 15);
-}
-
-export function makeAlphaid() {
-    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    return buildString(possible, 15);
-}
+export const makeid = makeRandStr;
+export const makeAlphaid = makeRandAlphaStr;
 
 export function checkForLeakErrors(): void {
     const leakStats: LeakResults = getLeakStatistics();
@@ -43,6 +29,24 @@ export function checkForLeakErrors(): void {
             }
         }
     }
+}
+
+export async function diffFiles(f1: string, f2: string): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+        fs.readFile(f1, (err, b1) => {
+            if (err) {
+                reject(err);
+            } else {
+                fs.readFile(f2, (err, b2) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(b1.equals(b2));
+                    }
+                });
+            }
+        });
+    });
 }
 
 export function sleep(ms) {

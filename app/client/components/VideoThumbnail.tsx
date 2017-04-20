@@ -11,6 +11,7 @@ interface VideoThumbnailProps {
 
 interface VideoThumbnailState {
     resolvedVideo: Maybe<Video>;
+    resolvedVideoThumbnail: Maybe<string>;
     videoIsBad: boolean;
 }
 
@@ -30,11 +31,16 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
         super(props);
 
         Video.readFromStringXorName(props.xorName, false)
-             .then(v => this.setState({ resolvedVideo: Maybe.just(v) }))
+             .then((v: Video) => {
+                 this.setState({ resolvedVideo: Maybe.just(v) });
+                 v.thumbnailFile.then((tf: string) =>
+                     this.setState({ resolvedVideoThumbnail: Maybe.just(tf) }));
+             })
              .catch(_ => this.setState({ videoIsBad: true }));
 
         this.state = {
             resolvedVideo: Maybe.nothing<Video>(),
+            resolvedVideoThumbnail: Maybe.nothing<string>(),
             videoIsBad: false
         };
     }
@@ -63,9 +69,12 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
                         }}>
                             <div style={{
                                 height: "100px",
-                                width: "150px",
-                                background: "black"
+                                width: "150px"
                             }}>
+                                {this.state.resolvedVideoThumbnail.caseOf({
+                                    nothing: () => <ChasingArrowsLoadingImage />,
+                                    just: t => <img src={t} />
+                                })}
                             </div>
                             <span>
                                 { v.title }

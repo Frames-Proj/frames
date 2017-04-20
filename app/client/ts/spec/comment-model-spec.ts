@@ -3,6 +3,7 @@ import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors } from "./test-util
 
 import VideoComment from "../comment-model";
 import Video from "../video-model";
+import { Maybe } from "../maybe";
 
 import Config from "../global-config";
 const CONFIG: Config = Config.getInstance();
@@ -22,6 +23,7 @@ describe("A video comment model", () => {
     beforeAll(async (done) => {
         await failDone(startupHook(), done);
         setCollectLeakStats();
+        CONFIG.setLongName(Maybe.just("uwotm8"));
         done();
     });
 
@@ -83,7 +85,7 @@ describe("A video comment model", () => {
                 await sc.dataID.deserialise(xorName), d => VideoComment.read(d)), done);
 
         expect(deserialComment.text).toBe(comment.text);
-        expect(deserialComment.date).toBe(comment.date);
+        expect(deserialComment.date.getTime()).toBe(comment.date.getTime());
         expect(deserialComment.parentVersion).toBe(comment.parentVersion);
         expect((await deserialComment.parent.serialise())
                .equals(await comment.parent.serialise())).toBe(true);
@@ -116,7 +118,7 @@ describe("A video comment model", () => {
                 await sc.dataID.deserialise(xorName), d => VideoComment.read(d)), done);
 
         expect(deserialComment.text).toBe(comment.text);
-        expect(deserialComment.date).toBe(comment.date);
+        expect(deserialComment.date.getTime()).toBe(comment.date.getTime());
         expect(deserialComment.parentVersion).toBe(comment.parentVersion);
         expect((await deserialComment.parent.serialise())
                .equals(await comment.parent.serialise())).toBe(true);

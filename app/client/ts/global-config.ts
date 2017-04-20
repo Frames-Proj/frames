@@ -31,7 +31,9 @@ export default class Config {
 
     public readonly APP_HOME_DIR: string = "/tmp/frames-home";
     public readonly APP_VIDEO_DIR: string = this.APP_HOME_DIR + "/video-cache";
+    public readonly APP_THUMBNAIL_DIR: string = this.APP_HOME_DIR + "/thumbnail-cache";
     public readonly SAFENET_VIDEO_DIR: string = "videos";
+    public readonly SAFENET_THUMBNAIL_DIR: string = "thumbnails";
     public readonly APP_NAME: string = "Frames";
 
     // long name stuff. We thought we would avoid global state...

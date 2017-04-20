@@ -34,3 +34,22 @@ export async function fileExists(path: string): Promise<boolean> {
         });
     });
 }
+
+function buildString(possibleChars: string, finalLength: number) {
+    let text = "";
+    for (let i = 0; i < finalLength; i++) {
+        text += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
+    }
+    return text;
+}
+
+export function makeRandStr() {
+    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    return buildString(possible, 15);
+}
+
+export function makeRandAlphaStr() {
+    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    return buildString(possible, 15);
+}
