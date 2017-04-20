@@ -158,25 +158,35 @@
 %	MATERIALS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Materials}
+\begin{block}{How Frames Data is Stored on the SafeNET}
 
-The following materials were required to complete the research:
+  The SafeNET provides several primitive data-types that can be used
+  to build up complex data models for an app to use in order to store
+  content. Each of these primitive datatypes are uniquely identified by
+  an XorName, which can be thought of as a pointer for the SafeNET.
+  StructuredData provides a place to store blobs of data and
+  allows updates. AppendableData allows anyone with the right permissions
+  to append an XorName, which allows different users to collaboratively
+  build an interconnected data-structure. Below, StructuredData is shown
+  in blue, AppendableData is shown in purple, and SafeFiles are shown in
+  orange.
 
-\begin{itemize}
-\item Curabitur pellentesque dignissim
-\item Eu facilisis est tempus quis
-\item Duis porta consequat lorem
-\item Eu facilisis est tempus quis
-\end{itemize}
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{video-model.png}
+  \caption{Frames Video Model}
+  \label{fig:video-model}
+  \end{figure}
 
-The materials were prepared according to the steps outlined below:
+  The video model shown in figure \ref{fig:video-model} contains references to
+  other videos as well as comments, and the owners of videos. References to videos and comments
+  represented with an XorName, while references to owners of videos are
+  represented with LongNames which make use of the SafeNET's identity system.
 
-\begin{enumerate}
-\item Curabitur pellentesque dignissim
-\item Eu facilisis est tempus quis
-\item Duis porta consequat lorem
-\item Curabitur pellentesque dignissim
-\end{enumerate}
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{comment-model.png}
+  \caption{Frames Comment Model}
+  \label{fig:comment-model}
+  \end{figure}
 
 \end{block}
 
@@ -187,16 +197,22 @@ The materials were prepared according to the steps outlined below:
 \begin{column}{\onecolwid}\vspace{-.6in} % The second column within column 2 (column 2.2)
 
 %----------------------------------------------------------------------------------------
-%	METHODS
-%----------------------------------------------------------------------------------------
 
-\begin{block}{Methods}
+\begin{block}{}
 
-Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed laoreet accumsan mattis. Integer sapien tellus, auctor ac blandit eget, sollicitudin vitae lorem. Praesent dictum tempor pulvinar. Suspendisse potenti. Sed tincidunt varius ipsum, et porta nulla suscipit et. Etiam congue bibendum felis, ac dictum augue cursus a. \textbf{Donec} magna eros, iaculis sit amet placerat quis, laoreet id est. In ut orci purus, interdum ornare nibh. Pellentesque pulvinar, nibh ac malesuada accumsan, urna nunc convallis tortor, ac vehicula nulla tellus eget nulla. Nullam lectus tortor, \textit{consequat tempor hendrerit} quis, vestibulum in diam. Maecenas sed diam augue.
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{user-profile-model.png}
+  \caption{Frames UserProfile Model}
+  \label{fig:user-profile-model}
+  \end{figure}
+
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{playlist-model.png}
+  \caption{Frames Playlist Model}
+  \label{fig:playlist-model}
+  \end{figure}
 
 \end{block}
-
-%----------------------------------------------------------------------------------------
 
 \end{column} % End of column 2.2
 
