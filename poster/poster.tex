@@ -15,6 +15,7 @@
 \documentclass[final]{beamer}
 
 \usepackage[scale=1.24]{beamerposter} % Use the beamerposter package for laying out the poster
+\usepackage{caption}
 
 \usetheme{confposter} % Use the confposter theme supplied with this template
 
@@ -110,17 +111,6 @@
 
   \par
 
-  The core service of the SafeNET, peer-to-peer cloud storage, is implemented
-  with a distributed hash table similar to in design to Kademila.\cite{kademila}
-  This allows nodes run by ``farmers'' on the network to provide storage and find
-  SafeNET objects while maintaining a local view of the network. For their effort,
-  ``farmers'' are rewarded with SafeCoin. Users pay for their usage of the network
-  with SafeCoin. It is expected that most users will also want to be farmers in
-  in order to pay for their own usage. In this way the SafeNET sets up a system of
-  economic incentives to participate in the peer-to-peer network.
-
-  \par
-
   The SafeNET is different from other peer-to-peer storage and cryptocurrency projects
   primarily because the synergistic effects of the two classes of technology.
   Peer-to-peer storage is a relatively solved problem from a technical point of view,
@@ -158,25 +148,35 @@
 %	MATERIALS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Materials}
+\begin{block}{How Frames Data is Stored on the SafeNET}
 
-The following materials were required to complete the research:
+  The SafeNET provides several primitive data-types that can be used
+  to build up complex data models for an app to use in order to store
+  content. Each of these primitive datatypes are uniquely identified by
+  an XorName, which can be thought of as a pointer for the SafeNET.
+  StructuredData provides a place to store blobs of data and
+  allows updates. AppendableData allows anyone with the right permissions
+  to append an XorName, which allows different users to collaboratively
+  build an interconnected data-structure. Below, StructuredData is shown
+  in blue, AppendableData is shown in purple, and SafeFiles are shown in
+  orange.
 
-\begin{itemize}
-\item Curabitur pellentesque dignissim
-\item Eu facilisis est tempus quis
-\item Duis porta consequat lorem
-\item Eu facilisis est tempus quis
-\end{itemize}
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{video-model.png}
+  \caption{Frames Video Model}
+  \label{fig:video-model}
+  \end{figure}
 
-The materials were prepared according to the steps outlined below:
+  The video model shown in figure \ref{fig:video-model} contains references to
+  other videos as well as comments, and the owners of videos. References to videos and comments
+  represented with an XorName, while references to owners of videos are
+  represented with LongNames which make use of the SafeNET's identity system.
 
-\begin{enumerate}
-\item Curabitur pellentesque dignissim
-\item Eu facilisis est tempus quis
-\item Duis porta consequat lorem
-\item Curabitur pellentesque dignissim
-\end{enumerate}
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{comment-model.png}
+  \caption{Frames Comment Model}
+  \label{fig:comment-model}
+  \end{figure}
 
 \end{block}
 
@@ -187,103 +187,41 @@ The materials were prepared according to the steps outlined below:
 \begin{column}{\onecolwid}\vspace{-.6in} % The second column within column 2 (column 2.2)
 
 %----------------------------------------------------------------------------------------
-%	METHODS
-%----------------------------------------------------------------------------------------
 
-\begin{block}{Methods}
+\begin{block}{}
 
-Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed laoreet accumsan mattis. Integer sapien tellus, auctor ac blandit eget, sollicitudin vitae lorem. Praesent dictum tempor pulvinar. Suspendisse potenti. Sed tincidunt varius ipsum, et porta nulla suscipit et. Etiam congue bibendum felis, ac dictum augue cursus a. \textbf{Donec} magna eros, iaculis sit amet placerat quis, laoreet id est. In ut orci purus, interdum ornare nibh. Pellentesque pulvinar, nibh ac malesuada accumsan, urna nunc convallis tortor, ac vehicula nulla tellus eget nulla. Nullam lectus tortor, \textit{consequat tempor hendrerit} quis, vestibulum in diam. Maecenas sed diam augue.
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{user-profile-model.png}
+  \caption{Frames UserProfile Model}
+  \label{fig:user-profile-model}
+  \end{figure}
+
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{playlist-model.png}
+  \caption{Frames Playlist Model}
+  \label{fig:playlist-model}
+  \end{figure}
 
 \end{block}
 
-%----------------------------------------------------------------------------------------
+\begin{block}{Screen Shots}
+
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{discover-page.png}
+  \captionsetup{labelformat=empty}
+  \label{fig:discover-page}
+  \end{figure}
+
+\end{block}
 
 \end{column} % End of column 2.2
 
 \end{columns} % End of the split of column 2 - any content after this will now take up 2 columns width
 
 %----------------------------------------------------------------------------------------
-%	IMPORTANT RESULT
-%----------------------------------------------------------------------------------------
-
-\begin{alertblock}{Important Result}
-
-Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed commodo molestie porta. Sed ultrices scelerisque sapien ac commodo. Donec ut volutpat elit.
-
-\end{alertblock} 
-
-%----------------------------------------------------------------------------------------
 
 \begin{columns}[t,totalwidth=\twocolwid] % Split up the two columns wide column again
 
-\begin{column}{\onecolwid} % The first column within column 2 (column 2.1)
-
-%----------------------------------------------------------------------------------------
-%	MATHEMATICAL SECTION
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Mathematical Section}
-
-Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin. Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin.
-  
-\begin{equation}
-E = mc^{2}
-\label{eqn:Einstein}
-\end{equation}
-
-Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin. Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin.
-
-\begin{equation}
-\cos^3 \theta =\frac{1}{4}\cos\theta+\frac{3}{4}\cos 3\theta
-\label{eq:refname}
-\end{equation}
-
-Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin. Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin.
-
-\begin{equation}
-\kappa =\frac{\xi}{E_{\mathrm{max}}} %\mathbb{ZNR}
-\end{equation}
-
-\end{block}
-
-%----------------------------------------------------------------------------------------
-
-\end{column} % End of column 2.1
-
-\begin{column}{\onecolwid} % The second column within column 2 (column 2.2)
-
-%----------------------------------------------------------------------------------------
-%	RESULTS
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Results}
-
-% \begin{figure}
-% \includegraphics[width=0.8\linewidth]{placeholder.jpg}
-% \caption{Figure caption}
-% \end{figure}
-
-Nunc tempus venenatis facilisis. Curabitur suscipit consequat eros non porttitor. Sed a massa dolor, id ornare enim:
-
-\begin{table}
-\vspace{2ex}
-\begin{tabular}{l l l}
-\toprule
-\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2}\\
-\midrule
-Treatment 1 & 0.0003262 & 0.562 \\
-Treatment 2 & 0.0015681 & 0.910 \\
-Treatment 3 & 0.0009271 & 0.296 \\
-\bottomrule
-\end{tabular}
-\caption{Table caption}
-\end{table}
-
-\end{block}
-
-%----------------------------------------------------------------------------------------
-
-\end{column} % End of column 2.2
 
 \end{columns} % End of the split of column 2
 
@@ -297,39 +235,28 @@ Treatment 3 & 0.0009271 & 0.296 \\
 %	CONCLUSION
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Conclusion}
+\begin{block}{}
 
-Nunc tempus venenatis facilisis. \textbf{Curabitur suscipit} consequat eros non porttitor. Sed a massa dolor, id ornare enim. Fusce quis massa dictum tortor \textbf{tincidunt mattis}. Donec quam est, lobortis quis pretium at, laoreet scelerisque lacus. Nam quis odio enim, in molestie libero. Vivamus cursus mi at \textit{nulla elementum sollicitudin}.
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{upload-page.png}
+  \captionsetup{labelformat=empty}
+  \label{fig:upload-page}
+  \end{figure}
 
-\end{block}
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{watch-page.png}
+  \captionsetup{labelformat=empty}
+  \label{fig:watch-page}
+  \end{figure}
 
-%----------------------------------------------------------------------------------------
-%	ADDITIONAL INFORMATION
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Additional Information}
-
-Maecenas ultricies feugiat velit non mattis. Fusce tempus arcu id ligula varius dictum. 
-\begin{itemize}
-\item Curabitur pellentesque dignissim
-\item Eu facilisis est tempus quis
-\item Duis porta consequat lorem
-\end{itemize}
-
-\end{block}
-
-%----------------------------------------------------------------------------------------
-%	REFERENCES
-%----------------------------------------------------------------------------------------
-
-\begin{block}{References}
-
-  % TODO: get this working right.
-\nocite{*} % Insert publications even if they are not cited in the poster
-\small{\bibliographystyle{unsrt}
-\bibliography{sample}\vspace{0.75in}}
+  \begin{figure}
+  \includegraphics[width=0.8\linewidth]{watch-page-comments.png}
+  \captionsetup{labelformat=empty}
+  \label{fig:watch-page-comments}
+  \end{figure}
 
 \end{block}
+
 
 %----------------------------------------------------------------------------------------
 %	ACKNOWLEDGEMENTS
@@ -342,29 +269,6 @@ Maecenas ultricies feugiat velit non mattis. Fusce tempus arcu id ligula varius 
 \small{\rmfamily{Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis. Aenean id neque dolor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.}} \\
 
 \end{block}
-
-%----------------------------------------------------------------------------------------
-%	CONTACT INFORMATION
-%----------------------------------------------------------------------------------------
-
-\setbeamercolor{block alerted title}{fg=black,bg=norange} % Change the alert block title colors
-\setbeamercolor{block alerted body}{fg=black,bg=white} % Change the alert block body colors
-
-\begin{alertblock}{Contact Information}
-
-\begin{itemize}
-\item Web: \href{http://www.university.edu/smithlab}{http://www.university.edu/smithlab}
-\item Email: \href{mailto:john@smith.com}{john@smith.com}
-\item Phone: +1 (000) 111 1111
-\end{itemize}
-
-\end{alertblock}
-
-%\begin{center}
-%\begin{tabular}{ccc}
-%\includegraphics[width=0.4\linewidth]{logo.png} & \hfill & \includegraphics[width=0.4\linewidth]{logo.png}
-%\end{tabular}
-%\end{center}
 
 %----------------------------------------------------------------------------------------
 
