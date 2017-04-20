@@ -19,6 +19,9 @@ export const safeClient: SafeClient =
 
 export const WATCH_URL_RE: RegExp = /\/watch\/([a-zA-Z0-9\/\+]+)/;
 
+// TODO: does not handle international characters
+export const VIDEO_TITLE_RE: RegExp = /^[A-Za-z0-9 ]+$/;
+
 export async function fileExists(path: string): Promise<boolean> {
     return new Promise<boolean>( (resolve, reject) => {
         fs.stat(path, (err, stat) => {

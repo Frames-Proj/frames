@@ -9,7 +9,7 @@ import { remote } from "electron";
 import * as fileType from "file-type";
 import * as readChunk from "read-chunk";
 import Video from "../ts/video-model";
-import { ValidationState, safeClient as sc } from "../ts/util";
+import { VIDEO_TITLE_RE, ValidationState, safeClient as sc } from "../ts/util";
 import { withDropP, SerializedDataID } from "safe-launcher-client";
 import { Maybe } from "../ts/maybe";
 
@@ -189,7 +189,12 @@ export class Upload extends React.Component<UploadProps, UploadState> {
     }
 
     private handleTitle(e) {
-        this.setOk("videoTitle");
+        const title: string = e.target.value;
+        if (VIDEO_TITLE_RE.test(title)) {
+            this.setOk("videoTitle");
+        } else {
+            this.setErr("videoTitle", "error", "Video titles must contain letters, numbers, and spaces.");
+        }
         this.setState({ videoTitle: e.target.value });
     }
     private handleDescription(e) {
