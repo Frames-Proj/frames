@@ -50,11 +50,15 @@ export class App extends React.Component<AppProps, AppState> {
     }
 
     render() {
+
         const popoverClickRootClose = (
             <Popover id="popover-trigger-click-root-close" title="Sign In">
                 <SignIn updateLongName={this.updateLongName.bind(this)}/>
             </Popover>
         );
+
+        const initialOverlayShow = this.state.longName.isNothing();
+
         return (
             <div style={{
                 width: '100%',
@@ -142,7 +146,8 @@ export class App extends React.Component<AppProps, AppState> {
                                 padding: '5px 0px',
                                 color: 'gray'
                             }}>
-                                <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={popoverClickRootClose}>
+                                <OverlayTrigger trigger="click" rootClose defaultOverlayShown    
+={initialOverlayShow} placement="bottom" overlay={popoverClickRootClose}>
                                     <div style={{
                                         cursor: 'pointer'
                                     }}>
