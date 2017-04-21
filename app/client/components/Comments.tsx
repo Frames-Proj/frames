@@ -186,7 +186,7 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
                         width: '100%',
                         display: 'flex'
                     }}>
-                        <button onClick={this.postComment} id="add-comment" style={{
+                        <button onClick={this.postComment} className="add-btn" style={{
                             marginTop: '10px',
                             marginLeft: 'auto'
                         }} ><i className="fa fa-plus-circle" aria-hidden="true" ></i> Add Your Comment</button>

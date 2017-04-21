@@ -79,8 +79,7 @@
     color: white;
 }
 
-#add-reply,
-#add-comment {
+.add-btn {
     cursor: pointer;
     background-color: white;
     font-size: 12px;
@@ -89,13 +88,11 @@
     border-radius: 5px;
 }
 
-#add-reply i,
-#add-comment i {
+.add-btn i {
     padding-right: 5px;
 }
 
-#add-reply:hover,
-#add-comment:hover {
+.add-btn:hover {
     border-color: green;
     color: green;
 }
