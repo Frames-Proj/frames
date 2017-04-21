@@ -58,7 +58,6 @@ export class App extends React.Component<AppProps, AppState> {
         );
 
         const initialOverlayShow = this.state.longName.isNothing();
-        console.log(initialOverlayShow);
 
         return (
             <div style={{
