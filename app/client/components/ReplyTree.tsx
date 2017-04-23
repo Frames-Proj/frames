@@ -116,7 +116,7 @@ export default class ReplyTree extends React.Component<ReplyTreeProps, ReplyTree
                             }}>
                                 { replies }
                             </div>
-                            <button onClick={() => this.setState({ reply: true })} id="add-reply"><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Your Reply</button>
+                            <button onClick={() => this.setState({ reply: true })} className="add-btn"><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Your Reply</button>
                         </div>)
                 })}
             </div>

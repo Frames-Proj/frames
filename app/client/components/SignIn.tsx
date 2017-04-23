@@ -1,28 +1,135 @@
 import * as React from 'react';
 import { Jumbotron } from 'react-bootstrap';
-import { prepareSignIn, addLongName, updateLongName } from '../../client/ts/signIn-utils';
+import { Notification } from "./SignInNotification";
+
+import { safeClient } from "../ts/util";
+import { Maybe } from "../ts/maybe";
+
+import Config from "../ts/global-config";
+const CONFIG: Config = Config.getInstance();
 
 interface SignInProp {
     updateLongName: () => any
 }
 
-export class SignIn extends React.Component<SignInProp, {}> {
+interface SignInState {
+    signedIn: boolean;
+    names: string[];
+    addName: string;
+    addNameStatus: Maybe<string>;
+}
 
-    componentDidMount() {
-        prepareSignIn.bind(this)();
+export class SignIn extends React.Component<SignInProp, SignInState> {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            signedIn: this.signedIn(),
+            names: [],
+            addName: "",
+            addNameStatus: Maybe.nothing<string>()
+        };
+        CONFIG.addLongNameChangeListener(() => this.setState({signedIn: this.signedIn()}));
+        this.loadNames();
+        this.handleAddNameChange = this.handleAddNameChange.bind(this);
+        this.addLongName = this.addLongName.bind(this);
+        this.updateLongName = this.updateLongName.bind(this);
+    }
+
+    // load the current longNames into the list
+    private async loadNames(): Promise<void> {
+
+        var names: string[] = ["Guest"];
+
+        await safeClient.dns.getLongNames().then((data) => {
+            data.forEach((name) => { names.push(name) });
+        });
+
+        this.setState({ names: names });
+
+    }
+
+    private handleAddNameChange(event): void {
+        this.setState({ addName: event.target.value });
+    }
+
+    private async addLongName(): Promise<void> {
+
+        const name: string = this.state.addName;
+
+        if (name) {
+            await safeClient.dns.register(name).then(() => {
+                this.setState({ addNameStatus: Maybe.just("success")});
+            }, (err) => {
+                this.setState({ addNameStatus: Maybe.just("error")});
+            });
+            this.loadNames();
+            this.setState({ addName: ''});
+        }
+    };
+
+    private updateLongName(event) {
+        const config = Config.getInstance();
+        const longName: string = event.target.value;
+        config.setLongName(longName === "Guest" ? Maybe.nothing<string>() : Maybe.just(longName));
+        this.props.updateLongName();
+    }
+
+    private signedIn() {
+        return CONFIG.getLongName().isJust();
     }
 
     render() {
+
+        var guest_warning: JSX.Element = null;
+        if (!this.state.signedIn) {
+            guest_warning = (
+                <Notification type="warning" message='To be able to upload, reply to, or comment on videos, you need to select a LongName other than "Guest."'/>
+            );
+        }
+
+        var name_options = this.state.names.map(name => {
+            return (<option value={name}>{name}</option>);
+        });
+
+        var add_name_status = this.state.addNameStatus.caseOf({
+            nothing: () => null,
+            just: status => {
+                if (status == "success")
+                    return (
+                        <Notification type="success" message="LongName successfully added!"/>
+                    )
+                else if (status == "error")
+                    return (
+                        <Notification type="error" message="There was an error processing your request. Please choose a different LongName."/>
+                    )
+            }
+        })
+
         return (
             <div>
                 <div>
-                    <h4>Select or Create a LongName</h4>
-                    <p>Select a LongName here</p>
-                    <select ref="nameDropdown" onChange={updateLongName.bind(this)}></select>
-                    <p> Or you can create a longname </p>
-                    <input type="text" ref="longName"/>
-                    <p ref="error_msg"></p>
-                    <button onClick={addLongName.bind(this)}>Add this Long Name</button>
+                    <div style={{
+                        marginBottom: '5px'
+                    }}>
+                        Select LongName
+                    </div>
+                    <select onChange={this.updateLongName}>
+                        { name_options }
+                    </select>
+                    <hr/>
+                    <div style={{
+                        marginBottom: '5px'
+                    }}>
+                        Add LongName
+                    </div>
+                    <input type="text" onChange={this.handleAddNameChange} value={this.state.addName}/>
+                    <button className="add-btn" onClick={this.addLongName} style={{
+                        marginTop: '10px'
+                    }}>
+                        <i className="fa fa-plus-circle" aria-hidden="true"></i> Add this Long Name</button>
+                    { add_name_status }
+                    { guest_warning }
                 </div>
             </div>
         )
