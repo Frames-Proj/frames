@@ -1,7 +1,8 @@
 
-import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors } from "./test-util";
+import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors, diffFiles } from "./test-util";
 
 import Video from "../video-model";
+import { Maybe } from "../maybe";
 
 import Config from "../global-config";
 const CONFIG: Config = Config.getInstance();
@@ -19,6 +20,7 @@ describe("A frames Video model", () => {
     beforeAll(async (done) => {
         await failDone(startupHook(), done);
         setCollectLeakStats();
+        CONFIG.setLongName(Maybe.just("uwotm8"));
         done();
     });
 
@@ -189,6 +191,31 @@ describe("A frames Video model", () => {
         await failDone(child.drop(), done);
         await failDone(recoveredChild.drop(), done);
         await failDone(recoveredParent.drop(), done);
+
+        done();
+    });
+
+    it("has a thumbnail image, which survives a round trip.", async (done) => {
+        setCollectLeakStatsBlock("vms:test6 thumbnail");
+
+        const video: Video =
+            await failDone(Video.new("title " + makeid(), "A description.",
+                                    `${TEST_DATA_DIR}/test-vid.mp4`), done);
+
+        const dataId: SerializedDataID =
+            await failDone(withDropP(await video.xorName(), (dId: DataIDHandle) => {
+                return dId.serialise();
+            }), done);
+
+        const recoveredVideo: Video =
+            await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
+                return Video.read(dIdH);
+            }), done);
+
+        expect(await diffFiles(await video.thumbnailFile, await recoveredVideo.thumbnailFile)).toBe(true);
+
+        await failDone(video.drop(), done);
+        await failDone(recoveredVideo.drop(), done);
 
         done();
     });

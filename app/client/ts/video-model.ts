@@ -13,6 +13,7 @@ import * as readChunk from "read-chunk";
 import * as stream from "stream";
 import VideoComment from "./comment-model";
 import { Maybe } from "./maybe";
+import extractThumbnail from "./thumbnail";
 
 import Config from "./global-config";
 const CONFIG: Config = Config.getInstance();
@@ -25,16 +26,23 @@ class UnsupportedVideoFormatError extends Error {
 
 export default class Video implements Drop {
 
-    public readonly title: string;
-    public readonly description: string;
-    public readonly owner: string;
+    private readonly data: VideoInfo;
+    public get title(): string { return this.data.title; }
+    public get description(): string { return this.data.description; }
+    public get owner(): string { return this.data.owner; }
+    public get parentVideoXorName(): Maybe<string> {
+        return this.data.parentVideoXorName == null ?
+            Maybe.nothing<string>() : Maybe.just(this.data.parentVideoXorName);
+    }
 
     // file is a Maybe<Promise<_>> because we don't always download the video file
     // (i.e. when we just want to create a VideoIcon).
     public readonly file: Maybe<Promise<string>>;
 
+    // a promise to the a local path pointing to the relevant thumbnail file
+    public readonly thumbnailFile: Promise<string>;
+
     // a pointer to the parent video, if there is one
-    public readonly parentVideoXorName: Maybe<string>;
     public readonly commentReplies: AppendableDataHandle;
     public readonly videoReplies: AppendableDataHandle;
 
@@ -85,19 +93,18 @@ export default class Video implements Drop {
     }
 
 
-    private constructor(title: string, description: string, owner: string,
-                        file: Maybe<Promise<string>>, commentReplies: AppendableDataHandle,
-                        videoReplies: AppendableDataHandle, parentVideoXorName?: string) {
-        this.title = title;
-        this.description = description;
-        this.owner = owner;
+    private constructor( data: VideoInfo
+                         , file: Maybe<Promise<string>>
+                         , thumbnailFile: Promise<string>
+                         , commentReplies: AppendableDataHandle
+                         , videoReplies: AppendableDataHandle) {
+        this.data = data;
+
         this.file = file;
+        this.thumbnailFile = thumbnailFile;
 
         this.commentReplies = commentReplies;
         this.videoReplies = videoReplies;
-
-        this.parentVideoXorName =
-            parentVideoXorName ? Maybe.just(parentVideoXorName) : Maybe.nothing<string>();
 
         this.commentMetadata = commentReplies.getMetadata();
         this.videoRepliesMetadata = videoReplies.getMetadata();
@@ -113,16 +120,13 @@ export default class Video implements Drop {
         this.videoData = vd;
         this.metadata = vd.getMetadata();
     }
+    // TODO: memoize this guy
     public xorName(): Promise<DataIDHandle> {
         return this.videoData.toDataIdHandle();
     }
 
     /**
      *  Construct a new video from raw parts.
-     *
-     *  TODO: Once we have the DNS api working, this method needs to do the
-     *  right thing when it comes to setting the owner field with a long name
-     *  or something.
      *
      * @returns a new Video. The video has not been persisted to the SAFEnet
      *  until `write` is called
@@ -133,13 +137,12 @@ export default class Video implements Drop {
 
     private static async makeVideo(title: string, description: string,
                                    localVideoFile: string, parentVideoXorName?: string): Promise<Video> {
+
         // Ownership of these guys is going to be passed to the created video
         const commentReplies: AppendableDataHandle =
             await sc.ad.create(title + " commentReplies");
-
         const videoReplies: AppendableDataHandle =
             await sc.ad.create(title + " videoReplies");
-
         function trySave(ad: AppendableDataHandle): Promise<void> {
             return ad.save().catch(err => {
                 // if the appendable data already exists, ignore the error.
@@ -155,59 +158,69 @@ export default class Video implements Drop {
         trySave(commentReplies);
         trySave(videoReplies);
 
+        async function getXorName(handle: AppendableDataHandle) {
+            return withDropP(await handle.toDataIdHandle(), h => h.serialise());
+        }
+
         const owner: string = CONFIG.getLongName().caseOf({
             just: n => n,
             nothing: () => { throw new NoUserNameError("You must choose a username."); }
         });
 
-        const v = new Video(title, description, owner,
-                            Maybe.just(Promise.resolve(localVideoFile)),
-                            commentReplies, videoReplies, parentVideoXorName);
+        const thumbnail: string = await extractThumbnail(localVideoFile);
+
+        const payload: VideoInfo = {
+            title: title,
+            description: description,
+            owner: owner,
+            videoFile: `${CONFIG.SAFENET_VIDEO_DIR}/${title}`,
+            thumbnailFile: `${CONFIG.SAFENET_THUMBNAIL_DIR}/${title}`,
+            videoReplies: await getXorName(videoReplies),
+            commentReplies: await getXorName(commentReplies)
+        };
+        if (parentVideoXorName != null) {
+            payload.parentVideoXorName = parentVideoXorName;
+        }
+
+        const v = new Video(payload, Maybe.just(Promise.resolve(localVideoFile)),
+                            Promise.resolve(thumbnail), commentReplies, videoReplies);
         v.setVideoData(await v.write());
         return v;
     }
 
     // @returns a promise for a dataID pointing to the written video meta-node
     private async write(): Promise<StructuredDataHandle> {
-
-        const safeVideoFile: string = `${CONFIG.SAFENET_VIDEO_DIR}/${this.title}`;
-        const localPath: string =
+        const localVideoFile: string =
             await this.file.caseOf({
                 just: f => f,
                 nothing: () => { throw new Error(
-                    "Tried to write File which was read shallowly. This should be impossible.") }
+                    "Tried to write File which was read shallowly. This should be impossible."); }
             });
+        const localThumbnailFile: string = await this.thumbnailFile;
 
-        let fileSize: number = fs.statSync(localPath).size;
-        let fStream: stream.Readable = fs.createReadStream(localPath);
-        const mimeType: string =
-            await readChunk(localPath, 0, 64).then((b: Buffer) => {
-                return fileType(b).mime;
-            });
+        async function writeSafeFile(localFile: string, safeFile: string, mimeTypes: string[]): Promise<void> {
+            const fileSize: number = fs.statSync(localFile).size;
+            const fStream: stream.Readable = fs.createReadStream(localFile);
+            const mimeType: string =
+                await readChunk(localFile, 0, 64).then((b: Buffer) => {
+                    return fileType(b).mime;
+                });
 
-        if (CONFIG.SUPPORTED_VIDEO_MIME_TYPES.indexOf(mimeType) === -1) {
-            throw new UnsupportedVideoFormatError(mimeType);
+            if (mimeTypes.indexOf(mimeType) === -1) {
+                throw new UnsupportedVideoFormatError(mimeType);
+            }
+
+            return sc.nfs.file.create("app", safeFile, fStream, fileSize, mimeType);
         }
 
-        await sc.nfs.file.create("app", safeVideoFile, fStream,
-                                            fileSize, mimeType);
+        await writeSafeFile(localVideoFile, this.data.videoFile, CONFIG.SUPPORTED_VIDEO_MIME_TYPES);
 
-        let payload: VideoInfo = {
-            title: this.title,
-            description: this.description,
-            owner: this.owner,
-            videoFile: safeVideoFile,
-            videoReplies: await (await this.videoReplies.toDataIdHandle()).serialise(),
-            commentReplies: await (await this.commentReplies.toDataIdHandle()).serialise(),
-        };
-        this.parentVideoXorName.caseOf({
-            nothing: () => null,
-            just: p => payload.parentVideoXorName = p
-        });
+        // upload the thumbnail file, and sanity check the output of ffmpeg
+        await writeSafeFile(localThumbnailFile, this.data.thumbnailFile, ["image/png"]);
 
         const viH: StructuredDataHandle =
             await sc.structured.create(this.title, TYPE_TAG_VERSIONED,
-                                       toVIStringy(payload));
+                                       toVIStringy(this.data));
         await viH.save();
         return viH;
     }
@@ -228,15 +241,19 @@ export default class Video implements Drop {
         const vi: VideoInfo = toVI(vis);
 
         const videoReplies: AppendableDataHandle =
-            (await sc.ad.fromDataIdHandle(
-                await sc.dataID.deserialise(vi.videoReplies))).handleId;
+            (await sc.ad.fromDataIdHandle(await sc.dataID.deserialise(vi.videoReplies))).handleId;
         const commentReplies: AppendableDataHandle =
-            (await sc.ad.fromDataIdHandle(
-                await sc.dataID.deserialise(vi.commentReplies))).handleId;
+            (await sc.ad.fromDataIdHandle(await sc.dataID.deserialise(vi.commentReplies))).handleId;
 
+        async function fileExists(file: string): Promise<boolean> {
+            return new Promise<boolean>((resolve, reject) => fs.exists(file, resolve));
+        }
 
+        const localVideoFile: string = `${CONFIG.APP_VIDEO_DIR}/${vi.title}`;
         let videoFile: Maybe<Promise<string>>;
-        if (fetchFile) {
+        if (await fileExists(localVideoFile)) {
+            videoFile = Maybe.just(Promise.resolve(localVideoFile));
+        } else if (fetchFile) {
             // TODO(ethan): this call should be going through the DNS API
             // once support for that lands.
             const video: SafeFile = await sc.nfs.file.get("app", vi.videoFile);
@@ -247,22 +264,32 @@ export default class Video implements Drop {
             }
 
             videoFile = Maybe.just(new Promise((resolve, reject) => {
-                const fileLoc: string = `${CONFIG.APP_VIDEO_DIR}/${vi.title}`;
-                fs.writeFile(fileLoc, video.body, (err) => {
+                fs.writeFile(localVideoFile, video.body, (err) => {
                     if (err) reject(err);
-                    else resolve(fileLoc);
+                    else resolve(localVideoFile);
                 });
             }));
         } else {
-            // This way is more reasonable
-            //    videoFile = Promise.reject(new Error("You asked me not to download the video file!"));
-            // but the below way prevents a PromiseRejectionWarning (which will be a hard error in
-            // node 7.x).
             videoFile = Maybe.nothing<Promise<string>>();
         }
 
-        const v = new Video(vi.title, vi.description, vi.owner,
-                            videoFile, commentReplies, videoReplies, vi.parentVideoXorName);
+        const localThumbnailFile: string = `${CONFIG.APP_THUMBNAIL_DIR}/${vi.title}`;
+        let thumbNailFile: Promise<string>;
+        if (await fileExists(localThumbnailFile)) {
+            thumbNailFile = Promise.resolve(localThumbnailFile);
+        } else {
+            thumbNailFile =
+                sc.nfs.file.get("app", vi.thumbnailFile).then((thumbnail: SafeFile) => {
+                    return new Promise<string>((resolve, reject) => {
+                        fs.writeFile(localThumbnailFile, thumbnail.body, (err) => {
+                            if (err) reject(err);
+                            else resolve(localThumbnailFile);
+                        });
+                    });
+                });
+        }
+
+        const v = new Video(vi, videoFile, thumbNailFile, commentReplies, videoReplies);
         v.setVideoData(sdH);
         return v;
     }
@@ -305,12 +332,15 @@ interface VideoInfoBase {
     description: string;
     videoFile: string;
     owner: string;
+    thumbnailFile: string; // as base64 encoded thumbnail image
 }
 function isVideoInfoBase(x: any): x is VideoInfoBase {
-    return  ( typeof x.title === "string"
+    return  ( x != null
+              && typeof x.title === "string"
               && typeof x.description === "string"
               && typeof x.owner === "string"
-              && typeof x.videoFile === "string");
+              && typeof x.videoFile === "string"
+              && typeof x.thumbnailFile === "string");
 }
 interface VideoInfoStringy extends VideoInfoBase {
     videoReplies: string; // base64 encoded
@@ -318,8 +348,9 @@ interface VideoInfoStringy extends VideoInfoBase {
     parentVideoXorName?: string; // base64 encoded
 }
 function isVideoInfoStringy(x: any): x is VideoInfoStringy {
-    return (typeof x.videoReplies === "string" &&
-            typeof x.commentReplies === "string") && isVideoInfoBase(x);
+    return (x != null
+            && typeof x.videoReplies === "string"
+            && typeof x.commentReplies === "string") && isVideoInfoBase(x);
 }
 function toVI(vi: VideoInfoStringy): VideoInfo {
     let ret: VideoInfo = {
@@ -327,6 +358,7 @@ function toVI(vi: VideoInfoStringy): VideoInfo {
         description: vi.description,
         videoFile: vi.videoFile,
         owner: vi.owner,
+        thumbnailFile: vi.thumbnailFile,
         videoReplies: Buffer.from(vi.videoReplies, "base64"),
         commentReplies: Buffer.from(vi.commentReplies, "base64")
     };
@@ -345,6 +377,7 @@ function toVIStringy(vi: VideoInfo): VideoInfoStringy {
         description: vi.description,
         videoFile: vi.videoFile,
         owner: vi.owner,
+        thumbnailFile: vi.thumbnailFile,
         videoReplies: vi.videoReplies.toString("base64"),
         commentReplies: vi.commentReplies.toString("base64")
     };
@@ -352,7 +385,8 @@ function toVIStringy(vi: VideoInfo): VideoInfoStringy {
     return ret;
 }
 function isVideoInfo(x: any): x is VideoInfo {
-    return (x.videoReplies instanceof Buffer
+    return (x != null
+            && x.videoReplies instanceof Buffer
             && x.commentReplies instanceof Buffer)
             && isVideoInfoBase(x);
 }
