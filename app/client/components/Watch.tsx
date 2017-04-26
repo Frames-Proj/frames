@@ -1,7 +1,8 @@
 import * as React from "react";
 import { Jumbotron, Navbar, Nav, NavItem } from "react-bootstrap";
 
-import Video from "../ts/video-model"
+import Video from "../ts/video-model";
+import VideoCache from "../ts/video-cache";
 import { SerializedDataID, withDropP } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";
 import VideoThumbnail from "./VideoThumbnail"
@@ -157,7 +158,8 @@ export class Watch extends React.Component<WatchProps, WatchState> {
             return Promise.reject(new Error("Watch: bad path"));
         }
 
-        return Video.readFromStringXorName(match[1]);
+        const xorName: string = match[1];
+        return VideoCache.getInstance().getFromXorName(xorName);
     }
 
     componentWillReceiveProps(nextProps: WatchProps) {
