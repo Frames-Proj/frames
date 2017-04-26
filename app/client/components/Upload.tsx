@@ -193,7 +193,7 @@ export class Upload extends React.Component<UploadProps, UploadState> {
         if (VIDEO_TITLE_RE.test(title)) {
             this.setOk("videoTitle");
         } else {
-            this.setErr("videoTitle", "error", "Video titles must contain letters, numbers, and spaces.");
+            this.setErr("videoTitle", "error", "Videos can only contain letters, numbers, and spaces.");
         }
         this.setState({ videoTitle: e.target.value });
     }
