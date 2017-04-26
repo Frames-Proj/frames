@@ -45,16 +45,15 @@ export default class VideoCache {
                 this.numEntries = Object.keys(this.cache).length;
             }
 
-            const video: Video = await Video.readFromStringXorName(xorName);
             this.cache[xorName] = {
-                video: video,
+                video: await Video.readFromStringXorName(xorName),
                 accessTime: new Date()
             };
-
             this.numEntries += 1;
         } else {
             this.cache[xorName].accessTime = new Date();
         }
+
         return this.cache[xorName].video;
     }
 
