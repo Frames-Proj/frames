@@ -27,7 +27,7 @@ export default class VideoCache {
         return VideoCache.INSTANCE;
     }
 
-    async getFromXorName(xorName: string) {
+    async getFromXorName(xorName: string): Promise<Video> {
         if (this.cache[xorName] == null) {
             if (this.numEntries + 1 > CONFIG.MAX_CACHE_SIZE) {
 
