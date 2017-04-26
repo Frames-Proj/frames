@@ -39,7 +39,7 @@ export default class VideoCache {
                 });
 
                 // delete half of the oldest cache entries
-                for (let i = 0; i < CONFIG.MAX_CACHE_SIZE / 2; i++) {
+                for (let i = 0; i < oldKeys.length / 2; i++) {
                     delete this.cache[oldKeys[i]];
                 }
                 this.numEntries = Object.keys(this.cache).length;
