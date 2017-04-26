@@ -3,6 +3,7 @@ import * as React from "react";
 import Video from "../ts/video-model"
 import VideoComment from "../ts/comment-model"
 
+import { InvalidHandleError } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";
 import { PropTypes } from "react";
 
@@ -100,6 +101,14 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
             v.getComment(curr).then(vc => {
                 comments.push(vc);
                 this.getAllComments(v, curr + 1, total, comments);
+            }).catch(err => {
+                // When the page gets refreshed, the Watch component will drop the video,
+                // invalidating all the member handles. In this case the `componentWillReceiveProps`
+                // method on this component will fire with a new video object, and another
+                // `setComments` job will start. It is then ok to ignore `InvalidHandleError`s.
+                // and abort the job (which we do by not recursing).
+                if (err instanceof InvalidHandleError) return;
+                else throw err;
             });
         }
     }
@@ -159,11 +168,14 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
             return;
 
         this.props.video.addComment(this.state.commentValue).then(() => {
-            this.setState({ 
+            this.setState({
                 comments: Maybe.nothing<JSX.Element[]>() ,
                 commentValue: ''
             });
             this.setComments(this.props.video);
+        }).catch(err => {
+            console.error(err)
+            throw err;
         });
 
     }

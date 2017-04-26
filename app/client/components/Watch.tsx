@@ -56,6 +56,7 @@ class VideoPlayer extends React.Component<VideoPlayerProps, VideoPlayerState> {
     }
 
     componentWillReceiveProps(nextProps: VideoPlayerProps): void {
+        this.setState({ resolvedVideo: Maybe.nothing<ResolvedVideo>() });
         this.resolveVideo(nextProps);
     }
 
@@ -160,8 +161,10 @@ export class Watch extends React.Component<WatchProps, WatchState> {
     }
 
     componentWillReceiveProps(nextProps: WatchProps) {
-        this.state.video.then( v => v.drop() );
-        this.setState({ video: this.mkVideo(nextProps).catch(this.handleVideoError) });
+        this.state.video.then( v => {
+            v.drop();
+            this.setState({ video: this.mkVideo(nextProps).catch(this.handleVideoError) });
+        });
     }
 
     private handleVideoError(err) {

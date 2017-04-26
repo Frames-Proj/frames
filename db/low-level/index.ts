@@ -31,6 +31,9 @@ import { DataIDClient, DataIDHandle, SerializedDataID } from "./src/ts/data-id";
 import { Drop, withDrop, withDropP, Handle, setCollectLeakStats,
          setCollectLeakStatsBlock, getLeakStatistics, LeakResults
        } from "./src/ts/raii";
+import { InvalidHandleError, SafeError, NotFoundError, UnexpectedResponseContent
+       } from "./src/ts/util";
+
 
 export { NfsClient, NfsFileClient, NfsDirectoryClient,
          NfsDirectoryData, NfsDirectoryInfo, NfsFileData, AuthorizationPayload,
@@ -39,7 +42,8 @@ export { NfsClient, NfsFileClient, NfsDirectoryClient,
          TYPE_TAG_VERSIONED, TYPE_TAG_UNVERSIONED, SerializedDataID,
          StructuredDataMetadata, setCollectLeakStats, setCollectLeakStatsBlock,
          getLeakStatistics, LeakResults, FromDataIDHandleResponse, ApiClientConfig,
-         StructuredDeserialiseResponse, DnsClient, DnsHomeDirectory
+         StructuredDeserialiseResponse, DnsClient, DnsHomeDirectory, InvalidHandleError,
+         SafeError, NotFoundError, UnexpectedResponseContent
        };
 
 

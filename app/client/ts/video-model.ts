@@ -14,6 +14,7 @@ import * as stream from "stream";
 import VideoComment from "./comment-model";
 import { Maybe } from "./maybe";
 import extractThumbnail from "./thumbnail";
+import CachedAppendableDataHandle from "./cached-appendable-data";
 
 import Config from "./global-config";
 const CONFIG: Config = Config.getInstance();
@@ -43,61 +44,39 @@ export default class Video implements Drop {
     public readonly thumbnailFile: Promise<string>;
 
     // a pointer to the parent video, if there is one
-    public readonly commentReplies: AppendableDataHandle;
-    public readonly videoReplies: AppendableDataHandle;
-
-    private commentMetadata: Promise<AppedableDataMetadata>;
-    private videoRepliesMetadata: Promise<AppedableDataMetadata>;
+    public readonly commentReplies: CachedAppendableDataHandle;
+    public readonly videoReplies: CachedAppendableDataHandle;
 
     private videoData: StructuredDataHandle; // the data on the network
     private metadata: Promise<StructuredDataMetadata>;
 
-    public async getNumComments(): Promise<number> {
-        return (await this.commentMetadata).dataLength;
+    // TODO: remove the promise here.
+    public getNumComments(): Promise<number> {
+        return Promise.resolve(this.commentReplies.length);
     }
-    public async getComment(i: number): Promise<VideoComment> {
-        if (i >= await this.getNumComments() || i < 0)
-            throw new Error(`Video::getComment(${i}) index not in range!`);
-
-        return withDropP(await this.commentReplies.at(i), (di) => {
-            return VideoComment.read(di);
-        });
+    public getComment(i: number): Promise<VideoComment> {
+        return this.commentReplies.withAt(i, did => VideoComment.read(did);
     }
     public async getCommentXorName(i: number): Promise<string> {
-        if (i >= await this.getNumComments() || i < 0)
-            throw new Error(`Video::getCommentXorName(${i}) index not in range!`);
-
-        return withDropP(await this.commentReplies.at(i), async (di) => {
-            return (await di.serialise()).toString("base64");
-        });
+        return this.commentReplies.withAt(i, async did => (await did.serialise()).toString("base64"));
     }
 
     public async getNumReplyVideos(): Promise<number> {
-        return (await this.videoRepliesMetadata).dataLength;
+        return Promise.resolve(this.videoReplies.length);
     }
     public async getReplyVideo(i: number): Promise<Video> {
-        if (i >= await this.getNumReplyVideos() || i < 0)
-            throw new Error(`Video::getNumReplyVideos(${i}) index not in range!`);
-
-        return withDropP(await this.videoReplies.at(i), async (vDId) => {
-            return Video.read(vDId);
-        });
+        return this.videoReplies.withAt(i, did => Video.read(did));
     }
     public async getReplyVideoXorName(i: number): Promise<string> {
-        if (i >= await this.getNumReplyVideos() || i < 0)
-            throw new Error(`Video::getReplyVideoXorName(${i}) index not in range!`);
-
-        return withDropP(await this.videoReplies.at(i), async (di) => {
-            return (await di.serialise()).toString("base64");
-        });
+        return this.videoReplies.withAt(i, async did => (await did.serialise()).toString("base64"));
     }
 
 
     private constructor( data: VideoInfo
                          , file: Maybe<Promise<string>>
                          , thumbnailFile: Promise<string>
-                         , commentReplies: AppendableDataHandle
-                         , videoReplies: AppendableDataHandle) {
+                         , commentReplies: CachedAppendableDataHandle
+                         , videoReplies: CachedAppendableDataHandle) {
         this.data = data;
 
         this.file = file;
@@ -105,9 +84,6 @@ export default class Video implements Drop {
 
         this.commentReplies = commentReplies;
         this.videoReplies = videoReplies;
-
-        this.commentMetadata = commentReplies.getMetadata();
-        this.videoRepliesMetadata = videoReplies.getMetadata();
 
         this.videoData = null;
     }
@@ -135,15 +111,21 @@ export default class Video implements Drop {
         return Video.makeVideo(title, description, localVideoFile);
     }
 
-    private static async makeVideo(title: string, description: string,
-                                   localVideoFile: string, parentVideoXorName?: string): Promise<Video> {
+    private static async makeVideo(title: string, description: string, localVideoFile: string, parentVideoXorName?: string): Promise<Video> {
 
         // Ownership of these guys is going to be passed to the created video
-        const commentReplies: AppendableDataHandle =
-            await sc.ad.create(title + " commentReplies");
-        const videoReplies: AppendableDataHandle =
-            await sc.ad.create(title + " videoReplies");
-        function trySave(ad: AppendableDataHandle): Promise<void> {
+        const commentReplies: CachedAppendableDataHandle =
+            await withDropP(await sc.ad.create(title + " commentReplies"), async adh => {
+                adh.save();
+                return withDropP(await adh.toDataIdHandle(), did => CachedAppendableDataHandle.new(did));
+            });
+        const videoReplies: CachedAppendableDataHandle =
+            await withDropP(await sc.ad.create(title + " videoReplies"), async adh => {
+                adh.save();
+                return withDropP(await adh.toDataIdHandle(), did => CachedAppendableDataHandle.new(did));
+            });
+
+        function trySave(ad: CachedAppendableDataHandle): Promise<void> {
             return ad.save().catch(err => {
                 // if the appendable data already exists, ignore the error.
                 // We don't need to update it.
@@ -158,7 +140,7 @@ export default class Video implements Drop {
         trySave(commentReplies);
         trySave(videoReplies);
 
-        async function getXorName(handle: AppendableDataHandle) {
+        async function getXorName(handle: CachedAppendableDataHandle) {
             return withDropP(await handle.toDataIdHandle(), h => h.serialise());
         }
 
@@ -240,10 +222,10 @@ export default class Video implements Drop {
 
         const vi: VideoInfo = toVI(vis);
 
-        const videoReplies: AppendableDataHandle =
-            (await sc.ad.fromDataIdHandle(await sc.dataID.deserialise(vi.videoReplies))).handleId;
-        const commentReplies: AppendableDataHandle =
-            (await sc.ad.fromDataIdHandle(await sc.dataID.deserialise(vi.commentReplies))).handleId;
+        const videoReplies: CachedAppendableDataHandle =
+            await CachedAppendableDataHandle.new(await sc.dataID.deserialise(vi.videoReplies));
+        const commentReplies: CachedAppendableDataHandle =
+            await CachedAppendableDataHandle.new(await sc.dataID.deserialise(vi.commentReplies));
 
         async function fileExists(file: string): Promise<boolean> {
             return new Promise<boolean>((resolve, reject) => fs.exists(file, resolve));
@@ -308,7 +290,7 @@ export default class Video implements Drop {
             true,
             await this.videoData.toDataIdHandle());
 
-        await withDropP(await comment.xorName(), (n) => this.commentReplies.append(n));
+        await this.commentReplies.append(await comment.xorName());
         return comment;
     }
 
