@@ -55,7 +55,7 @@ export default class Video implements Drop {
         return Promise.resolve(this.commentReplies.length);
     }
     public getComment(i: number): Promise<VideoComment> {
-        return this.commentReplies.withAt(i, did => VideoComment.read(did);
+        return this.commentReplies.withAt(i, did => VideoComment.read(did));
     }
     public async getCommentXorName(i: number): Promise<string> {
         return this.commentReplies.withAt(i, async did => (await did.serialise()).toString("base64"));
