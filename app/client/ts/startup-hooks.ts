@@ -36,9 +36,7 @@ async function checkServiceState(ln: Maybe<string>) {
                 await safeClient.dns.addService(name, CONFIG.SERVICE_NAME, "app", CONFIG.SERVICE_HOME_DIR);
             }
         },
-        nothing: async () => {
-            console.log('nothing here');
-        }
+        nothing: async () => {}
     });
 };
 
