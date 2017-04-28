@@ -20,11 +20,8 @@ async function checkServiceState(ln: Maybe<string>) {
     ln.caseOf({
         just: async (name: string) => {
             let services: string[];
-            try {
-                services = await safeClient.dns.getServices(name);
-            } catch (e) {
-                throw e;
-            }
+            services = await safeClient.dns.getServices(name);
+
             if (services.indexOf(CONFIG.SERVICE_NAME) === -1) {
                 try {
                     await safeClient.nfs.dir.get("app", CONFIG.SERVICE_HOME_DIR);
@@ -36,11 +33,7 @@ async function checkServiceState(ln: Maybe<string>) {
                     }
                 }
 
-                try {
-                    await safeClient.dns.addService(name, CONFIG.SERVICE_NAME, "app", CONFIG.SERVICE_HOME_DIR);
-                } catch (e) {
-                    throw e;
-                }
+                await safeClient.dns.addService(name, CONFIG.SERVICE_NAME, "app", CONFIG.SERVICE_HOME_DIR);
             }
         },
         nothing: async () => {
