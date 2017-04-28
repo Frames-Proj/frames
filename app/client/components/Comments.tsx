@@ -173,9 +173,6 @@ export default class ReplyTree extends React.Component<CommentsProps, CommentsSt
                 commentValue: ''
             });
             this.setComments(this.props.video);
-        }).catch(err => {
-            console.error(err)
-            throw err;
         });
 
     }
