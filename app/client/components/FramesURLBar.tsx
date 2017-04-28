@@ -3,6 +3,7 @@ import { PropTypes } from "react";
 import { FormGroup, FormControl } from "react-bootstrap"
 import { DataIDHandle, SerializedDataID, SafeClient } from "safe-launcher-client";
 import { browserHistory } from "react-router";
+import { Maybe } from "../ts/maybe";
 
 import { safeClient, ValidationState, WATCH_URL_RE } from "../ts/util";
 const sc = safeClient;
@@ -21,6 +22,7 @@ export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBa
     constructor(props) {
         super(props);
 
+        this.makeURLFromRoute = this.makeURLFromRoute.bind(this);
         // react-router v4 does not provide a place to attach a listener
         // to check if the route has changed. Believe me, I'm mad too.
         window.addEventListener("hashchange", (e) => {
@@ -31,25 +33,35 @@ export class FramesURLBar extends React.Component<FramesURLBarProps, FramesURLBa
             }
             const hashPart: string = urlParts[1];
 
-            // for now we only represent videos as a frames URL, but once
-            // user profiles land, we probably also want those to be checked
-            // for here.
-            const watchMatch: string[] = WATCH_URL_RE.exec(hashPart);
-            if (watchMatch != null && watchMatch.length === 2) {
-                const url: string = `frames://${watchMatch[1]}`;
-                if (url !== this.state.url) { // `setState` always re-renders. We don't need that.
-                    this.setState({ url: `frames://${watchMatch[1]}` });
-                }
-                return;
-            }
-
-            // the current route is not representable as a frames URL
-            if (this.state.url !== "") {
-                this.setState({ url: "" });
+            const newURL = this.makeURLFromRoute(hashPart);
+            if (newURL !== this.state.url) {
+                this.setState({ url: newURL });
             }
         }, false);
 
-        this.state = { url: "" };
+        this.state = {
+            url: this.makeURLFromRoute(window.location.hash)
+        };
+    }
+
+    // @pure
+    // @param hashPart - the hash part of the current window location
+    // @returns the right Frames URL to display
+    private makeURLFromRoute(hashPart: string): string {
+        if (hashPart == null) {
+            console.error("FramesURLBar:makeURLFromRoute bad hashPart.");
+            return "";
+        }
+        // for now we only represent videos as a frames URL, but once
+        // user profiles land, we probably also want those to be checked
+        // for here.
+        const watchMatch: string[] = WATCH_URL_RE.exec(hashPart);
+        if (watchMatch != null && watchMatch.length === 2) {
+            return `frames://${watchMatch[1]}`;
+        }
+
+        // the current route is not representable as a frames URL
+        return "";
     }
 
     static contextTypes = {
