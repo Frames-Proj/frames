@@ -34,6 +34,25 @@ export class SignIn extends React.Component<SignInProp, SignInState> {
         this.handleAddNameChange = this.handleAddNameChange.bind(this);
         this.addLongName = this.addLongName.bind(this);
         this.updateLongName = this.updateLongName.bind(this);
+        this.reorderNames = this.reorderNames.bind(this);
+    }
+
+    private reorderNames(): void {
+        //this is so that the current longName is first on the list
+        const currentLongName: Maybe<string> = CONFIG.getLongName();
+        if (currentLongName.isJust()) {
+            var reorderedNames = this.state.names;
+            reorderedNames.sort((a,b) => {
+                const cases = {
+                    nothing: () => "Guest",
+                    just: name => name
+                };
+                if (a == currentLongName.caseOf(cases)) return -1;
+                if (b == currentLongName.caseOf(cases)) return 1;
+                return 0;
+            });
+            this.setState({ names: reorderedNames });
+        }
     }
 
     // load the current longNames into the list
@@ -46,7 +65,7 @@ export class SignIn extends React.Component<SignInProp, SignInState> {
         });
 
         this.setState({ names: names });
-
+        this.reorderNames();
     }
 
     private handleAddNameChange(event): void {

@@ -12,6 +12,7 @@ import Video from "../ts/video-model";
 import { VIDEO_TITLE_RE, ValidationState, safeClient as sc } from "../ts/util";
 import { withDropP, SerializedDataID } from "safe-launcher-client";
 import { Maybe } from "../ts/maybe";
+import { Notification } from "./SignInNotification";
 
 import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
@@ -26,6 +27,7 @@ interface UploadState {
     videoDescription: string;
     videoFile: string;
     errorModal: boolean;
+    errorUpload: boolean;
 
     validFlags: Map<string, ValidationState>;
     help: Map<string, string[]>;
@@ -53,6 +55,7 @@ export class Upload extends React.Component<UploadProps, UploadState> {
             videoDescription: "",
             videoFile: "",
             errorModal: false,
+            errorUpload: false,
             validFlags: new Map(),
             help: new Map(),
         };
@@ -69,6 +72,8 @@ export class Upload extends React.Component<UploadProps, UploadState> {
         this.setOk = this.setOk.bind(this);
         this.setErr = this.setErr.bind(this);
         this.appendHelp = this.appendHelp.bind(this);
+
+        this.doSubmit = this.doSubmit.bind(this);
 
         this.checkUsername(CONFIG.getLongName());
         CONFIG.addLongNameChangeListener(this.checkUsername.bind(this));
@@ -162,17 +167,17 @@ export class Upload extends React.Component<UploadProps, UploadState> {
     private async doSubmit() {
         let video: Video;
         function catchErr(err): Promise<Video> {
-            console.error("Upload.tsx:Upload:doSubmit error. This should be impossible.");
-            console.error(err);
+            //give a helpful error message if there's a duplicate upload
+            this.setState({ errorUpload: true });
             throw err;
         }
         if (this.props.replyVideo === undefined) {
             video = await Video.new(this.state.videoTitle, this.state.videoDescription,
-                                    this.state.videoFile).catch(catchErr);
+                                    this.state.videoFile).catch(catchErr.bind(this));
         } else {
             video = await (await this.props.replyVideo)
                 .addVideoReply(this.state.videoTitle, this.state.videoDescription, this.state.videoFile)
-                .catch(catchErr);
+                .catch(catchErr.bind(this));
         }
 
         withDropP(await video.xorName(), async (n) => {
@@ -312,6 +317,10 @@ export class Upload extends React.Component<UploadProps, UploadState> {
 
 
                 <HelpBlock id="validationHelp" style={{"margin-top": "20px"}}>
+                        <Notification show={this.state.errorUpload} type="error"
+                                      message="Please change the name or video and re-upload."
+                                      style={{"margin-bottom": "10px"}}
+                        />
                     {this.makeHelpText()}
                 </HelpBlock>
 
