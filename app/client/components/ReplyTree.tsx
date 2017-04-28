@@ -4,7 +4,7 @@ import { Upload } from "./Upload";
 import Video from "../ts/video-model"
 import { SerializedDataID, withDropP } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";
-import VideoThumbnail from "./VideoThumbnail"
+import VideoThumbnail, { VTArg } from "./VideoThumbnail"
 import { PropTypes } from "react";
 
 import { safeClient, WATCH_URL_RE } from "../ts/util";
@@ -49,7 +49,7 @@ export default class ReplyTree extends React.Component<ReplyTreeProps, ReplyTree
          v.parentVideoXorName.caseOf({
             nothing: () => {},
             just: name => {this.setState({ parent: Maybe.just(
-                <VideoThumbnail xorName={name} />)
+                <VideoThumbnail arg={new VTArg(name)} />)
             })}
          });
     }
@@ -69,7 +69,7 @@ export default class ReplyTree extends React.Component<ReplyTreeProps, ReplyTree
             this.setState({ replies: Maybe.just(replies) });
         } else {
             v.getReplyVideoXorName(curr).then(name => {
-                replies.push(<VideoThumbnail xorName={name} />);
+                replies.push(<VideoThumbnail arg={new VTArg(name)} />);
                 this.getAllReplies(v, curr + 1, total, replies);
             });
         }
