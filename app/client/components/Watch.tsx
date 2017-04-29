@@ -10,7 +10,6 @@ import { PropTypes } from "react";
 import ReplyTree from "./ReplyTree";
 import VideoInfo from "./VideoInfo";
 import Comments from "./Comments";
-import VideoCache from "../ts/video-cache";
 import Config from "../ts/global-config";
 
 import { safeClient, WATCH_URL_RE } from "../ts/util";

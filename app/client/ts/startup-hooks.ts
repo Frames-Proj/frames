@@ -9,6 +9,7 @@
 import Config from "./global-config";
 import { Maybe } from "./maybe";
 import { NotFoundError } from "safe-launcher-client";
+import VideoCache from "./video-cache";
 const CONFIG: Config = Config.getInstance();
 
 import { safeClient } from "./util";
@@ -49,6 +50,20 @@ export default async function startupHook(): Promise<void> {
 
     checkServiceState(CONFIG.getLongName());
     CONFIG.addLongNameChangeListener(checkServiceState);
+
+    // be sure the cache state gets persisted to disk
+    window.onbeforeunload = () => {
+        CONFIG.getLongName().caseOf({
+            just: async (name: string) => {
+                (await VideoCache.getInstance(name)).persistOnDisk().catch(e => {
+                    //alert(e.message);
+                    console.log('onbeforeunload:', e, typeof e);
+                    //throw e;
+                });
+            },
+            nothing: async () => {}
+        });
+    };
 }
 
 //
