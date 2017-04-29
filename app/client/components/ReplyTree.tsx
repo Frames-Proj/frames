@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Upload } from "./Upload";
-import Video from "../ts/video-model"
+import { Video } from "../ts/video-model"
 import { SerializedDataID, withDropP } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";
 import VideoThumbnail, { VTArg } from "./VideoThumbnail"

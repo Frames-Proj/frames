@@ -8,7 +8,7 @@ import { PropTypes } from "react";
 import { remote } from "electron";
 import * as fileType from "file-type";
 import * as readChunk from "read-chunk";
-import Video from "../ts/video-model";
+import { Video } from "../ts/video-model";
 import { VIDEO_TITLE_RE, ValidationState, safeClient as sc } from "../ts/util";
 import { withDropP, SerializedDataID } from "safe-launcher-client";
 import { Maybe } from "../ts/maybe";

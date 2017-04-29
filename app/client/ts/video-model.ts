@@ -25,7 +25,7 @@ class UnsupportedVideoFormatError extends Error {
     }
 }
 
-export default class Video implements Drop {
+export class Video implements Drop {
 
     private readonly data: VideoInfo;
     public get title(): string { return this.data.title; }
@@ -56,6 +56,9 @@ export default class Video implements Drop {
     }
     public getComment(i: number): Promise<VideoComment> {
         return this.commentReplies.withAt(i, did => VideoComment.read(did));
+    }
+    public dataToStringy(): VideoInfoStringy {
+        return toVIStringy(this.data);
     }
     public async getCommentXorName(i: number): Promise<string> {
         return this.commentReplies.withAt(i, async did => (await did.serialise()).toString("base64"));
@@ -99,6 +102,18 @@ export default class Video implements Drop {
     // TODO: memoize this guy
     public xorName(): Promise<DataIDHandle> {
         return this.videoData.toDataIdHandle();
+    }
+
+    public static async retrieveFromInfo(videoInfo: VideoInfo): Promise<Video> {
+        const commentReplies: CachedAppendableDataHandle =
+            await CachedAppendableDataHandle.new(await sc.dataID.deserialise(videoInfo.commentReplies));
+        const videoReplies: CachedAppendableDataHandle =
+            await CachedAppendableDataHandle.new(await sc.dataID.deserialise(videoInfo.videoReplies));
+        return new Video(videoInfo,
+                         Maybe.just(Promise.resolve(videoInfo.videoFile)),
+                         Promise.resolve(videoInfo.thumbnailFile),
+                         commentReplies,
+                         videoReplies);
     }
 
     /**
@@ -324,7 +339,7 @@ function isVideoInfoBase(x: any): x is VideoInfoBase {
               && typeof x.videoFile === "string"
               && typeof x.thumbnailFile === "string");
 }
-interface VideoInfoStringy extends VideoInfoBase {
+export interface VideoInfoStringy extends VideoInfoBase {
     videoReplies: string; // base64 encoded
     commentReplies: string; // base64 encoded
     parentVideoXorName?: string; // base64 encoded
@@ -334,7 +349,7 @@ function isVideoInfoStringy(x: any): x is VideoInfoStringy {
             && typeof x.videoReplies === "string"
             && typeof x.commentReplies === "string") && isVideoInfoBase(x);
 }
-function toVI(vi: VideoInfoStringy): VideoInfo {
+export function toVI(vi: VideoInfoStringy): VideoInfo {
     let ret: VideoInfo = {
         title: vi.title,
         description: vi.description,
@@ -348,12 +363,12 @@ function toVI(vi: VideoInfoStringy): VideoInfo {
 
     return ret;
 }
-interface VideoInfo extends VideoInfoBase {
+export interface VideoInfo extends VideoInfoBase {
     videoReplies: SerializedDataID;
     commentReplies: SerializedDataID;
     parentVideoXorName?: string;
 }
-function toVIStringy(vi: VideoInfo): VideoInfoStringy {
+export function toVIStringy(vi: VideoInfo): VideoInfoStringy {
     let ret: VideoInfoStringy = {
         title: vi.title,
         description: vi.description,

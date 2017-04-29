@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import Video from "../ts/video-model"
+import { Video } from "../ts/video-model"
 
 interface VideoInfoProps {
     video: Video;

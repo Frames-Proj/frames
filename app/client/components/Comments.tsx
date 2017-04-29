@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import Video from "../ts/video-model"
+import { Video } from "../ts/video-model"
 import VideoComment from "../ts/comment-model"
 
 import { InvalidHandleError } from "safe-launcher-client";
