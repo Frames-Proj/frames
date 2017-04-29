@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import Video from "../ts/video-model";
+import { Video } from "../ts/video-model";
 import { ChasingArrowsLoadingImage } from "./Animations";
 import { Maybe } from "../ts/maybe";
 import { PropTypes } from "react";

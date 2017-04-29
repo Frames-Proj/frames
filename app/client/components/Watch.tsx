@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Jumbotron, Navbar, Nav, NavItem } from "react-bootstrap";
 
-import Video from "../ts/video-model";
+import { Video } from "../ts/video-model";
 import VideoCache from "../ts/video-cache";
 import { SerializedDataID, withDropP } from "safe-launcher-client";
 import { ChasingArrowsLoadingImage } from "./Animations";

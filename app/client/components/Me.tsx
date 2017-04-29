@@ -2,7 +2,7 @@ import * as React from "react";
 import {Jumbotron, Tab, Row, Col, Nav, NavItem, Grid, Thumbnail, Button} from "react-bootstrap";
 
 import Config from "../ts/global-config";
-import Video from "../ts/video-model";
+import { Video } from "../ts/video-model";
 import VideoComment from "../ts/comment-model";
 import Playlist from "../ts/playlist-model";
 import VideoThumbnail from "./VideoThumbnail";
