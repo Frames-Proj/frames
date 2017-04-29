@@ -60,6 +60,8 @@ export default class Config {
     public readonly APP_PERMISSIONS: string[] = [ "SAFE_DRIVE_ACCESS", "LOW_LEVEL_API"];
     public readonly SAFE_LAUNCHER_ENDPOINT: string = "http://localhost:8100";
     public readonly SERVICE_NAME: string = this.APP_NAME.toLowerCase();
+    public readonly SERVICE_HOME_DIR: string = "frameshome";
+    public readonly MAX_CACHE_SIZE: number = 1000;
 
     public makeAuthPayload(): AuthorizationPayload {
         return {
