@@ -1,4 +1,4 @@
-import Video from "./video-model";
+import { toVI, Video, VideoInfo, VideoInfoStringy } from "./video-model";
 import Config from "./global-config";
 import * as stream from "stream";
 import { Maybe } from "./maybe";
@@ -15,12 +15,18 @@ interface Cache {
 }
 
 type CacheStateStringy = {
-    xorName: string;
-    name: string;
+    [xorName: string]: {
+        stringyVideo: VideoInfoStringy,
+        accessTime: Date
+    }
 }
 
 export default class VideoCache {
     private static readonly CACHE_STATE_FILENAME = 'cachestate';
+    private static buildFilename(longName: string): string {
+        return `${this.CACHE_STATE_FILENAME}${longName}`;
+    }
+
     private static INSTANCES: {
         [longName: string]: VideoCache
     } = {};
@@ -28,15 +34,15 @@ export default class VideoCache {
     private cache: Cache;
     private numEntries: number;
 
-    private constructor(private longName: string, oldState: Maybe<CacheStateStringy>) {
-        oldState.caseOf({
+    private constructor(private longName: string, cache: Maybe<Cache>) {
+        cache.caseOf({
             nothing: () => {
                 this.cache = {};
                 this.numEntries = 0;
             },
-            just: (state: CacheStateStringy) => {
-                this.cache = {};
-                this.numEntries = Infinity;
+            just: (existingCache: Cache) => {
+                this.cache = existingCache;
+                this.numEntries = Object.keys(this.cache).length;
             }
         });
     }
@@ -78,28 +84,39 @@ export default class VideoCache {
             this.cache[xorName].accessTime = new Date();
         }
 
-        console.log('cache state:', this.cache);
         return this.cache[xorName].video;
     }
 
     stateToString(): string {
-        //const ret = Object.keys(this.cache).map((xorName: string) => return {
-        return JSON.stringify({
-            xorName: '',
-            name: ''
+        const stringyState: CacheStateStringy = {};
+        Object.keys(this.cache).forEach((key: string) => {
+            stringyState[key] = {
+                stringyVideo: this.cache[key].video.dataToStringy(),
+                accessTime: this.cache[key].accessTime
+            }
         });
+        return JSON.stringify(stringyState);
     }
 
-    private static async readFromDisk(longName): Promise<Maybe<CacheStateStringy>> {
+    private static async readFromDisk(longName): Promise<Maybe<Cache>> {
         const homeDir: DnsHomeDirectory = await safeClient.dns.getHomeDirectory(longName, CONFIG.SERVICE_NAME);
         const fileNames: string[] = homeDir.files.map((f: NfsFileData) => f.name);
 
-        if (fileNames.indexOf(VideoCache.CACHE_STATE_FILENAME) === -1) {
-            return Maybe.nothing<CacheStateStringy>();
+        if (fileNames.indexOf(this.buildFilename(longName)) === -1) {
+            return Maybe.nothing<Cache>();
         }
 
-        const dataFile: SafeFile = await safeClient.dns.getFile(longName, CONFIG.SERVICE_NAME, VideoCache.CACHE_STATE_FILENAME);
-        return Maybe.just<CacheStateStringy>(JSON.parse(dataFile.body.toString()));
+        const dataFile: SafeFile = await safeClient.dns.getFile(longName, CONFIG.SERVICE_NAME, this.buildFilename(longName));
+        const stringyState: CacheStateStringy = JSON.parse(dataFile.body.toString());
+        const rebuiltCache: Cache = {};
+        Object.keys(stringyState).forEach(async (xorName: string) => {
+            const videoInfo: VideoInfo = toVI(stringyState[xorName].stringyVideo);
+            rebuiltCache[xorName] = {
+                video: await Video.retrieveFromInfo(videoInfo),
+                accessTime: stringyState[xorName].accessTime
+            }
+        });
+        return Maybe.just<Cache>(rebuiltCache);
     }
 
     async persistOnDisk() {
@@ -112,7 +129,7 @@ export default class VideoCache {
         });
 
         await safeClient.nfs.file.create("app",
-                                         `${homeDir.info.name}/${VideoCache.CACHE_STATE_FILENAME}`,
+                                         `${homeDir.info.name}/${VideoCache.buildFilename(this.longName)}`,
                                          dataStream,
                                          buffer.byteLength,
                                          "text/plain");
