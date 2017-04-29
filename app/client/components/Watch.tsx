@@ -10,10 +10,13 @@ import { PropTypes } from "react";
 import ReplyTree from "./ReplyTree";
 import VideoInfo from "./VideoInfo";
 import Comments from "./Comments";
+import VideoCache from "../ts/video-cache";
+import Config from "../ts/global-config";
 
 import { safeClient, WATCH_URL_RE } from "../ts/util";
 import { Maybe } from "../ts/maybe";
 const sc = safeClient;
+const CONFIG: Config = Config.getInstance();
 
 
 interface VideoPlayerProps {
@@ -152,14 +155,18 @@ export class Watch extends React.Component<WatchProps, WatchState> {
         };
     }
 
-    private mkVideo(props): Promise<Video> {
+    private async mkVideo(props): Promise<Video> {
         const match: string[] = WATCH_URL_RE.exec(props.location.pathname);
         if (match.length !== 2) {
             return Promise.reject(new Error("Watch: bad path"));
         }
 
         const xorName: string = match[1];
-        return VideoCache.getInstance().getFromXorName(xorName);
+        return await CONFIG.getLongName().caseOf({
+            just: async (longName: string) =>
+                (await VideoCache.getInstance(longName)).getFromXorName(xorName),
+            nothing: async () => await Video.readFromStringXorName(xorName)
+        });
     }
 
     componentWillReceiveProps(nextProps: WatchProps) {
