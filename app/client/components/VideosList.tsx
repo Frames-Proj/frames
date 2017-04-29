@@ -1,5 +1,5 @@
 import * as React from 'react';
-import VideoThumbnail from "./VideoThumbnail";
+import VideoThumbnail, { VTArg } from "./VideoThumbnail";
 
 export class VideosList extends React.Component<{}, {}> {
 
@@ -17,10 +17,10 @@ export class VideosList extends React.Component<{}, {}> {
         var videos: JSX.Element[] = [
             // sports
             <VideoThumbnail
-                xorName={"AdafsAAAAAAAAAAAAAAg7pUk7oRUjt4UnccreklFfuYF3ZQzc2RcRLHmAwpieIAAAAAAAAAB9Q"} />,
+                arg={new VTArg("AdafsAAAAAAAAAAAAAAg7pUk7oRUjt4UnccreklFfuYF3ZQzc2RcRLHmAwpieIAAAAAAAAAB9Q")} />,
             // art
             <VideoThumbnail
-                xorName={"AAAAAAAAAAAAAAAgINq3PEnkFVN7CH0waEGtg+LP+h7Kup9poR6hueNrCQAAAAAAAAAB9Q"} />
+                arg={new VTArg("AAAAAAAAAAAAAAAgINq3PEnkFVN7CH0waEGtg+LP+h7Kup9poR6hueNrCQAAAAAAAAAB9Q")} />
         ];
 
         return (
