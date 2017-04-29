@@ -8,7 +8,6 @@
 
 import Config from "./global-config";
 import { Maybe } from "./maybe";
-import { NotFoundError } from "safe-launcher-client";
 import VideoCache from "./video-cache";
 const CONFIG: Config = Config.getInstance();
 
@@ -16,30 +15,6 @@ import { safeClient } from "./util";
 
 import * as mkpath from "mkpath";
 
-// ensure that the service is registered and the home dir is created
-async function checkServiceState(ln: Maybe<string>) {
-    ln.caseOf({
-        just: async (name: string) => {
-            let services: string[];
-            services = await safeClient.dns.getServices(name);
-
-            if (services.indexOf(CONFIG.SERVICE_NAME) === -1) {
-                try {
-                    await safeClient.nfs.dir.get("app", CONFIG.SERVICE_HOME_DIR);
-                } catch (e) {
-                    if (e instanceof NotFoundError) {
-                        await safeClient.nfs.dir.create("app", CONFIG.SERVICE_HOME_DIR, true);
-                    } else {
-                        throw e;
-                    }
-                }
-
-                await safeClient.dns.addService(name, CONFIG.SERVICE_NAME, "app", CONFIG.SERVICE_HOME_DIR);
-            }
-        },
-        nothing: async () => {}
-    });
-};
 
 export default async function startupHook(): Promise<void> {
     await ensureVideoCache();
@@ -47,9 +22,6 @@ export default async function startupHook(): Promise<void> {
 
     await ensureSafeVideoDir();
     await ensureSafeThumbnailDir();
-
-    checkServiceState(CONFIG.getLongName());
-    CONFIG.addLongNameChangeListener(checkServiceState);
 
     // be sure the cache state gets persisted to disk
     window.onbeforeunload = () => {

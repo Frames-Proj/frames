@@ -12,7 +12,7 @@ const sc = safeClient;
 import Config from "./global-config";
 const CONFIG = Config.getInstance();
 
-import Video from "./video-model";
+import { Video } from "./video-model";
 
 //
 // The playlist class will be stored in a structured data with

@@ -4,7 +4,7 @@
 
 import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors, diffFiles } from "./test-util";
 
-import Video from "../video-model";
+import { Video } from "../video-model";
 import { Maybe } from "../maybe";
 
 import CachedAppendableDataHandle from "../cached-appendable-data";

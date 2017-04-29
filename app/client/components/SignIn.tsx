@@ -87,10 +87,10 @@ export class SignIn extends React.Component<SignInProp, SignInState> {
         }
     };
 
-    private updateLongName(event) {
+    private async updateLongName(event) {
         const config = Config.getInstance();
         const longName: string = event.target.value;
-        config.setLongName(longName === "Guest" ? Maybe.nothing<string>() : Maybe.just(longName));
+        await config.setLongName(longName === "Guest" ? Maybe.nothing<string>() : Maybe.just(longName));
         this.props.updateLongName();
     }
 

@@ -7,7 +7,27 @@
 import { InstantiationError } from "./error";
 import { AuthorizationPayload } from "safe-launcher-client";
 import { Maybe } from "./maybe";
+import { NotFoundError } from "safe-launcher-client";
+import { safeClient } from "./util";
 
+// ensure that the service is registered and the home dir is created
+async function checkServiceState(name: string, serviceName: string, homeDir: string): Promise<void> {
+    const services: string[] = await safeClient.dns.getServices(name);
+
+    if (services.indexOf(serviceName) === -1) {
+        try {
+            await safeClient.nfs.dir.get("app", homeDir);
+        } catch (e) {
+            if (e instanceof NotFoundError) {
+                await safeClient.nfs.dir.create("app", homeDir, true);
+            } else {
+                throw e;
+            }
+        }
+
+        await safeClient.dns.addService(name, serviceName, "app", homeDir);
+    }
+};
 
 export default class Config {
     // Contains global immutable state about our app. This is where we should stuff
@@ -42,11 +62,13 @@ export default class Config {
     public getLongName(): Maybe<string> {
         return this.CURRENT_LONG_NAME;
     }
-    public setLongName(longName: Maybe<string>): void {
+    public async setLongName(longName: Maybe<string>): Promise<void> {
         this.CURRENT_LONG_NAME = longName;
-        for (let i = 0; i < this.longNameListeners.length; ++i) {
-            this.longNameListeners[i](longName);
-        }
+        await longName.caseOf({
+            nothing: async () => {},
+            just: async (name: string) => await checkServiceState(name, this.SERVICE_NAME, this.SERVICE_HOME_DIR)
+        });
+        this.longNameListeners.forEach(f => f(longName));
     }
     public addLongNameChangeListener(f: (ln: Maybe<string>) => any): void {
         this.longNameListeners.push(f);
