@@ -53,27 +53,28 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
     render() {
         const content: JSX.Element =
             this.state.videoIsBad ?
-            <span style={{
-                color: "#e80910",
-                fontSize: "160px",
-                fontWeight: "bold",
-                textAlign: "center",
-                margin: "0px 20px 0px 20px"
-            }}> X </span>
+            null
             : this.state.resolvedVideo.caseOf({
                 nothing: () => <ChasingArrowsLoadingImage />,
                 just: v => (
-                    <div>
+                    <div className="video-thumbnail" style={{
+                        display: 'inline-block',
+                        marginRight: '50px'
+                    }}>
                         <a href="#" onClick={this.onClick.bind(this)} style={{
                             cursor: "pointer"
                         }}>
                             <div style={{
                                 height: "100px",
-                                width: "150px"
+                                width: "100%",
+                                overflow: 'hidden'
                             }}>
                                 {this.state.resolvedVideoThumbnail.caseOf({
                                     nothing: () => <ChasingArrowsLoadingImage />,
-                                    just: t => <img src={t} />
+                                    just: t => <img src={t} style={{
+                                        height: '100px',
+                                        width: 'auto'
+                                    }}/>
                                 })}
                             </div>
                             <span>
@@ -90,7 +91,9 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
             });
 
         return (
-            <div className="video-thumbnail">
+            <div style={{
+                display: 'inline-block'
+            }}>
                 {content}
             </div>
         );
