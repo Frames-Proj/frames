@@ -81,30 +81,22 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
 
     render() {
         const content: JSX.Element =
-            this.state.videoIsBad ?
-            <span style={{
-                color: "#e80910",
-                fontSize: "160px",
-                fontWeight: "bold",
-                textAlign: "center",
-                margin: "0px 20px 0px 20px"
-            }}> X </span>
-            : this.state.payload.caseOf({
+            this.state.videoIsBad ? null : this.state.payload.caseOf({
                 nothing: () => <ChasingArrowsLoadingImage />,
-                just: p => (
-                    <div>
+                just: p => (<div>
                         <a href="#" onClick={this.onClick.bind(this)} style={{
                             cursor: "pointer"
                         }}>
                             <div style={{
                                 height: "100px",
-                                width: "150px"
+                                width: "100%",
+                                overflow: 'hidden'
                             }}>
-                                <img src={p.thumbnailFile} />
+                                <img src={p.thumbnailFile} style={{
+                                            height: '100px',
+                                            width: 'auto'}}/>
                             </div>
-                            <span>
-                                { p.title }
-                            </span>
+                            <span>{p.title}</span>
                         </a>
                         <div style={{
                             fontSize: "12px",
@@ -112,11 +104,12 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
                         }}>
                             { p.owner }
                         </div>
-                    </div>)
+                   </div>)
             });
-
         return (
-            <div className="video-thumbnail">
+            <div style={{
+                display: 'inline-block'
+            }}>
                 {content}
             </div>
         );

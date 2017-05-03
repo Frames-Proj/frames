@@ -39,9 +39,7 @@ export class Discover extends React.Component<{}, DiscoverState> {
                     padding: '50px'
                 }}>
                     <h1>Discover</h1>
-                    <p>Here are some videos on various topics to get the conversation
-                        started. If a topic interests you, check out the replies people
-                        have posted, or post a reply of your own.</p>
+                    <p>Get the conversation with some of the videos below. Make sure to check out the replies, or post a reply of your own!</p>
                 </Jumbotron>
                 <div style={{
                     height: 'calc(100% - 294px)',
