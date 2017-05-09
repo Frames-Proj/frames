@@ -3,6 +3,8 @@ import * as React from 'react';
 export interface NotificationProps {
     type: string;
     message: string;
+    style?: any;
+    show?: boolean;
 }
 
 export class Notification extends React.Component<NotificationProps, {}> {
@@ -35,8 +37,12 @@ export class Notification extends React.Component<NotificationProps, {}> {
             'text-transform': 'uppercase'
         };
 
+        if (this.props.style) {
+            this.props.style["display"] = this.props.show ? "block" : "none";
+        }
+
         return (
-            <div>
+            <div style={this.props.style}>
                 <hr/>
                 <div style={borderStyle}>
                     <div style={titleStyle}>

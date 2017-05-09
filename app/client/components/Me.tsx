@@ -4,6 +4,7 @@ import {Jumbotron, Tab, Row, Col, Nav, NavItem, Grid, Thumbnail, Button} from "r
 
 import VideoThumbnail from "./VideoThumbnail";
 import { Maybe } from "../ts/maybe";
+import { VTArg } from "./VideoThumbnail";
 
 interface MeState {
     uploads: Maybe<string[]>;
@@ -17,7 +18,7 @@ export class UserOverview extends React.Component<{}, MeState> {
         this.state = {
             uploads: Maybe.nothing<string[]>(),
         }
-       
+
         this.render.bind(this);
 
     }
@@ -54,7 +55,8 @@ export class UserOverview extends React.Component<{}, MeState> {
             },
             just: xornames => {
                 var thumbnails = xornames.map((xorname) => {
-                    return (<VideoThumbnail xorName={xorname}/>);
+                    return (<VideoThumbnail arg={new VTArg(xorname)}/>);
+
                 });
                 return (
                     <div style={{

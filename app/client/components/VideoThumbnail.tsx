@@ -5,15 +5,40 @@ import { ChasingArrowsLoadingImage } from "./Animations";
 import { Maybe } from "../ts/maybe";
 import { PropTypes } from "react";
 
+
+export class VTArg {
+    private kind: "xorName" | "rawPayload";
+    constructor(private _d: string | VideoThumbnailPayload) {
+        if (typeof _d === "string") this.kind = "xorName";
+        else if (_d instanceof VideoThumbnailPayload) this.kind = "rawPayload";
+        else throw new Error("Type error.");
+    }
+    public caseOf<T>(cases: { xorName: (xorName: string) => T,
+                              rawPayload: (rawPayload: VideoThumbnailPayload) => T }): T {
+        if (this.kind === "xorName") return cases.xorName(this._d as string);
+        else if (this.kind === "rawPayload") return cases.rawPayload(this._d as VideoThumbnailPayload);
+    }
+
+}
+
 interface VideoThumbnailProps {
-    xorName: string;
+    arg: VTArg;
 }
 
 interface VideoThumbnailState {
-    resolvedVideo: Maybe<Video>;
-    resolvedVideoThumbnail: Maybe<string>;
+    /* resolvedVideo: Maybe<Video>;
+     * resolvedVideoThumbnail: Maybe<string>;*/
+    payload: Maybe<VideoThumbnailPayload>;
     videoIsBad: boolean;
 }
+
+// all the data a `VideoThumbnail` really needs to work.
+class VideoThumbnailPayload {
+    constructor(public title: string,
+                public owner: string,
+                public thumbnailFile: string,
+                public xorName: string) {}
+};
 
 export default class VideoThumbnail extends React.Component<VideoThumbnailProps, VideoThumbnailState> {
 
@@ -30,37 +55,36 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
     constructor(props: VideoThumbnailProps) {
         super(props);
 
-        Video.readFromStringXorName(props.xorName, false)
-             .then((v: Video) => {
-                 this.setState({ resolvedVideo: Maybe.just(v) });
-                 v.thumbnailFile.then((tf: string) =>
-                     this.setState({ resolvedVideoThumbnail: Maybe.just(tf) }));
-             })
-             .catch(_ => this.setState({ videoIsBad: true }));
-
         this.state = {
-            resolvedVideo: Maybe.nothing<Video>(),
-            resolvedVideoThumbnail: Maybe.nothing<string>(),
+            payload: Maybe.nothing<VideoThumbnailPayload>(),
             videoIsBad: false
         };
+
+        props.arg.caseOf<Promise<void> | void>({
+            xorName: n =>
+                Video.readFromStringXorName(n, false)
+                    .then((v: Video) => v.thumbnailFile.then((tf: string) =>
+                        this.setState({ payload: Maybe.just(new VideoThumbnailPayload(
+                        v.title, v.owner, tf, n))})))
+                    .catch(_ => this.setState({ videoIsBad: true })),
+            rawPayload: rp => this.setState({ payload: Maybe.just(rp) })
+        });
     }
 
     private onClick(e): void {
         e.preventDefault();
-        this.context.router.history.push(`/watch/${this.props.xorName}`);
+        this.state.payload.caseOf({
+            nothing: () => null, // if we have not loaded yet, the link should not be live
+            just: p => this.context.router.history.push(`/watch/${p.xorName}`)
+        });
     }
 
     render() {
         const content: JSX.Element =
-            this.state.videoIsBad ?
-            null
-            : this.state.resolvedVideo.caseOf({
+            this.state.videoIsBad ? null : this.state.payload.caseOf({
                 nothing: () => <ChasingArrowsLoadingImage />,
-                just: v => (
-                    <div className="video-thumbnail" style={{
-                        display: 'inline-block',
-                        marginRight: '50px'
-                    }}>
+                just: p => (<div>
+
                         <a href="#" onClick={this.onClick.bind(this)} style={{
                             cursor: "pointer"
                         }}>
@@ -69,27 +93,21 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
                                 width: "100%",
                                 overflow: 'hidden'
                             }}>
-                                {this.state.resolvedVideoThumbnail.caseOf({
-                                    nothing: () => <ChasingArrowsLoadingImage />,
-                                    just: t => <img src={t} style={{
-                                        height: '100px',
-                                        width: 'auto'
-                                    }}/>
-                                })}
+                                <img src={p.thumbnailFile} style={{
+                                            height: '100px',
+                                            width: 'auto'}}/>
+
                             </div>
-                            <span>
-                                { v.title }
-                            </span>
+                            <span>{p.title}</span>
                         </a>
                         <div style={{
                             fontSize: "12px",
                             color: "gray"
                         }}>
-                            { v.owner }
+                            { p.owner }
                         </div>
-                    </div>)
+                   </div>)
             });
-
         return (
             <div style={{
                 display: 'inline-block'

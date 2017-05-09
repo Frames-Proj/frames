@@ -277,8 +277,7 @@ export class StructuredDataHandle extends Handle {
      * @param handle - the structured data handle
      */
     protected async dropImpl(): Promise<void> {
-        if (!this.valid)
-            throw new InvalidHandleError(this.handle, "StructuredDataHandle:dropImpl");
+        if (!this.valid) return; // we want drop to be idempotent. It lets us be imprecise about ownership
 
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.sdEndpoint}/handle/${this.handle}`, {

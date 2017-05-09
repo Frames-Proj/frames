@@ -97,8 +97,7 @@ export class DataIDHandle extends Handle {
      *
      */
     protected async dropImpl(): Promise<void> {
-        if (!this.valid)
-            throw new InvalidHandleError(this.handle, "DataIDHandle:dropImpl");
+        if (!this.valid) return; // we want drop to be idempotent. It lets us be imprecise about ownership
 
         const result = await saneResponse(WebRequest.create<any>(
             `${this.client.endpoint}/data-id/${this.handle}`, {
