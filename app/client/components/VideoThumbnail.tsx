@@ -84,6 +84,7 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
             this.state.videoIsBad ? null : this.state.payload.caseOf({
                 nothing: () => <ChasingArrowsLoadingImage />,
                 just: p => (<div>
+
                         <a href="#" onClick={this.onClick.bind(this)} style={{
                             cursor: "pointer"
                         }}>
@@ -95,6 +96,7 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
                                 <img src={p.thumbnailFile} style={{
                                             height: '100px',
                                             width: 'auto'}}/>
+
                             </div>
                             <span>{p.title}</span>
                         </a>
