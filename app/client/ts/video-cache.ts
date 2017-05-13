@@ -22,16 +22,18 @@ const MANIFEST_FILE = "cache-manifest.dat";
 
 // All the info required to construct a video. The pointers to the
 // video and comment replies live in the payload.
-interface CachedVideoInfoStringy {
+export interface CachedVideoInfoStringy {
     xorName: string; // base64 encoded name of the video node on the SafeNET
     payload: VideoInfoStringy;
     file: string; // path to the video file on the local system
     thumbnailFile: string;
+    timestamp: number; // seconds since unix epoch indicating when the video was last touched
 }
 
 interface VideoCache {
     [xorName: string]: CachedVideoInfoStringy;
 }
+
 
 //
 // This class contains the factory methods: `new` and `read` which
@@ -196,6 +198,54 @@ export class VideoFactory {
 
             });
         });
+    }
+
+    // private, but exposed for unit testing the tricky cache logic only
+    public _addVideo(video: CachedVideoInfoStringy): Promise<void> {
+
+        let p: Promise<void> = Promise.resolve();
+        // if we have overflowed the max cache size, clear the bottom
+        // half of the cache
+        if (Object.keys(this.cachedVideos).length > CONFIG.MAX_CACHE_SIZE) {
+            p = p.then(_ => this.compactCache());
+        }
+
+        if (!(video.xorName in this.cachedVideos)) {
+            this.cachedVideos[video.xorName] = video;
+        }
+        return p;
+    }
+
+    private async compactCache(): Promise<void> {
+        const tgtCacheNum = CONFIG.MAX_CACHE_SIZE / 2;
+
+        const keepList = Object.keys(this.cachedVideos)
+            .map(k => this.cachedVideos[k])
+            .sort((lhs, rhs) => rhs.timestamp - lhs.timestamp)
+            .slice(0, Math.floor(CONFIG.MAX_CACHE_SIZE / 2))
+            .reduce((acc, vi) => {
+                acc[vi.xorName] = vi;
+                return acc;
+            }, {});
+
+        let removePromises: Promise<void>[] = [];
+        for (let vid in this.cachedVideos) {
+            if (vid in keepList) continue;
+            const vidInfo: CachedVideoInfoStringy = this.cachedVideos[vid];
+
+            const rm: Promise<void> = new Promise<void>((resolve, reject) =>
+                    fs.unlink(vidInfo.file, (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                })).then(_ => new Promise<void>((resolve, reject) =>
+                    fs.unlink(vidInfo.thumbnailFile, (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                })));
+            removePromises.push(rm);
+        }
+
+        return Promise.all(removePromises).then(_ => { return; });
     }
 
 }
