@@ -1,6 +1,6 @@
 import { UserProfileData, UserProfile } from "../user-model";
 import { safeClient } from "../util";
-import { sleep, makeAlphaid, failDone } from "./test-util";
+import { sleep, makeAlphaid, failDone, setupTestEnv } from "./test-util";
 import Config from "../global-config";
 
 const CONFIG: Config = Config.getInstance();
@@ -8,9 +8,18 @@ const CONFIG: Config = Config.getInstance();
 let VALID_LONG_NAME: string;
 const HOME_DIR: string = makeAlphaid().toLowerCase();
 
+// TODO(ethan): this might not be needed anymore
 describe("The user profile data store", () => {
 
     beforeAll(async (done) => {
+        await failDone(setupTestEnv(), done);
+        done();
+    });
+
+    beforeAll(async (done) => {
+
+
+
         VALID_LONG_NAME = makeAlphaid().toLowerCase();
 
         await failDone(safeClient.nfs.dir.create("app", HOME_DIR, false), done);

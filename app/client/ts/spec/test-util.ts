@@ -1,7 +1,12 @@
 
-import { LeakResults, getLeakStatistics } from "safe-launcher-client";
+import { LeakResults, setCollectLeakStats, getLeakStatistics } from "safe-launcher-client";
 import { makeRandAlphaStr, makeRandStr } from "../util";
+import startupHook from "../startup-hooks";
 import * as fs from "fs";
+import { safeClient as sc } from "../util";
+import Config from "../global-config";
+const CONFIG = Config.getInstance();
+import { Maybe } from "../maybe";
 
 export const TEST_DATA_DIR: string = `${__dirname}/../../client/ts/spec/test-data`;
 
@@ -15,6 +20,20 @@ export function failDone<T>(promise: Promise<T>,
 
 export const makeid = makeRandStr;
 export const makeAlphaid = makeRandAlphaStr;
+
+export async function setupTestEnv(): Promise<void> {
+    await startupHook();
+    setCollectLeakStats();
+    await sc.dns.register("uwotm8")
+        .catch(err => {
+            const errDescription = JSON.parse(err.res.body.toString()).description;
+            if (errDescription === "DnsError::DnsNameAlreadyRegistered") {
+                return; // we good
+            }
+            throw err;
+        })
+        .then(() => CONFIG.setLongName(Maybe.just("uwotm8")));
+}
 
 export function checkForLeakErrors(): void {
     const leakStats: LeakResults = getLeakStatistics();

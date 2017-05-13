@@ -1,26 +1,17 @@
-
-import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors, diffFiles } from "./test-util";
-
+import { TEST_DATA_DIR, failDone, makeid,
+         checkForLeakErrors, diffFiles, setupTestEnv } from "./test-util";
 import Video from "../video-model";
-import { Maybe } from "../maybe";
-
-import Config from "../global-config";
-const CONFIG: Config = Config.getInstance();
-
 import { TYPE_TAG_VERSIONED, DataIDHandle,
          SerializedDataID, withDropP, StructuredDataHandle,
          setCollectLeakStats, setCollectLeakStatsBlock
        } from "safe-launcher-client";
 import { safeClient } from "../util";
-
-import startupHook from "../startup-hooks";
+import { VideoFactory } from "../video-cache";
 
 describe("A frames Video model", () => {
 
     beforeAll(async (done) => {
-        await failDone(startupHook(), done);
-        setCollectLeakStats();
-        CONFIG.setLongName(Maybe.just("uwotm8"));
+        await failDone(setupTestEnv(), done);
         done();
     });
 
@@ -28,22 +19,12 @@ describe("A frames Video model", () => {
         checkForLeakErrors();
     });
 
-    it("can be created out of raw parts, and written to the network.", async (done) => {
-        setCollectLeakStatsBlock("vms:test1 create raw write");
-
-        const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
-                                    `${TEST_DATA_DIR}/test-vid.mp4`), done);
-        await video.drop();
-
-        done();
-    });
-
     it("can be recovered from a serialized dataID.", async (done) => {
         setCollectLeakStatsBlock("vms:test2 recover");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const dataId: SerializedDataID =
@@ -53,7 +34,7 @@ describe("A frames Video model", () => {
 
         const recoveredVideo: Video =
             await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
-                return Video.read(dIdH);
+                return vf.read(dIdH);
             }), done);
 
         expect(recoveredVideo.title).toBe(video.title);
@@ -67,9 +48,10 @@ describe("A frames Video model", () => {
 
     it("can be a reply to another video.", async (done) => {
         setCollectLeakStatsBlock("vms:test3 create reply");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const parent: Video =
-            await failDone(Video.new("title " + makeid(), "Parent description.",
+            await failDone(vf.new("title " + makeid(), "Parent description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
         parent.parentVideoXorName.caseOf({
             nothing: () => null,
@@ -94,9 +76,10 @@ describe("A frames Video model", () => {
 
     it("can find its parent after being serialized.", async (done) => {
         setCollectLeakStatsBlock("vms:test3 round-trip parent");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const parent: Video =
-            await failDone(Video.new("title " + makeid(), "Parent description.",
+            await failDone(vf.new("title " + makeid(), "Parent description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
         const child: Video =
             await failDone(parent.addVideoReply("child title " + makeid(),
@@ -109,13 +92,13 @@ describe("A frames Video model", () => {
 
         const recoveredChild: Video =
             await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
-                return Video.read(dIdH);
+                return vf.read(dIdH);
             }), done);
         expect(recoveredChild.title).toBe(child.title);
         expect(recoveredChild.description).toBe(child.description);
 
         const recoveredParent: Video =
-            await failDone(Video.readFromStringXorName(
+            await failDone(vf.readFromStringXorName(
                 recoveredChild.parentVideoXorName.valueOr("BOGUS")), done);
         expect(recoveredParent.title).toBe(parent.title);
         expect(recoveredParent.description).toBe(parent.description);
@@ -136,9 +119,10 @@ describe("A frames Video model", () => {
 
     it("can be read without downloading the whole video.", async (done) => {
         setCollectLeakStatsBlock("vms:test4 no video file");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const dataId: SerializedDataID =
@@ -148,7 +132,7 @@ describe("A frames Video model", () => {
 
         const recoveredVideo: Video =
             await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
-                return Video.read(dIdH, false);
+                return vf.read(dIdH, false);
             }), done);
 
         expect(recoveredVideo.title).toBe(video.title);
@@ -167,9 +151,10 @@ describe("A frames Video model", () => {
 
     it("can get it's child's XorName as a string.", async (done) => {
         setCollectLeakStatsBlock("vms:test5 round-trip parent");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const parent: Video =
-            await failDone(Video.new("title " + makeid(), "Parent description.",
+            await failDone(vf.new("title " + makeid(), "Parent description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
         const child: Video =
             await failDone(parent.addVideoReply("child title " + makeid(),
@@ -177,12 +162,12 @@ describe("A frames Video model", () => {
 
         const recoveredParent: Video =
             await failDone(withDropP(await parent.xorName(), async pname => {
-                return await Video.read(pname, false);
+                return await vf.read(pname, false);
             }), done);
 
         const childXorName = await failDone(recoveredParent.getReplyVideoXorName(0), done);
         const recoveredChild: Video =
-            await failDone(Video.readFromStringXorName(childXorName), done);
+            await failDone(vf.readFromStringXorName(childXorName), done);
 
         expect(recoveredChild.title).toBe(child.title);
         expect(recoveredChild.description).toBe(child.description);
@@ -197,9 +182,10 @@ describe("A frames Video model", () => {
 
     it("has a thumbnail image, which survives a round trip.", async (done) => {
         setCollectLeakStatsBlock("vms:test6 thumbnail");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const dataId: SerializedDataID =
@@ -209,7 +195,7 @@ describe("A frames Video model", () => {
 
         const recoveredVideo: Video =
             await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
-                return Video.read(dIdH);
+                return vf.read(dIdH);
             }), done);
 
         expect(await diffFiles(await video.thumbnailFile, await recoveredVideo.thumbnailFile)).toBe(true);

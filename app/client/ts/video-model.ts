@@ -19,7 +19,7 @@ import CachedAppendableDataHandle from "./cached-appendable-data";
 import Config from "./global-config";
 const CONFIG: Config = Config.getInstance();
 
-class UnsupportedVideoFormatError extends Error {
+export class UnsupportedVideoFormatError extends Error {
     constructor(mimeType: string) {
         super(`Unsupported Video Format: ${mimeType}`);
     }
@@ -72,7 +72,7 @@ export default class Video implements Drop {
     }
 
 
-    private constructor( data: VideoInfo
+    constructor( data: VideoInfo
                          , file: Maybe<Promise<string>>
                          , thumbnailFile: Promise<string>
                          , commentReplies: CachedAppendableDataHandle
@@ -92,7 +92,7 @@ export default class Video implements Drop {
         await this.videoReplies.drop();
         await this.videoData.drop();
     }
-    private setVideoData(vd: StructuredDataHandle): void {
+    public _setVideoData(vd: StructuredDataHandle): void {
         this.videoData = vd;
         this.metadata = vd.getMetadata();
     }
@@ -166,12 +166,12 @@ export default class Video implements Drop {
 
         const v = new Video(payload, Maybe.just(Promise.resolve(localVideoFile)),
                             Promise.resolve(thumbnail), commentReplies, videoReplies);
-        v.setVideoData(await v.write());
+        v._setVideoData(await v._write());
         return v;
     }
 
     // @returns a promise for a dataID pointing to the written video meta-node
-    private async write(): Promise<StructuredDataHandle> {
+    public async _write(): Promise<StructuredDataHandle> {
         const localVideoFile: string =
             await this.file.caseOf({
                 just: f => f,
@@ -272,7 +272,7 @@ export default class Video implements Drop {
         }
 
         const v = new Video(vi, videoFile, thumbNailFile, commentReplies, videoReplies);
-        v.setVideoData(sdH);
+        v._setVideoData(sdH);
         return v;
     }
 
@@ -324,17 +324,17 @@ function isVideoInfoBase(x: any): x is VideoInfoBase {
               && typeof x.videoFile === "string"
               && typeof x.thumbnailFile === "string");
 }
-interface VideoInfoStringy extends VideoInfoBase {
+export interface VideoInfoStringy extends VideoInfoBase {
     videoReplies: string; // base64 encoded
     commentReplies: string; // base64 encoded
     parentVideoXorName?: string; // base64 encoded
 }
-function isVideoInfoStringy(x: any): x is VideoInfoStringy {
+export function isVideoInfoStringy(x: any): x is VideoInfoStringy {
     return (x != null
             && typeof x.videoReplies === "string"
             && typeof x.commentReplies === "string") && isVideoInfoBase(x);
 }
-function toVI(vi: VideoInfoStringy): VideoInfo {
+export function toVI(vi: VideoInfoStringy): VideoInfo {
     let ret: VideoInfo = {
         title: vi.title,
         description: vi.description,
@@ -348,12 +348,12 @@ function toVI(vi: VideoInfoStringy): VideoInfo {
 
     return ret;
 }
-interface VideoInfo extends VideoInfoBase {
+export interface VideoInfo extends VideoInfoBase {
     videoReplies: SerializedDataID;
     commentReplies: SerializedDataID;
     parentVideoXorName?: string;
 }
-function toVIStringy(vi: VideoInfo): VideoInfoStringy {
+export function toVIStringy(vi: VideoInfo): VideoInfoStringy {
     let ret: VideoInfoStringy = {
         title: vi.title,
         description: vi.description,
@@ -366,7 +366,7 @@ function toVIStringy(vi: VideoInfo): VideoInfoStringy {
     if (vi.parentVideoXorName) ret.parentVideoXorName = vi.parentVideoXorName;
     return ret;
 }
-function isVideoInfo(x: any): x is VideoInfo {
+export function isVideoInfo(x: any): x is VideoInfo {
     return (x != null
             && x.videoReplies instanceof Buffer
             && x.commentReplies instanceof Buffer)

@@ -1,5 +1,6 @@
 
-import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors } from "./test-util";
+import { TEST_DATA_DIR, failDone, makeid,
+         checkForLeakErrors, setupTestEnv } from "./test-util";
 
 import VideoComment from "../comment-model";
 import Video from "../video-model";
@@ -21,9 +22,7 @@ let started: boolean = false;
 describe("A video comment model", () => {
 
     beforeAll(async (done) => {
-        await failDone(startupHook(), done);
-        setCollectLeakStats();
-        CONFIG.setLongName(Maybe.just("uwotm8"));
+        await failDone(setupTestEnv(), done);
         done();
     });
 
