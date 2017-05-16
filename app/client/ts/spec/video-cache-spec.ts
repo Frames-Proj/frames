@@ -6,6 +6,7 @@ import { TYPE_TAG_VERSIONED, DataIDHandle,
          SerializedDataID, withDropP, StructuredDataHandle,
          setCollectLeakStats, setCollectLeakStatsBlock
        } from "safe-launcher-client";
+import { Maybe } from "../maybe";
 
 import { safeClient as sc } from "../util";
 import Config from "../global-config";
@@ -57,7 +58,7 @@ describe("A Video factory", () => {
             const v = mkTestVid();
             fs.closeSync(fs.openSync(v.file, "w")); // make empty file
             fs.closeSync(fs.openSync(v.thumbnailFile, "w"));
-            await vf._addVideo(v);
+            await vf._addVideo(Promise.resolve(Maybe.just(v)));
         }
 
         // TODO: remove test dir

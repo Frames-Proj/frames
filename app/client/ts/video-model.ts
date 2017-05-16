@@ -100,6 +100,10 @@ export default class Video implements Drop {
     public xorName(): Promise<DataIDHandle> {
         return this.videoData.toDataIdHandle();
     }
+    public async stringXorName(): Promise<string> {
+        return withDropP(await this.xorName(), async di =>
+                         Promise.resolve((await di.serialise()).toString("base64")) );
+    }
 
     /**
      *  Construct a new video from raw parts.

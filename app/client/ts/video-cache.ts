@@ -6,7 +6,8 @@
 
 import Video from "./video-model";
 import { VideoInfoStringy, VideoInfo, isVideoInfo,
-         toVI, isVideoInfoStringy, UnsupportedVideoFormatError } from "./video-model";
+         toVI, toVIStringy, isVideoInfoStringy,
+         UnsupportedVideoFormatError } from "./video-model";
 import * as fs from "fs";
 
 import Config from "./global-config";
@@ -104,6 +105,7 @@ export class VideoFactory {
         const v = new Video(payload, Maybe.just(Promise.resolve(localVideoFile)),
                             Promise.resolve(thumbnail), commentReplies, videoReplies);
         v._setVideoData(await v._write());
+        this._addVideo(mkCachedVideo(v, toVIStringy(payload)));
         return v;
     }
 
@@ -112,6 +114,11 @@ export class VideoFactory {
             Buffer.from(xorName, "base64")), n => Video.read(n, fetchFile));
     }
     public async read(dataId: DataIDHandle, fetchFile = true): Promise<Video> {
+        const strXorName: string = (await dataId.serialise()).toString("base64");
+        if (strXorName in this.cachedVideos) {
+            return getCachedVideo(this.cachedVideos[strXorName]);
+        }
+
         const sdH: StructuredDataHandle =
             (await sc.structured.fromDataIdHandle(dataId)).handleId;
 
@@ -172,6 +179,7 @@ export class VideoFactory {
 
         const v = new Video(vi, videoFile, thumbNailFile, commentReplies, videoReplies);
         v._setVideoData(sdH);
+        this._addVideo(mkCachedVideo(v, vis));
         return v;
     }
 
@@ -201,7 +209,10 @@ export class VideoFactory {
     }
 
     // private, but exposed for unit testing the tricky cache logic only
-    public _addVideo(video: CachedVideoInfoStringy): Promise<void> {
+    // @idempotent
+    public async _addVideo(video: Promise<Maybe<CachedVideoInfoStringy>>): Promise<void> {
+        const v: CachedVideoInfoStringy = (await video).valueOr(null);
+        if (v === null) return; // just don't touch the cache if we never actually downloaded the video
 
         let p: Promise<void> = Promise.resolve();
         // if we have overflowed the max cache size, clear the bottom
@@ -210,8 +221,8 @@ export class VideoFactory {
             p = p.then(_ => this.compactCache());
         }
 
-        if (!(video.xorName in this.cachedVideos)) {
-            this.cachedVideos[video.xorName] = video;
+        if (!(v.xorName in this.cachedVideos)) {
+            this.cachedVideos[v.xorName] = v;
         }
         return p;
     }
@@ -249,4 +260,38 @@ export class VideoFactory {
     }
 
 }
+
+async function mkCachedVideo(v: Video, payload: VideoInfoStringy): Promise<Maybe<CachedVideoInfoStringy>> {
+    // this just flips the monads and unpacks the promise (which is now the outer monad)
+    const file: Maybe<string> = await v.file.caseOf({
+        just: async fp => Promise.resolve(Maybe.just<string>(await fp)),
+        nothing: () => Promise.resolve(Maybe.nothing<string>())
+    });
+    const xorName = await v.stringXorName();
+    const tf = await v.thumbnailFile;
+
+    return file.bind(f => Maybe.just<CachedVideoInfoStringy>({
+        xorName: xorName,
+        payload: payload,
+        file: f,
+        thumbnailFile: tf,
+        timestamp: new Date().getTime() // TODO: is this right?
+    }));
+}
+
+async function getCachedVideo(blob: CachedVideoInfoStringy): Promise<Video> {
+    const videoReplies: CachedAppendableDataHandle =
+        await CachedAppendableDataHandle.new(await sc.dataID.deserialise(
+            new Buffer(blob.payload.videoReplies, "base64")));
+    const commentReplies: CachedAppendableDataHandle =
+        await CachedAppendableDataHandle.new(await sc.dataID.deserialise(
+            new Buffer(blob.payload.commentReplies, "base64")));
+    return new Video(toVI(blob.payload),
+                     Maybe.just(Promise.resolve(blob.file)),
+                     Promise.resolve(blob.thumbnailFile),
+                     commentReplies,
+                     videoReplies
+                    );
+}
+
 
