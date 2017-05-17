@@ -71,3 +71,13 @@ export async function diffFiles(f1: string, f2: string): Promise<boolean> {
 export function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export async function idempotentMkdirSync(name): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        fs.mkdir(name, (err) => {
+            if (err && err.code === "EEXIST") resolve();
+            else if (err) reject();
+            else resolve();
+        });
+    });
+}

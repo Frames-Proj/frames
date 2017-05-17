@@ -56,3 +56,39 @@ export function makeRandAlphaStr() {
     let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     return buildString(possible, 15);
 }
+
+export async function recursiveRmdir(dir: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        fs.readdir(dir, (err, files) => {
+            if (err) {
+                reject(err);
+            } else {
+                Promise.all(files.map(f => {
+                    const fullPath: string = `${dir}/${f}`;
+                    return new Promise((resInner, rejInner) => {
+                        fs.stat(fullPath, (err, stats: fs.Stats) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                if (stats.isDirectory()) {
+                                    recursiveRmdir(fullPath).then(_ => resInner());
+                                } else {
+                                    fs.unlink(fullPath, err => {
+                                        if (err) rejInner(err);
+                                        else resInner();
+                                    });
+                                }
+                            }
+                        });
+                    });
+                })).then(_ => {
+                    fs.rmdir(dir, (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+            }
+        });
+    });
+}
+

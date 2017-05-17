@@ -1,5 +1,5 @@
 import { TEST_DATA_DIR, failDone, makeid,
-         checkForLeakErrors, setupTestEnv } from "./test-util";
+         checkForLeakErrors, setupTestEnv, idempotentMkdirSync } from "./test-util";
 import { VideoFactory, CachedVideoInfoStringy } from "../video-cache";
 import Video from "../video-model";
 import { TYPE_TAG_VERSIONED, DataIDHandle,
@@ -26,7 +26,7 @@ describe("A Video factory", () => {
         done();
     });
 
-    fit("can compact the video cache", async done => {
+    it("can compact the video cache", async done => {
         const vf: VideoFactory = await VideoFactory.getInstance();
         const testDirName = `/tmp/frames-test/${makeid()}`;
 
@@ -43,15 +43,6 @@ describe("A Video factory", () => {
             };
         }
 
-        async function idempotentMkdirSync(name): Promise<void> {
-            return new Promise<void>((resolve, reject) => {
-                fs.mkdir(name, (err) => {
-                    if (err && err.code === "EEXIST") resolve();
-                    else if (err) reject();
-                    else resolve();
-                });
-            });
-        }
         idempotentMkdirSync("/tmp/frames-test");
         fs.mkdirSync(testDirName);
         for (let i = 0; i < CONFIG.MAX_CACHE_SIZE + 2; ++i) {
