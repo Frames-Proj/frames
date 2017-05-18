@@ -7,6 +7,19 @@ import * as stream from "stream";
 const CONFIG: Config = Config.getInstance();
 const userProfileFilename = "userProfileData";
 
+
+export let currentUserProfile: Maybe<Promise<UserProfile>> = null;
+CONFIG.addLongNameChangeListener(longName => {
+    longName.caseOf({
+        nothing: () => {
+            currentUserProfile = Maybe.nothing<Promise<UserProfile>>();
+        },
+        just: ln => {
+            currentUserProfile = Maybe.just(UserProfile.read(ln));
+        }
+    });
+});
+
 export interface UserProfileData {
     playlists: string[];
     uploadedVideos: string[];

@@ -18,6 +18,7 @@ import { safeClient as sc, NoUserNameError } from "./util";
 import extractThumbnail from "./thumbnail";
 import { Maybe } from "./maybe";
 import * as fileType from "file-type";
+import { currentUserProfile, UserProfile } from "./user-model";
 
 // All the info required to construct a video. The pointers to the
 // video and comment replies live in the payload.
@@ -105,7 +106,18 @@ export class VideoFactory {
         const v = new Video(payload, Maybe.just(Promise.resolve(localVideoFile)),
                             Promise.resolve(thumbnail), commentReplies, videoReplies, this);
         v._setVideoData(await v._write());
-        await this._addVideo(mkCachedVideo(v, toVIStringy(payload)));
+        const cachedVidInfo: CachedVideoInfoStringy =
+            (await (mkCachedVideo(v, toVIStringy(payload)))).valueOr(null);
+        if (cachedVidInfo !== null)
+            await this._addVideo(cachedVidInfo);
+        await currentUserProfile.caseOf({
+            nothing: () => { throw new Error("video-cache.ts:VideoFactory:makeVideo impossible"); },
+            just: async prof => {
+                const p: UserProfile = await prof;
+                p.uploadVideo(cachedVidInfo.xorName);
+                p.write();
+            }
+        });
         return v;
     }
 
@@ -179,7 +191,10 @@ export class VideoFactory {
 
         const v = new Video(vi, videoFile, thumbNailFile, commentReplies, videoReplies, this);
         v._setVideoData(sdH);
-        await this._addVideo(mkCachedVideo(v, vis));
+        await (await mkCachedVideo(v, vis)).caseOf({
+            nothing: () => Promise.resolve(null),
+            just: cv => this._addVideo(cv)
+        });
         return v;
     }
 
@@ -233,10 +248,7 @@ export class VideoFactory {
 
     // private, but exposed for unit testing the tricky cache logic only
     // @idempotent
-    public async _addVideo(video: Promise<Maybe<CachedVideoInfoStringy>>): Promise<void> {
-        const v: CachedVideoInfoStringy = (await video).valueOr(null);
-        if (v === null) return; // just don't touch the cache if we never actually downloaded the video
-
+    public async _addVideo(v: CachedVideoInfoStringy): Promise<void> {
         let p: Promise<void> = Promise.resolve();
         // if we have overflowed the max cache size, clear the bottom
         // half of the cache
