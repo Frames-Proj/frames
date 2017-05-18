@@ -4,6 +4,7 @@ import Video from "../ts/video-model";
 import { ChasingArrowsLoadingImage } from "./Animations";
 import { Maybe } from "../ts/maybe";
 import { PropTypes } from "react";
+import { VideoFactory } from "../ts/video-cache";
 
 
 export class VTArg {
@@ -26,8 +27,6 @@ interface VideoThumbnailProps {
 }
 
 interface VideoThumbnailState {
-    /* resolvedVideo: Maybe<Video>;
-     * resolvedVideoThumbnail: Maybe<string>;*/
     payload: Maybe<VideoThumbnailPayload>;
     videoIsBad: boolean;
 }
@@ -62,11 +61,14 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
 
         props.arg.caseOf<Promise<void> | void>({
             xorName: n =>
-                Video.readFromStringXorName(n, false)
-                    .then((v: Video) => v.thumbnailFile.then((tf: string) =>
-                        this.setState({ payload: Maybe.just(new VideoThumbnailPayload(
-                        v.title, v.owner, tf, n))})))
-                    .catch(_ => this.setState({ videoIsBad: true })),
+                VideoFactory.getInstance().then(vf =>
+                    vf.readFromStringXorName(n, false)
+                        .then((v: Video) => v.thumbnailFile.then((tf: string) =>
+                            this.setState({
+                                payload: Maybe.just(
+                                    new VideoThumbnailPayload(v.title, v.owner, tf, n))
+                            })))
+                        .catch(_ => this.setState({ videoIsBad: true }))),
             rawPayload: rp => this.setState({ payload: Maybe.just(rp) })
         });
     }

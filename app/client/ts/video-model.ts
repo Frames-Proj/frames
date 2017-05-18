@@ -15,6 +15,7 @@ import VideoComment from "./comment-model";
 import { Maybe } from "./maybe";
 import extractThumbnail from "./thumbnail";
 import CachedAppendableDataHandle from "./cached-appendable-data";
+import { VideoFactory } from "./video-cache";
 
 import Config from "./global-config";
 const CONFIG: Config = Config.getInstance();
@@ -26,6 +27,7 @@ export class UnsupportedVideoFormatError extends Error {
 }
 
 export default class Video implements Drop {
+    // @friend-class VideoFactory
 
     private readonly data: VideoInfo;
     public get title(): string { return this.data.title; }
@@ -65,7 +67,7 @@ export default class Video implements Drop {
         return Promise.resolve(this.videoReplies.length);
     }
     public async getReplyVideo(i: number): Promise<Video> {
-        return this.videoReplies.withAt(i, did => Video.read(did));
+        return this.videoReplies.withAt(i, did => this.vf.read(did));
     }
     public async getReplyVideoXorName(i: number): Promise<string> {
         return this.videoReplies.withAt(i, async did => (await did.serialise()).toString("base64"));
@@ -73,10 +75,11 @@ export default class Video implements Drop {
 
 
     constructor( data: VideoInfo
-                         , file: Maybe<Promise<string>>
-                         , thumbnailFile: Promise<string>
-                         , commentReplies: CachedAppendableDataHandle
-                         , videoReplies: CachedAppendableDataHandle) {
+               , file: Maybe<Promise<string>>
+               , thumbnailFile: Promise<string>
+               , commentReplies: CachedAppendableDataHandle
+               , videoReplies: CachedAppendableDataHandle
+               , private vf: VideoFactory) {
         this.data = data;
 
         this.file = file;
@@ -88,9 +91,11 @@ export default class Video implements Drop {
         this.videoData = null;
     }
     public async drop(): Promise<void> {
-        await this.commentReplies.drop();
-        await this.videoReplies.drop();
-        await this.videoData.drop();
+        await Promise.all([
+            this.commentReplies.drop(),
+            this.videoReplies.drop(),
+            this.videoData.drop()
+        ]);
     }
     public _setVideoData(vd: StructuredDataHandle): void {
         this.videoData = vd;
@@ -105,75 +110,7 @@ export default class Video implements Drop {
                          Promise.resolve((await di.serialise()).toString("base64")) );
     }
 
-    /**
-     *  Construct a new video from raw parts.
-     *
-     * @returns a new Video. The video has not been persisted to the SAFEnet
-     *  until `write` is called
-     */
-    public static async new(title: string, description: string, localVideoFile: string): Promise<Video> {
-        return Video.makeVideo(title, description, localVideoFile);
-    }
-
-    private static async makeVideo(title: string, description: string, localVideoFile: string, parentVideoXorName?: string): Promise<Video> {
-
-        // Ownership of these guys is going to be passed to the created video
-        const commentReplies: CachedAppendableDataHandle =
-            await withDropP(await sc.ad.create(title + " commentReplies"), async adh => {
-                adh.save();
-                return withDropP(await adh.toDataIdHandle(), did => CachedAppendableDataHandle.new(did));
-            });
-        const videoReplies: CachedAppendableDataHandle =
-            await withDropP(await sc.ad.create(title + " videoReplies"), async adh => {
-                adh.save();
-                return withDropP(await adh.toDataIdHandle(), did => CachedAppendableDataHandle.new(did));
-            });
-
-        function trySave(ad: CachedAppendableDataHandle): Promise<void> {
-            return ad.save().catch(err => {
-                // if the appendable data already exists, ignore the error.
-                // We don't need to update it.
-                if ((err.res != null && err.res.statusCode === 400)
-                    && (err.res != null && err.res.body != null
-                        && err.res.body.errorCode === -23) ) {
-                    return;
-                }
-                throw err;
-            });
-        }
-        trySave(commentReplies);
-        trySave(videoReplies);
-
-        async function getXorName(handle: CachedAppendableDataHandle) {
-            return withDropP(await handle.toDataIdHandle(), h => h.serialise());
-        }
-
-        const owner: string = CONFIG.getLongName().caseOf({
-            just: n => n,
-            nothing: () => { throw new NoUserNameError("You must choose a username."); }
-        });
-
-        const thumbnail: string = await extractThumbnail(localVideoFile);
-
-        const payload: VideoInfo = {
-            title: title,
-            description: description,
-            owner: owner,
-            videoFile: `${CONFIG.SAFENET_VIDEO_DIR}/${title}`,
-            thumbnailFile: `${CONFIG.SAFENET_THUMBNAIL_DIR}/${title}`,
-            videoReplies: await getXorName(videoReplies),
-            commentReplies: await getXorName(commentReplies)
-        };
-        if (parentVideoXorName != null) {
-            payload.parentVideoXorName = parentVideoXorName;
-        }
-
-        const v = new Video(payload, Maybe.just(Promise.resolve(localVideoFile)),
-                            Promise.resolve(thumbnail), commentReplies, videoReplies);
-        v._setVideoData(await v._write());
-        return v;
-    }
-
+    // private but we need to expose it so that the `VideoFactory` friend class can access it.
     // @returns a promise for a dataID pointing to the written video meta-node
     public async _write(): Promise<StructuredDataHandle> {
         const localVideoFile: string =
@@ -211,75 +148,6 @@ export default class Video implements Drop {
         return viH;
     }
 
-    public static async readFromStringXorName(xorName: string, fetchFile = true): Promise<Video> {
-        return withDropP(await sc.dataID.deserialise(
-            Buffer.from(xorName, "base64")), n => Video.read(n, fetchFile));
-    }
-
-    public static async read(dataId: DataIDHandle, fetchFile = true): Promise<Video> {
-        const sdH: StructuredDataHandle =
-            (await sc.structured.fromDataIdHandle(dataId)).handleId;
-
-        const vis = await sdH.readAsObject();
-        if (!isVideoInfoStringy(vis))
-            throw new Error("Malformed VideoInfo response.");
-
-        const vi: VideoInfo = toVI(vis);
-
-        const videoReplies: CachedAppendableDataHandle =
-            await CachedAppendableDataHandle.new(await sc.dataID.deserialise(vi.videoReplies));
-        const commentReplies: CachedAppendableDataHandle =
-            await CachedAppendableDataHandle.new(await sc.dataID.deserialise(vi.commentReplies));
-
-        async function fileExists(file: string): Promise<boolean> {
-            return new Promise<boolean>((resolve, reject) => fs.exists(file, resolve));
-        }
-
-        const localVideoFile: string = `${CONFIG.APP_VIDEO_DIR}/${vi.title}`;
-        let videoFile: Maybe<Promise<string>>;
-        if (await fileExists(localVideoFile)) {
-            videoFile = Maybe.just(Promise.resolve(localVideoFile));
-        } else if (fetchFile) {
-            // TODO(ethan): this call should be going through the DNS API
-            // once support for that lands.
-            const video: SafeFile = await sc.nfs.file.get("app", vi.videoFile);
-
-            const mimeType = fileType(video.body).mime;
-            if (CONFIG.SUPPORTED_VIDEO_MIME_TYPES.indexOf(mimeType) === -1) {
-                throw new UnsupportedVideoFormatError(mimeType);
-            }
-
-            videoFile = Maybe.just(new Promise((resolve, reject) => {
-                fs.writeFile(localVideoFile, video.body, (err) => {
-                    if (err) reject(err);
-                    else resolve(localVideoFile);
-                });
-            }));
-        } else {
-            videoFile = Maybe.nothing<Promise<string>>();
-        }
-
-        const localThumbnailFile: string = `${CONFIG.APP_THUMBNAIL_DIR}/${vi.title}`;
-        let thumbNailFile: Promise<string>;
-        if (await fileExists(localThumbnailFile)) {
-            thumbNailFile = Promise.resolve(localThumbnailFile);
-        } else {
-            thumbNailFile =
-                sc.nfs.file.get("app", vi.thumbnailFile).then((thumbnail: SafeFile) => {
-                    return new Promise<string>((resolve, reject) => {
-                        fs.writeFile(localThumbnailFile, thumbnail.body, (err) => {
-                            if (err) reject(err);
-                            else resolve(localThumbnailFile);
-                        });
-                    });
-                });
-        }
-
-        const v = new Video(vi, videoFile, thumbNailFile, commentReplies, videoReplies);
-        v._setVideoData(sdH);
-        return v;
-    }
-
     public async addComment(text: string): Promise<VideoComment> {
         const owner: string = CONFIG.getLongName().caseOf({
             just: n => n,
@@ -302,7 +170,7 @@ export default class Video implements Drop {
         const thisXorName: string =
             await withDropP(await this.xorName(), async n => (await n.serialise()).toString("base64"));
 
-        const videoPromise = Video.makeVideo(title, description, videoFile, thisXorName);
+        const videoPromise = this.vf._makeVideo(title, description, videoFile, thisXorName);
         videoPromise.then(async video =>
                           withDropP(await video.xorName(), n => this.videoReplies.append(n)));
 

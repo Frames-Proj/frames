@@ -107,7 +107,6 @@ describe("A frames Video model", () => {
         expect(parentsChild.title).toBe(child.title);
         expect(parentsChild.description).toBe(child.description);
 
-
         await failDone(parent.drop(), done);
         await failDone(child.drop(), done);
         await failDone(recoveredChild.drop(), done);
@@ -115,7 +114,7 @@ describe("A frames Video model", () => {
         await failDone(parentsChild.drop(), done);
 
         done();
-    });
+    }, 15000);
 
     it("can be read without downloading the whole video.", async (done) => {
         setCollectLeakStatsBlock("vms:test4 no video file");
@@ -130,6 +129,9 @@ describe("A frames Video model", () => {
                 return dId.serialise();
             }), done);
 
+        // for this test, we can't have the cache getting in our way
+        await vf._invalidate(dataId.toString("base64"));
+
         const recoveredVideo: Video =
             await failDone(withDropP(await safeClient.dataID.deserialise(dataId), (dIdH) => {
                 return vf.read(dIdH, false);
@@ -139,7 +141,7 @@ describe("A frames Video model", () => {
         expect(recoveredVideo.description).toBe(video.description);
 
         recoveredVideo.file.caseOf({
-            just: _ => { fail(); done(); },
+            just: f => { fail(`had file=${f}`); done(); },
             nothing: () => null
         });
 

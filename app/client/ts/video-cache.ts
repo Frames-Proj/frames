@@ -19,8 +19,6 @@ import extractThumbnail from "./thumbnail";
 import { Maybe } from "./maybe";
 import * as fileType from "file-type";
 
-const MANIFEST_FILE = "cache-manifest.dat";
-
 // All the info required to construct a video. The pointers to the
 // video and comment replies live in the payload.
 export interface CachedVideoInfoStringy {
@@ -42,14 +40,16 @@ interface VideoCache {
 //
 //
 export class VideoFactory {
+    // @friend-class Video
+
     static INSTNACE: Promise<VideoFactory> = null;
 
     constructor(private cachedVideos: VideoCache) {}
 
     public new(title: string, description: string, localVideoFile: string): Promise<Video> {
-        return this.makeVideo(title, description, localVideoFile);
+        return this._makeVideo(title, description, localVideoFile);
     }
-    private async makeVideo(title: string, description: string, localVideoFile: string, parentVideoXorName?: string): Promise<Video> {
+    public async _makeVideo(title: string, description: string, localVideoFile: string, parentVideoXorName?: string): Promise<Video> {
 
         // Ownership of these guys is going to be passed to the created video
         const commentReplies: CachedAppendableDataHandle =
@@ -103,20 +103,20 @@ export class VideoFactory {
         }
 
         const v = new Video(payload, Maybe.just(Promise.resolve(localVideoFile)),
-                            Promise.resolve(thumbnail), commentReplies, videoReplies);
+                            Promise.resolve(thumbnail), commentReplies, videoReplies, this);
         v._setVideoData(await v._write());
-        this._addVideo(mkCachedVideo(v, toVIStringy(payload)));
+        await this._addVideo(mkCachedVideo(v, toVIStringy(payload)));
         return v;
     }
 
     public async readFromStringXorName(xorName: string, fetchFile = true): Promise<Video> {
         return withDropP(await sc.dataID.deserialise(
-            Buffer.from(xorName, "base64")), n => Video.read(n, fetchFile));
+            Buffer.from(xorName, "base64")), n => this.read(n, fetchFile));
     }
     public async read(dataId: DataIDHandle, fetchFile = true): Promise<Video> {
         const strXorName: string = (await dataId.serialise()).toString("base64");
         if (strXorName in this.cachedVideos) {
-            return getCachedVideo(this.cachedVideos[strXorName]);
+            return this.getCachedVideo(this.cachedVideos[strXorName]);
         }
 
         const sdH: StructuredDataHandle =
@@ -177,9 +177,9 @@ export class VideoFactory {
                 });
         }
 
-        const v = new Video(vi, videoFile, thumbNailFile, commentReplies, videoReplies);
+        const v = new Video(vi, videoFile, thumbNailFile, commentReplies, videoReplies, this);
         v._setVideoData(sdH);
-        this._addVideo(mkCachedVideo(v, vis));
+        await this._addVideo(mkCachedVideo(v, vis));
         return v;
     }
 
@@ -192,7 +192,7 @@ export class VideoFactory {
 
     private static newVideoFactory(): Promise<VideoFactory> {
         return new Promise((resolve, reject) => {
-            fs.readFile(`${CONFIG.APP_HOME_DIR}/${MANIFEST_FILE}`, (err, contents) => {
+            fs.readFile(CONFIG.CACHE_MANIFEST_FILE, (err, contents) => {
                 if (err) {
                     if (err.code === "ENOENT") {
                         resolve(new VideoFactory({}));
@@ -206,6 +206,29 @@ export class VideoFactory {
 
             });
         });
+    }
+
+    private async getCachedVideo(blob: CachedVideoInfoStringy): Promise<Video> {
+        const videoReplies: CachedAppendableDataHandle =
+            await CachedAppendableDataHandle.new(await sc.dataID.deserialise(
+                new Buffer(blob.payload.videoReplies, "base64")));
+        const commentReplies: CachedAppendableDataHandle =
+            await CachedAppendableDataHandle.new(await sc.dataID.deserialise(
+                new Buffer(blob.payload.commentReplies, "base64")));
+
+        const v: Video = new Video(toVI(blob.payload),
+                                Maybe.just(Promise.resolve(blob.file)),
+                                Promise.resolve(blob.thumbnailFile),
+                                commentReplies,
+                                videoReplies,
+                                this
+                                );
+        const vd: StructuredDataHandle =
+            await withDropP(await sc.dataID.deserialise(new Buffer(blob.xorName, "base64")), async did => {
+                return (await sc.structured.fromDataIdHandle(did)).handleId;
+            });
+        v._setVideoData(vd);
+        return v;
     }
 
     // private, but exposed for unit testing the tricky cache logic only
@@ -227,6 +250,26 @@ export class VideoFactory {
         return p;
     }
 
+    // expose a mechanism to manually invalidate a video.
+    // this is mostly useful for tests.
+    public _invalidate(xorName: string): Promise<void> {
+        if (!(xorName in this.cachedVideos)) return;
+
+        const vi: CachedVideoInfoStringy = this.cachedVideos[xorName];
+        delete this.cachedVideos[xorName];
+        return Promise.all([this.writeCacheManifest(), this.rmVideoFiles(vi)]).then(_ => null);
+    }
+
+    private writeCacheManifest(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            fs.writeFile(CONFIG.CACHE_MANIFEST_FILE,
+                         JSON.stringify(this.cachedVideos), (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+    }
+
     private async compactCache(): Promise<void> {
         const tgtCacheNum = CONFIG.MAX_CACHE_SIZE / 2;
 
@@ -242,21 +285,40 @@ export class VideoFactory {
         let removePromises: Promise<void>[] = [];
         for (let vid in this.cachedVideos) {
             if (vid in keepList) continue;
-            const vidInfo: CachedVideoInfoStringy = this.cachedVideos[vid];
-
-            const rm: Promise<void> = new Promise<void>((resolve, reject) =>
-                    fs.unlink(vidInfo.file, (err) => {
-                        if (err) reject(err);
-                        else resolve();
-                })).then(_ => new Promise<void>((resolve, reject) =>
-                    fs.unlink(vidInfo.thumbnailFile, (err) => {
-                        if (err) reject(err);
-                        else resolve();
-                })));
-            removePromises.push(rm);
+            removePromises.push(this.rmVideoFiles(this.cachedVideos[vid]));
         }
+        await Promise.all(removePromises);
+        this.cachedVideos = keepList;
+        return this.writeCacheManifest();
+    }
 
-        return Promise.all(removePromises).then(_ => { return; });
+    private rmVideoFiles(vi: CachedVideoInfoStringy): Promise<void> {
+        return Promise.all([
+            new Promise<void>((resolve, reject) => {
+                    if (vi.file.startsWith(CONFIG.APP_HOME_DIR)) {
+                        fs.unlink(vi.file, (err) => {
+                            if (err)
+                                if (err.code === "ENOENT") resolve();
+                                else reject(err);
+                            else resolve();
+                        });
+                    } else {
+                        resolve();
+                    }
+            }),
+            new Promise<void>((resolve, reject) => {
+                if (vi.thumbnailFile.startsWith(CONFIG.APP_HOME_DIR)) {
+                    fs.unlink(vi.thumbnailFile, (err) => {
+                        if (err)
+                            if (err.code === "ENOENT") resolve();
+                            else reject(err);
+                        else resolve();
+                    });
+                } else {
+                    resolve();
+                }
+            })
+        ]).then(_ => null );
     }
 
 }
@@ -275,23 +337,9 @@ async function mkCachedVideo(v: Video, payload: VideoInfoStringy): Promise<Maybe
         payload: payload,
         file: f,
         thumbnailFile: tf,
-        timestamp: new Date().getTime() // TODO: is this right?
+        timestamp: new Date().getTime() / 1000
     }));
 }
 
-async function getCachedVideo(blob: CachedVideoInfoStringy): Promise<Video> {
-    const videoReplies: CachedAppendableDataHandle =
-        await CachedAppendableDataHandle.new(await sc.dataID.deserialise(
-            new Buffer(blob.payload.videoReplies, "base64")));
-    const commentReplies: CachedAppendableDataHandle =
-        await CachedAppendableDataHandle.new(await sc.dataID.deserialise(
-            new Buffer(blob.payload.commentReplies, "base64")));
-    return new Video(toVI(blob.payload),
-                     Maybe.just(Promise.resolve(blob.file)),
-                     Promise.resolve(blob.thumbnailFile),
-                     commentReplies,
-                     videoReplies
-                    );
-}
 
 

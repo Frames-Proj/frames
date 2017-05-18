@@ -34,6 +34,7 @@ export default class Config {
     public readonly APP_THUMBNAIL_DIR: string = this.APP_HOME_DIR + "/thumbnail-cache";
     public readonly SAFENET_VIDEO_DIR: string = "videos";
     public readonly SAFENET_THUMBNAIL_DIR: string = "thumbnails";
+    public readonly CACHE_MANIFEST_FILE: string = `${this.APP_HOME_DIR}/cache-manifest.dat`;
     public readonly APP_NAME: string = "Frames";
 
     // long name stuff. We thought we would avoid global state...

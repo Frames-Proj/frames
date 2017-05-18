@@ -3,7 +3,7 @@ import { idempotentMkdirSync, makeid } from "./test-util";
 import * as fs from "fs";
 
 describe("recursiveRmdir", () => {
-    fit("can remove a directory", async done => {
+    it("can remove a directory", async done => {
         const testDir: string = makeid();
 
         idempotentMkdirSync("/tmp/frames-test");
@@ -13,7 +13,7 @@ describe("recursiveRmdir", () => {
         done();
     });
 
-    fit("can remove a file in that directory", async done => {
+    it("can remove a file in that directory", async done => {
         const testDir: string = makeid();
 
         idempotentMkdirSync("/tmp/frames-test");
@@ -23,7 +23,7 @@ describe("recursiveRmdir", () => {
 
         done();
     });
-    fit("can recursively remove a directory", async done => {
+    it("can recursively remove a directory", async done => {
         const testDir: string = makeid();
         const testSubDir: string = makeid();
 
