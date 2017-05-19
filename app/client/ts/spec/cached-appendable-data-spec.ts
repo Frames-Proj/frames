@@ -2,7 +2,8 @@
 //
 
 
-import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors, diffFiles } from "./test-util";
+import { TEST_DATA_DIR, failDone, makeid,
+         checkForLeakErrors, diffFiles, setupTestEnv } from "./test-util";
 
 import Video from "../video-model";
 import { Maybe } from "../maybe";
@@ -24,9 +25,7 @@ import startupHook from "../startup-hooks";
 describe("A cached appendable data.", () => {
 
     beforeAll(async (done) => {
-        await failDone(startupHook(), done);
-        setCollectLeakStats();
-        CONFIG.setLongName(Maybe.just("uwotm8"));
+        await failDone(setupTestEnv(), done);
         done();
     });
 

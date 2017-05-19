@@ -7,6 +7,7 @@ import { SafeFile, withDropP, DataIDHandle,
        } from "safe-launcher-client";
 
 import { safeClient, NoUserNameError } from "./util";
+import { VideoFactory } from "./video-cache";
 
 const sc = safeClient;
 import Config from "./global-config";
@@ -16,10 +17,13 @@ import Video from "./video-model";
 
 //
 // The playlist class will be stored in a structured data with
-// an attached appendable data
-// on the network. Once MaidSafe adds support for updating
-// a file, it could make more sense to just use a file
-// to store things.
+// an attached appendable data on the network. Once MaidSafe
+// adds support for updating a file, it could make more
+// sense to just use a file to store things.
+//
+// The video objects in a playlist just contain enough info
+// to make a thumbnail. In order to actually watch the video
+// you have to make a new video object.
 //
 // For now, playlists don't allow for reordering, but a
 // workaround for the future is to allow playlist members
@@ -80,11 +84,13 @@ export default class Playlist implements Drop {
                             did => sc.ad.fromDataIdHandle(did));
         const networkVideoList = networkVideoListMD.handleId;
 
-        // NOTE: this loads all the videos. Is that too slow?
-        let videos: Video[] = [];
+        // NOTE: this loads all the video thumbnails
+        const vf: VideoFactory = await VideoFactory.getInstance();
+        let videoPs: Promise<Video>[] = [];
         for (let i = 0; i < networkVideoListMD.dataLength; ++i) {
-            videos.push(await Video.read(await networkVideoList.at(i)));
+            videoPs.push(vf.read(await networkVideoList.at(i), false));
         }
+        const videos: Video[] = await Promise.all(videoPs);
 
         let p = new Playlist(videos, networkVideoList, pi.title, pi.description, pi.owner);
         p.setNetworkInfo(sdH);

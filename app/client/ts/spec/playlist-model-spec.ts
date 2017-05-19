@@ -1,5 +1,6 @@
 
-import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors } from "./test-util";
+import { TEST_DATA_DIR, failDone,
+         makeid, checkForLeakErrors, setupTestEnv } from "./test-util";
 
 import Playlist from "../playlist-model";
 import Video from "../video-model";
@@ -14,15 +15,14 @@ import { TYPE_TAG_VERSIONED, DataIDHandle,
        } from "safe-launcher-client";
 import { safeClient } from "../util";
 const sc = safeClient;
+import { VideoFactory } from "../video-cache";
 
 import startupHook from "../startup-hooks";
 
 describe("A playlist model", () => {
 
     beforeAll(async (done) => {
-        await failDone(startupHook(), done);
-        setCollectLeakStats();
-        CONFIG.setLongName(Maybe.just("uwotm8"));
+        await failDone(setupTestEnv(), done);
         done();
     });
 
@@ -59,9 +59,10 @@ describe("A playlist model", () => {
 
     it("can get a video appended", async (done) => {
         setCollectLeakStatsBlock("pms:test3 append");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
         const playlist = await failDone(Playlist.new("Cats " + makeid(), "A list of cat videos"), done);
 
@@ -75,9 +76,10 @@ describe("A playlist model", () => {
 
     it("can be serialized with videos in the list", async (done) => {
         setCollectLeakStatsBlock("pms:test4 append round trip");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
         const playlist = await failDone(Playlist.new("Cats " + makeid(), "A list of cat videos"), done);
 

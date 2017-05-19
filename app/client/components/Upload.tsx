@@ -17,6 +17,8 @@ import { Notification } from "./SignInNotification";
 import Config from "../ts/global-config";
 const CONFIG: Config = Config.getInstance();
 
+import { VideoFactory } from "../ts/video-cache";
+
 interface UploadProps {
     replyVideo: Video;
     redirect: (route: string) => void;
@@ -165,6 +167,8 @@ export class Upload extends React.Component<UploadProps, UploadState> {
     }
 
     private async doSubmit() {
+        const vf: VideoFactory = await VideoFactory.getInstance();
+
         let video: Video;
         function catchErr(err): Promise<Video> {
             //give a helpful error message if there's a duplicate upload
@@ -172,8 +176,8 @@ export class Upload extends React.Component<UploadProps, UploadState> {
             throw err;
         }
         if (this.props.replyVideo === undefined) {
-            video = await Video.new(this.state.videoTitle, this.state.videoDescription,
-                                    this.state.videoFile).catch(catchErr.bind(this));
+            video = await vf.new(this.state.videoTitle, this.state.videoDescription,
+                                 this.state.videoFile).catch(catchErr.bind(this));
         } else {
             video = await (await this.props.replyVideo)
                 .addVideoReply(this.state.videoTitle, this.state.videoDescription, this.state.videoFile)

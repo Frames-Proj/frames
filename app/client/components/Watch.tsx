@@ -9,7 +9,7 @@ import { PropTypes } from "react";
 import ReplyTree from "./ReplyTree";
 import VideoInfo from "./VideoInfo";
 import Comments from "./Comments";
-
+import { VideoFactory } from "../ts/video-cache";
 import { safeClient, WATCH_URL_RE } from "../ts/util";
 import { Maybe } from "../ts/maybe";
 const sc = safeClient;
@@ -151,13 +151,13 @@ export class Watch extends React.Component<WatchProps, WatchState> {
         };
     }
 
-    private mkVideo(props): Promise<Video> {
+    private async mkVideo(props): Promise<Video> {
         const match: string[] = WATCH_URL_RE.exec(props.location.pathname);
         if (match.length !== 2) {
             return Promise.reject(new Error("Watch: bad path"));
         }
 
-        return Video.readFromStringXorName(match[1]);
+        return (await VideoFactory.getInstance()).readFromStringXorName(match[1]);
     }
 
     componentWillReceiveProps(nextProps: WatchProps) {

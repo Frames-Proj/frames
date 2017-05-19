@@ -1,5 +1,6 @@
 
-import { TEST_DATA_DIR, failDone, makeid, checkForLeakErrors } from "./test-util";
+import { TEST_DATA_DIR, failDone, makeid,
+         checkForLeakErrors, setupTestEnv } from "./test-util";
 
 import VideoComment from "../comment-model";
 import Video from "../video-model";
@@ -14,6 +15,7 @@ import { TYPE_TAG_VERSIONED, DataIDHandle,
        } from "safe-launcher-client";
 import { safeClient } from "../util";
 const sc = safeClient;
+import { VideoFactory } from "../video-cache";
 
 import startupHook from "../startup-hooks";
 let started: boolean = false;
@@ -21,9 +23,7 @@ let started: boolean = false;
 describe("A video comment model", () => {
 
     beforeAll(async (done) => {
-        await failDone(startupHook(), done);
-        setCollectLeakStats();
-        CONFIG.setLongName(Maybe.just("uwotm8"));
+        await failDone(setupTestEnv(), done);
         done();
     });
 
@@ -33,9 +33,10 @@ describe("A video comment model", () => {
 
     it("can be created as a root comment", async (done) => {
         setCollectLeakStatsBlock("cms:test1 create root");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const comment: VideoComment =
@@ -49,9 +50,10 @@ describe("A video comment model", () => {
 
     it("can be created as a comment reply", async (done) => {
         setCollectLeakStatsBlock("cms:test2 create reply");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const rootComment: VideoComment =
@@ -69,9 +71,10 @@ describe("A video comment model", () => {
 
     it("can be saved and recovered when it is a top level comment", async (done) => {
         setCollectLeakStatsBlock("cms:test3 save recover top");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const comment: VideoComment =
@@ -99,9 +102,10 @@ describe("A video comment model", () => {
 
     it("can be created as a comment reply", async (done) => {
         setCollectLeakStatsBlock("cms:test4 reply");
+        const vf: VideoFactory = await VideoFactory.getInstance();
 
         const video: Video =
-            await failDone(Video.new("title " + makeid(), "A description.",
+            await failDone(vf.new("title " + makeid(), "A description.",
                                     `${TEST_DATA_DIR}/test-vid.mp4`), done);
 
         const rootComment: VideoComment =
