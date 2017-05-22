@@ -5,6 +5,10 @@ import {Jumbotron, Tab, Row, Col, Nav, NavItem, Grid, Thumbnail, Button} from "r
 import VideoThumbnail from "./VideoThumbnail";
 import { Maybe } from "../ts/maybe";
 import { VTArg } from "./VideoThumbnail";
+import { UserProfile, currentUserProfile } from "../ts/user-model";
+
+import Config from "../ts/global-config";
+const CONFIG: Config = Config.getInstance();
 
 interface MeState {
     uploads: Maybe<string[]>;
@@ -20,18 +24,24 @@ export class UserOverview extends React.Component<{}, MeState> {
         }
 
         this.render.bind(this);
-
+        this.getMyVideos.bind(this);
     }
 
     componentDidMount() {
-        this.getMyVideos();
+        // This relies on being attached after the currentUserProfile
+        // listener. Pretty fragile, but it should work for now.
+        // TODO: cleanup
+        CONFIG.addLongNameChangeListener(this.getMyVideos);
+        this.getMyVideos(CONFIG.getLongName());
     }
 
     // dummy function for now
-    private getMyVideos(): void {
-        var links: string[] = ['AAAAAAyrHJYXQE+vKyTiIeGJyllFgT4U0/dmNFsJyhO74o/89QEAAAAAAAA',
-                               'AAAAAAyrHJYXQE+vKyTiIeGJyllFgT4U0/dmNFsJyhO74o/89QEAAAAAAAA'];
-        this.setState({uploads: Maybe.just(links)});
+    private getMyVideos(longName: Maybe<string>): void {
+        if (longName.isNothing()) return;
+
+        currentUserProfile.onJust(cupP => cupP.then(up => {
+            this.setState({uploads: Maybe.just(up.data.uploadedVideos)});
+        }));
     }
 
     private getThumbnails(): JSX.Element {
@@ -55,14 +65,16 @@ export class UserOverview extends React.Component<{}, MeState> {
             },
             just: xornames => {
                 var thumbnails = xornames.map((xorname) => {
-                    return (<VideoThumbnail arg={new VTArg(xorname)}/>);
+                    return (<VideoThumbnail
+                                style={{ display: "inline-block", padding: "0px 20px 0px 0px" }}
+                                arg={new VTArg(xorname)}/>);
 
                 });
                 return (
                     <div style={{
-                        height: 'calc(100% - 100px)',
-                        width: 'calc(100% - 100px)',
-                        margin: '50px'
+                        height: "calc(100% - 100px)",
+                        width: "calc(100% - 100px)",
+                        margin: "50px"
                     }}>
                         { thumbnails }
                     </div>

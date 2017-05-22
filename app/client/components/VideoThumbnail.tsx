@@ -24,6 +24,7 @@ export class VTArg {
 
 interface VideoThumbnailProps {
     arg: VTArg;
+    style?: Object;
 }
 
 interface VideoThumbnailState {
@@ -111,13 +112,10 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
                    </div>)
             });
         return (
-            <div style={{
-                display: 'inline-block'
-            }}>
+            <div style={this.props.style || { display: "inline-block" }} >
                 {content}
             </div>
         );
-
     }
 
 };
