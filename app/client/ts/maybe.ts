@@ -48,4 +48,8 @@ export class Maybe<T> {
         }
         return this.value;
     }
+
+    public onJust(f: (value: T) => any): void {
+        if (!this._isNothing) f(this.value);
+    }
 }

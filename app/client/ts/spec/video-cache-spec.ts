@@ -57,7 +57,7 @@ describe("A Video factory", () => {
             const v = mkTestVid();
             fs.closeSync(fs.openSync(v.file, "w")); // make empty file
             fs.closeSync(fs.openSync(v.thumbnailFile, "w"));
-            await failDone(vf._addVideo(Promise.resolve(Maybe.just(v))), done);
+            await failDone(vf._addVideo(v), done);
         }
 
         // expect there to be CONFIG.MAX_CACHE_SIZE * 2 / 2 video in the directory
