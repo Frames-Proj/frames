@@ -17,7 +17,7 @@ import * as mkpath from "mkpath";
 
 // ensure that the service is registered and the home dir is created
 async function checkServiceState(ln: Maybe<string>) {
-    ln.caseOf({
+    await ln.caseOf({
         just: async (name: string) => {
             let services: string[];
             services = await safeClient.dns.getServices(name);
@@ -48,7 +48,7 @@ export default async function startupHook(): Promise<void> {
     await ensureSafeThumbnailDir();
 
     checkServiceState(CONFIG.getLongName());
-    CONFIG.addLongNameChangeListener(checkServiceState);
+    CONFIG.addAsyncLongNameChangeListener(checkServiceState);
 }
 
 //

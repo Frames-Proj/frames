@@ -40,17 +40,24 @@ export default class Config {
     // long name stuff. We thought we would avoid global state...
     private CURRENT_LONG_NAME: Maybe<string> = Maybe.nothing<string>();
     private longNameListeners: ((ln: Maybe<string>) => any)[] = [];
+    private longNameAsyncListeners: ((ln: Maybe<string>) => Promise<any>)[] = [];
     public getLongName(): Maybe<string> {
         return this.CURRENT_LONG_NAME;
     }
-    public setLongName(longName: Maybe<string>): void {
+    public async setLongName(longName: Maybe<string>): Promise<void> {
         this.CURRENT_LONG_NAME = longName;
+        for (let i = 0; i < this.longNameAsyncListeners.length; ++i) {
+            await this.longNameAsyncListeners[i](longName);
+        }
         for (let i = 0; i < this.longNameListeners.length; ++i) {
             this.longNameListeners[i](longName);
         }
     }
     public addLongNameChangeListener(f: (ln: Maybe<string>) => any): void {
         this.longNameListeners.push(f);
+    }
+    public addAsyncLongNameChangeListener(f: (ln: Maybe<string>) => Promise<any>): void {
+        this.longNameAsyncListeners.push(f);
     }
 
     public readonly SUPPORTED_VIDEO_MIME_TYPES = ["video/mp4"];

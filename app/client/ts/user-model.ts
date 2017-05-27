@@ -1,5 +1,5 @@
 import { safeClient } from "./util";
-import { SafeFile, DnsHomeDirectory, NfsFileData } from "safe-launcher-client";
+import { SafeFile, DnsHomeDirectory, NfsFileData, NotFoundError } from "safe-launcher-client";
 import Config from "./global-config";
 import { Maybe } from "./maybe";
 import * as stream from "stream";
@@ -59,7 +59,8 @@ export class UserProfile {
      * @returns - a promise with the UserProfile object
      */
     public static async read(longName: string): Promise<UserProfile> {
-        const homeDir: DnsHomeDirectory = await safeClient.dns.getHomeDirectory(longName, CONFIG.SERVICE_NAME);
+        const homeDir: DnsHomeDirectory =
+            await safeClient.dns.getHomeDirectory(longName, CONFIG.SERVICE_NAME);
         const fileNames: string[] = homeDir.files.map((f: NfsFileData) => f.name);
 
         if (fileNames.indexOf(userProfileFilename) === -1) {
@@ -69,9 +70,11 @@ export class UserProfile {
             });
         }
 
-        const profileDataFile: SafeFile = await safeClient.dns.getFile(longName, CONFIG.SERVICE_NAME, userProfileFilename);
+        const profileDataFile: SafeFile =
+            await safeClient.dns.getFile(longName, CONFIG.SERVICE_NAME, userProfileFilename);
 
-        const userProfileData: Maybe<UserProfileData> = toUserProfileData(JSON.parse(profileDataFile.body.toString()));
+        const userProfileData: Maybe<UserProfileData> =
+            toUserProfileData(JSON.parse(profileDataFile.body.toString()));
 
         return userProfileData.caseOf({
             just: data => new UserProfile(longName, data),
@@ -111,7 +114,8 @@ export class UserProfile {
      * @arg longName - longName that the user is operating under
      */
     public async write(): Promise<void> {
-        const homeDir: DnsHomeDirectory = await safeClient.dns.getHomeDirectory(this._longName, CONFIG.SERVICE_NAME);
+        const homeDir: DnsHomeDirectory =
+            await safeClient.dns.getHomeDirectory(this._longName, CONFIG.SERVICE_NAME);
 
         const dataString: string = JSON.stringify(this._data);
         const buffer: Buffer = Buffer.from(dataString);
@@ -120,10 +124,14 @@ export class UserProfile {
             dataStream.write(buffer, err => resolve());
         });
 
-        await safeClient.nfs.file.create("app",
-                                         `${homeDir.info.name}/${userProfileFilename}`,
-                                         dataStream,
-                                         buffer.byteLength,
-                                         "text/plain");
+        await safeClient.nfs.file.delete("app", `${homeDir.info.name}/${userProfileFilename}`)
+            .catch(err => {
+                if (err instanceof NotFoundError) return;
+                throw err;
+            }).then(_ => {
+                return safeClient.nfs.file.create(
+                    "app", `${homeDir.info.name}/${userProfileFilename}`,
+                    dataStream, buffer.byteLength, "text/plain");
+            });
     }
 };

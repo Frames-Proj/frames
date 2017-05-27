@@ -75,4 +75,27 @@ describe("The user profile data store", () => {
         done();
     });
 
+    it("does not break when we upload a second video.", async done => {
+        const vf: VideoFactory = await VideoFactory.getInstance();
+
+        const v1: Video =
+            await failDone(vf.new("title " + makeid(), "A description.",
+                                    `${TEST_DATA_DIR}/test-vid.mp4`), done);
+        const v2: Video =
+            await failDone(vf.new("title " + makeid(), "A description.",
+                                    `${TEST_DATA_DIR}/test-vid.mp4`), done);
+
+        await failDone(currentUserProfile.caseOf<Promise<void>>({
+            nothing: () => { fail("no user profile!"); done(); return <Promise<void>>null; },
+            just: async p => {
+                const uvs: string[] = (await p).data.uploadedVideos;
+                expect(uvs).toContain(await v1.stringXorName());
+                expect(uvs).toContain(await v2.stringXorName());
+            }
+        }), done);
+
+        await failDone(v1.drop(), done);
+        done();
+    });
+
 });

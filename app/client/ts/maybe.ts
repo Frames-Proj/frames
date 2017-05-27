@@ -25,8 +25,8 @@ export class Maybe<T> {
         }
     }
 
-    public isNothing(): boolean {return this._isNothing;}
-    public isJust(): boolean {return !this._isNothing;}
+    public isNothing(): boolean {return this._isNothing; }
+    public isJust(): boolean {return !this._isNothing; }
 
     public caseOf<K>(c: MaybePattern<T, K>): K {
         if (this._isNothing) {
