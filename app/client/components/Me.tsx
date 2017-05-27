@@ -64,7 +64,7 @@ export class UserOverview extends React.Component<{}, MeState> {
                 );
             },
             just: xornames => {
-                var thumbnails = xornames.map((xorname) => {
+                const thumbnails = xornames.map((xorname) => {
                     return (<VideoThumbnail
                                 style={{ display: "inline-block", padding: "0px 20px 0px 0px" }}
                                 arg={new VTArg(xorname)}/>);

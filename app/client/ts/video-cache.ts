@@ -47,6 +47,32 @@ export class VideoFactory {
 
     constructor(private cachedVideos: VideoCache) {}
 
+    // @returns a time-sorted list of the video cache entries
+    public getCachedVideos(): CachedVideoInfoStringy[] {
+        return Object.keys(this.cachedVideos)
+            .map(k => this.cachedVideos[k])
+            .sort((lhs, rhs) => rhs.timestamp - lhs.timestamp);
+    }
+
+    private cacheChangeCbs: ((vids: CachedVideoInfoStringy[]) => any)[] = [];
+    private taggedCacheChangeCbs: ({[tag: string]: ((vids: CachedVideoInfoStringy[]) => any)}) = {};
+    public addCacheChangeListener(f: (vids: CachedVideoInfoStringy[]) => any, tag ?: string): void {
+        if (tag === undefined) {
+            this.cacheChangeCbs.push(f);
+        } else {
+            if (!(tag in f)) this.taggedCacheChangeCbs[tag] = f;
+        }
+    }
+    private fireCacheChangeListeners(): void {
+        const cachedVideosList = this.getCachedVideos();
+        for (let i: number = 0; i < this.cacheChangeCbs.length; ++i) {
+            this.cacheChangeCbs[i](cachedVideosList);
+        }
+        Object.keys(this.taggedCacheChangeCbs).forEach(k => {
+            this.taggedCacheChangeCbs[k](cachedVideosList);
+        });
+    }
+
     public new(title: string, description: string, localVideoFile: string): Promise<Video> {
         return this._makeVideo(title, description, localVideoFile);
     }
@@ -248,7 +274,7 @@ export class VideoFactory {
 
     // private, but exposed for unit testing the tricky cache logic only
     // @idempotent
-    public async _addVideo(v: CachedVideoInfoStringy): Promise<void> {
+    public _addVideo(v: CachedVideoInfoStringy): Promise<void> {
         let p: Promise<void> = Promise.resolve();
         // if we have overflowed the max cache size, clear the bottom
         // half of the cache
@@ -259,7 +285,8 @@ export class VideoFactory {
         if (!(v.xorName in this.cachedVideos)) {
             this.cachedVideos[v.xorName] = v;
         }
-        return p;
+        this.fireCacheChangeListeners();
+        return p.then(_ => this.writeCacheManifest());
     }
 
     // expose a mechanism to manually invalidate a video.
@@ -269,6 +296,7 @@ export class VideoFactory {
 
         const vi: CachedVideoInfoStringy = this.cachedVideos[xorName];
         delete this.cachedVideos[xorName];
+        this.fireCacheChangeListeners();
         return Promise.all([this.writeCacheManifest(), this.rmVideoFiles(vi)]).then(_ => null);
     }
 
