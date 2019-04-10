@@ -112,7 +112,7 @@ export default class VideoThumbnail extends React.Component<VideoThumbnailProps,
                    </div>)
             });
         return (
-            <div style={this.props.style || { display: "inline-block" }} >
+            <div style={this.props.style || { padding: "0px 20px 0px 0px", display: "inline-block" }} >
                 {content}
             </div>
         );
